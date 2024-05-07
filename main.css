@@ -1,0 +1,41 @@
+body {
+  
+  background-color: #202020;
+
+}
+
+section {
+
+  margin: 6px;
+  padding: 4px;
+  background-color: #2c2c2c;
+  border-radius: 2px;
+
+}
+
+#treeTable td * {
+  aspect-ratio: 1 / 1;
+}
+
+.modal {
+  --bs-modal-header-border-color: black;
+  --bs-modal-footer-border-color: black;
+  --bs-modal-bg: #2C2D2F;
+}
+
+.minecraftTooltip {
+  padding: 1px 5px 1px 5px;
+  border: 2px solid #230158;
+  background-color: #110111;
+  color: white;
+  font-family: minecraft;
+  text-shadow: 1px 2px 0 color-mix(in srgb, currentColor 24%, black);
+  min-height: 30px;
+}
+
+@font-face {
+  font-family: 'minecraft';
+  src: url('fonts/Minecraft.ttf');
+  font-style: normal;
+  font-weight: normal;
+}
