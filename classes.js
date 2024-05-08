@@ -39,23 +39,23 @@ const minecraftDelimiter = '§';
 function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
 {
     result = '<span>';
+    let color = '';
 
-    for (let i = 0; i < text.length; i++) {
+    for (let i = 0; i < text.length;) {
 
         let c = text[i];
 
         if (c != delimiter) {
             result += c;
+            i++;
             continue;
         }
-        //else
+        //else  
         result += '</span>';
-        decoration = '';
-        style = '';
-        color = '';
+        let decoration = '';
+        let style = '';
 
-        while (text[i] == delimiter) {
-            
+        do {
             i++;
             charactersLeft = text.length - i;
             if (charactersLeft < 1) {
@@ -94,15 +94,15 @@ function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
                 i += 7;
                 continue;
             }
-        }
+        } while (text[i] == delimiter)
 
         span = '<span style="';
 
         if (decoration.length > 0)
-            span += 'text-decoration:' + decoration + ';';
+            span += `text-decoration:${decoration};`;
 
         if (color.length > 0)
-            span += 'color:' + color + ';';
+            span += `color:${color};`;
 
         if (style.length > 0)
             span += style;
@@ -110,7 +110,6 @@ function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
         span += '">';
 
         result += span;
-        result += text[i];
     }
 
     result += '</span>';
@@ -125,12 +124,19 @@ function insertStringBeforeSelected(insertString) {
     if ( !activeElement instanceof HTMLTextAreaElement || !( activeElement instanceof HTMLInputElement && activeElement.type == 'text') ) {
         return;
     }
+
+    if (activeElement.maxLength != null && activeElement.value.length + insertString.length > activeElement.maxLength) {
+        return;
+    }
     
     const currentValue = activeElement.value;
     const cursorPosition = activeElement.selectionStart;
+
     activeElement.value = currentValue.substring(0, cursorPosition) + insertString + currentValue.substring(cursorPosition, currentValue.length);
+
     activeElement.selectionStart = cursorPosition + insertString.length;
     activeElement.selectionEnd = activeElement.selectionStart;
+
     activeElement.dispatchEvent(new Event('input'));
 }
 
@@ -140,64 +146,26 @@ function convertToMinecraftTooltip(text, outputFieldID) {
         outputField.innerHTML = minecraftToHTML(text);
 }
 
-class Class
-{
-    /**
-     * Returns class name
-     * @return string
-     */
-    getName()
-    {
-        return "";
-    }
-
-    /**
-     * Returns path to the ability icon folder for this class
-     * @return string
-     */
-    getAbilityPath()
-    {
-        return "";
-    }
-}
-
-class Archer extends Class
-{
-    getName()
-    {
-        return "Archer"
-    }
-
-    getAbilityPath()
-    {
-        return "abilities/class/archer";
-    }
-}
-
-class Archetype
-{
-    /**
-     * Name
-     * @var string
-     */
-    name = "";
-
-    constructor(name = "")
-    {
-        this.name = name;
-    }
+const classDictionary = {
+    'Archer' : 'abilities/class/archer',
 }
 
 class Ability
 {
     /**
-     * Top-most text, saved in html format
+     * ID
+     * @var int
+     */
+    id;
+    
+    /**
+     * Top-most text
      * @var string
      */
     name;
 
     /**
-     * Description, saved in html format
+     * Description
      * @var string
      */
     description;
@@ -284,11 +252,10 @@ class TravelCell extends Cell
     bConnectedRight;
 }
 
-class Tree
-{
+class Properties {
     /**
      * Class
-     * @var Class
+     * @var string
      */
     class;
 
@@ -333,6 +300,21 @@ class Tree
      * @var bool
      */
     bTravesableUp;
+}
+
+class BaseTree
+{
+    /**
+     * Generic properties of the editor
+     * @var Properties
+     */
+    properties;
+
+    /**
+     * archetype : [ability1, ability2]
+     * @var Map
+     */
+    abilities = {'' : []};
 
     /**
      * A map of cells, keys are cell number if counted left to right, up to down, starting at 1
@@ -340,11 +322,42 @@ class Tree
      */
     cellMap;
 
-    /**
-     * A map of cells, keys are cell number if counted left to right, up to down, starting at 1
-     * @var Map
-     */
-    allocatedAbilities;
+    editArchetype(name = "", nameFormID = "archetypeNameInput") {   
+
+        const nameInputElement = document.getElementById(nameFormID);
+        if (nameInputElement == null)
+            return;
+
+        if (name == "") {
+            nameInputElement.value = "";
+            nameInputElement.oldname = "";
+        }
+        else {
+            nameInputElement.value = name;
+            nameInputElement.oldname = name;
+        }
+
+        nameInputElement.dispatchEvent(new Event('input'));
+    }
+
+    saveArchetype(nameFormID = "archetypeNameInput") {
+        const nameInputElement = document.getElementById(nameFormID);
+        if (nameInputElement == null || nameInputElement.value == "")
+            return;
+
+        const oldname = nameInputElement.oldname || "";
+
+        if (oldname == "") {
+
+            this.abilities[nameInputElement.value] = [];
+
+        } else {
+
+            this.abilities[nameInputElement.value] = nameInputElement[nameInputElement.oldname] || [];
+            nameInputElement[nameInputElement.oldname] = null;
+
+        }
+    }
 
     /**
      * Returns the html ready string for populating a cell with a clickable (optional)
@@ -407,16 +420,6 @@ class Tree
                 table.appendChild(rowElement);
             }
         }
-    }
-
-    editOnClick(cellID)
-    {
-
-    }
-
-    allocateOnClick(cellID)
-    {
-
     }
 
     /**

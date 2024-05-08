@@ -164,7 +164,7 @@
                 ARCHETYPES
               </div>
 
-              <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#archetypeModal">
+              <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#archetypeModal" onclick="tree.editArchetype()">
                 +
               </button>
 
@@ -210,9 +210,10 @@
 
           <div class="modal-body">
 
-            <div>
+            <div class="form-floating">
 
-              <input type="text" class="form-control focusable" id="archeotypeDefaultInput" placeholder="ex. Boltslinger" autocomplete="off" oninput="convertToMinecraftTooltip(value, 'archeotypeTooltip')">
+              <input type="text" class="form-control focusable" id="archetypeNameInput" autocomplete="off" placeholder="ex. Boltslinger" oninput="convertToMinecraftTooltip(value, 'archeotypeTooltip')" maxlength="150">
+              <label class="maxlength-label" for="archetypeNameInput">ex. Boltslinger</label>
 
             </div>
 
@@ -225,7 +226,7 @@
           <div class="modal-footer">
 
             <button type="button" class="btn btn-outline-danger focusable" data-bs-dismiss="modal">Close</button>
-            <button type="button" class="btn btn-outline-success ms-4 focusable" data-bs-dismiss="modal">Save</button>
+            <button type="button" class="btn btn-outline-success ms-4 focusable" data-bs-dismiss="modal" onclick="tree.saveArchetype()">Save</button>
 
           </div>
 
@@ -240,15 +241,18 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="classes.js"></script>
     <script>
+      let tree = new BaseTree();
+
       const archetypeModal = document.getElementById('archetypeModal')
-      const archeotypeDefaultInput = document.getElementById('archeotypeDefaultInput')
+      const archetypeNameInput = document.getElementById('archetypeNameInput')
 
       archetypeModal.addEventListener('shown.bs.modal', () => {
-        archeotypeDefaultInput.focus()
+        archetypeNameInput.focus();
       })
 
       document.addEventListener("DOMContentLoaded", (event) => {
 
+        //Populates color options from codeDictionaryColor map
         const colorContainers = document.getElementsByClassName("colorContainer");
 
         for (let key in codeDictionaryColor) {
@@ -266,6 +270,21 @@
           }
 
         }
+
+        //Makes labels display remaining character count when something is typed
+        const automatedCharCountLabels = document.getElementsByClassName("maxlength-label");
+
+        for (label of automatedCharCountLabels) {
+
+          const input = document.getElementById(label.getAttribute('for'));
+          
+          if (input == null || input.getAttribute('maxlength') == null)
+            continue;
+          
+          input.addEventListener( "input", (e) =>
+            label.innerHTML = input.value.length > 0 ? `${input.value.length}/${input.getAttribute('maxlength')}` : input.placeholder );
+        }
+
       });
 
     </script>
