@@ -52,14 +52,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="maxAbilityPoints" class="form-label">Ability Points</label></div>
-                <div><input type="number" min="1" value="45" class="form-control" style="width: 80px" id="maxAbilityPoints"></div>
+                <div><input type="number" min="1" value="45" class="form-control integer" style="width: 80px" id="maxAbilityPoints"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="treePages" class="form-label">Tree Pages</label></div>
-                <div><input type="number" min="1" max="50" value="7" class="form-control" style="width: 80px" id="treePages"></div>
+                <div><input type="number" min="1" max="50" value="7" class="form-control integer" style="width: 80px" id="treePages"></div>
                 
               </div>
 
@@ -70,14 +70,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="rowsPerPage" class="form-label">Rows Per Page</label></div>
-                <div><input type="number" min="3" max="11" value="6" class="form-control" style="width: 70px" id="rowsPerPage"></div>
+                <div><input type="number" min="3" max="11" value="6" class="form-control integer" style="width: 70px" id="rowsPerPage"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="pagesDisplayed" class="form-label">Pages displayed</label></div>
-                <div><input type="number" min="1" max="8" value="2" class="form-control" style="width: 70px" id="pagesDisplayed"></div>
+                <div><input type="number" min="1" max="8" value="2" class="form-control integer" style="width: 70px" id="pagesDisplayed"></div>
                 
               </div>
 
@@ -170,10 +170,25 @@
 
             </div>
 
-            <div class="m-2" style="background-color: #353537; border: 2px double #303133; border-radius: 2px;">
-              g
+            <div class="m-2 overflow-auto" style="max-height: 110px;" id="archetypeContainer"></div>
+
+          </div>
+
+          <div class="border border-black rounded-2 border-2 mt-2" style="background-color: #2C2D2F;">
+            
+            <div class="d-flex justify-content-between align-items-center ps-3 pe-2 mt-1">
+              <div class="text-light">
+                ABILITIES
+              </div>
+
+              <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#abilityModal" onclick="tree.editAbility()">
+                +
+              </button>
+
             </div>
 
+            <div class="m-2 overflow-auto" style="max-height: 600px;" id="abilityContainer"></div>
+            
           </div>
 
         </div>
@@ -182,7 +197,7 @@
     </section>
 
     <div class="modal fade" id="archetypeModal" tabindex="-1" aria-labelledby="Archetype Edit" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered"  onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
+      <div class="modal-dialog modal-dialog-centered" onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
 
         <div class="modal-content">
 
@@ -190,17 +205,17 @@
 
           <div class="modal-header justify-content-between">
 
-            <h1 class="modal-title fs-5 text-light" id="archetypeModalLabel">Archetypes</h1>
+            <h1 class="modal-title fs-5 text-light ms-1" id="archetypeModalLabel">Archetype</h1>
             <div>
 
               <div class="colorContainer" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <button type="button" class="btn btn-secondary me-2 p-0" style="height: 25px; width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>
-                <button type="button" class="btn btn-secondary me-2 p-0 fw-bold" style="height: 25px; width: 25px;" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 p-0 fst-italic" style="height: 25px; width: 25px;" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 p-0 text-decoration-underline" style="height: 25px; width: 25px;" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 p-0 text-decoration-line-through" style="height: 25px; width: 25px;" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
+                <button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>
+                <button type="button" class="btn btn-secondary me-2 fw-bold small-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic small-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline small-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through small-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
                 <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">
               </div>
 
@@ -219,7 +234,7 @@
 
             <div class="mt-3 mb-3" style="background-color: #110111; height: 1px;"></div>
 
-            <div class="minecraftTooltip" id="archeotypeTooltip"></div>
+            <div class="minecraftTooltip overflow-hidden" id="archeotypeTooltip"></div>
             
           </div>
 
@@ -238,13 +253,103 @@
 
     </div>
 
+    <div class="modal fade" id="abilityModal" tabindex="-1" aria-labelledby="Ability Edit" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
+
+        <div class="modal-content">
+
+          <form>
+
+          <div class="modal-header justify-content-between">
+
+            <h1 class="modal-title fs-5 text-light ms-1" id="abilityModalLabel">Ability</h1>
+            <div>
+
+              <div class="colorContainer" style="text-align: end;"></div>
+
+              <div class="row justify-content-end mt-2" style="text-align: end;">
+                <button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>
+                <button type="button" class="btn btn-secondary me-2 fw-bold small-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic small-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline small-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through small-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
+                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="modal-body">
+
+            <div class="form-floating">
+
+              <input type="text" class="form-control focusable" id="abilityNameInput" autocomplete="off" placeholder="Name" oninput="tree.renderEditorAbilityTooltip()" maxlength="200">
+              <label class="maxlength-label" for="abilityNameInput">Name</label>
+
+            </div>
+
+            <div class="form-floating mt-2">
+
+              <textarea type="text" style="min-height: 200px;" class="form-control focusable" id="abilityDescriptionInput" autocomplete="off" placeholder="Description" oninput="tree.renderEditorAbilityTooltip()" maxlength="1200"></textarea>
+              <label class="maxlength-label" for="abilityDescriptionInput">Description</label>
+
+            </div>
+
+            <select class="form-select mt-2 focusable" id="abilityArchetypeInput" aria-label="Archetype" oninput="tree.renderEditorAbilityTooltip()"></select>
+
+            <div class="d-flex align-items-center justify-content-between w-100 mt-2 ps-1">
+
+              <div class="me-5 text-light"><label for="pointsRequiredInput" class="form-label">Points Required</label></div>
+              <div><input type="number" min="0" max="8" value="1" class="form-control focusable integer" style="width: 80px" id="pointsRequiredInput" oninput="tree.renderEditorAbilityTooltip()"></div>
+              
+            </div>
+
+            <div class="d-flex align-items-center justify-content-between w-100 mt-2 ps-1">
+
+              <div class="me-5 text-light"><label for="archetypePointsRequiredInput" class="form-label">Archetype Points Required</label></div>
+              <div><input type="number" min="0" max="8" value="0" class="form-control focusable integer" style="width: 80px" id="archetypePointsRequiredInput" oninput="tree.renderEditorAbilityTooltip()"></div>
+              
+            </div>
+
+            <select class="form-select mt-2 focusable" id="abilityPrerequiseteInput" aria-label="Prerequisite ability" oninput="tree.renderEditorAbilityTooltip()"></select>
+
+            <div class="mt-3 mb-3" style="background-color: #110111; height: 1px;"></div>
+
+            <div class="minecraftTooltip overflow-hidden" id="editAbilityTooltip"></div>
+            
+          </div>
+
+          <div class="modal-footer justify-content-between">
+
+            <div class="d-flex justify-content-between align-items-center flex-fill" style="max-width: 230px;" id="abilityTypeInput"></div>
+
+            <div>
+
+              <button type="button" class="btn btn-outline-danger focusable" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-outline-success ms-4 focusable" onclick="tree.saveAbility()">Save</button>
+
+            </div>
+
+          </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="minecraftTooltip overflow-hidden" id="cursorTooltip" hidden></div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="classes.js"></script>
     <script>
       let tree = new BaseTree();
 
-      const archetypeModal = document.getElementById('archetypeModal')
-      const archetypeNameInput = document.getElementById('archetypeNameInput')
+      const archetypeModal = document.getElementById('archetypeModal');
+      const archetypeNameInput = document.getElementById('archetypeNameInput');
 
       archetypeModal.addEventListener('shown.bs.modal', () => {
         archetypeNameInput.focus();
@@ -269,14 +374,16 @@
             clone.addEventListener("click", () => {insertStringBeforeSelected(minecraftDelimiter + key)});
           }
 
+          button.remove();
+
         }
 
         //Makes labels display remaining character count when something is typed
         const automatedCharCountLabels = document.getElementsByClassName("maxlength-label");
 
-        for (label of automatedCharCountLabels) {
+        for (let label of automatedCharCountLabels) {
 
-          const input = document.getElementById(label.getAttribute('for'));
+          let input = document.getElementById(label.getAttribute('for'));
           
           if (input == null || input.getAttribute('maxlength') == null)
             continue;
@@ -284,6 +391,25 @@
           input.addEventListener( "input", (e) =>
             label.innerHTML = input.value.length > 0 ? `${input.value.length}/${input.getAttribute('maxlength')}` : input.placeholder );
         }
+
+        //Makes .integer inputs round floats
+        const automatedRoundInputs = document.getElementsByClassName("integer");
+        
+        for (let input of automatedRoundInputs) {
+          input.addEventListener( "change", (e) => {input.value = Math.round(input.value);});
+        }
+
+        //Attaches a div to a cursor, used to display content
+        document.addEventListener('mousemove', (e) => {
+          const cursorTooltip = document.getElementById('cursorTooltip');
+          if (!cursorTooltip || cursorTooltip.hidden == true)
+            return;
+
+          let leftOffset = (e.pageX + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : e.pageX + 5;
+          leftOffset = Math.max(leftOffset, 12);
+          
+          cursorTooltip.style = `top: ${e.pageY + 5}px; left: ${leftOffset}px`;
+        });
 
       });
 

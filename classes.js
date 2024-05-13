@@ -36,8 +36,14 @@ const codeDictionaryStyle = {
 };
 const minecraftDelimiter = '§';
 
-function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
+function sanitizeHTML(text) {
+    return text.replace(/</g, '&lt;');
+}
+
+function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter = minecraftDelimiter)
 {
+    text = sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp');
+
     result = '<span>';
     let color = '';
 
@@ -51,7 +57,7 @@ function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
             continue;
         }
         //else  
-        result += '</span>';
+        result += bStripFormattingInstead ? '' : '</span>';
         let decoration = '';
         let style = '';
 
@@ -109,7 +115,8 @@ function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
 
         span += '">';
 
-        result += span;
+        if (!bStripFormattingInstead)
+            result += span;
     }
 
     result += '</span>';
@@ -120,15 +127,14 @@ function minecraftToHTML(text = "", delimiter = minecraftDelimiter)
 function insertStringBeforeSelected(insertString) {
 
     const activeElement = document.activeElement;
-    
-    if ( !activeElement instanceof HTMLTextAreaElement || !( activeElement instanceof HTMLInputElement && activeElement.type == 'text') ) {
+    if ( !activeElement || !activeElement.type == 'textarea' || !activeElement.type == 'text' ) {
         return;
     }
 
     if (activeElement.maxLength != null && activeElement.value.length + insertString.length > activeElement.maxLength) {
         return;
     }
-    
+   
     const currentValue = activeElement.value;
     const cursorPosition = activeElement.selectionStart;
 
@@ -148,16 +154,65 @@ function convertToMinecraftTooltip(text, outputFieldID) {
 
 const classDictionary = {
     'Archer' : 'abilities/class/archer',
+    'Warrior' : 'abilities/class/warrior',
+    'Assassin' : 'abilities/class/assassin',
+    'Mage' : 'abilities/class/mage',
+    'Shaman' : 'abilities/class/shaman',
+}
+
+const abilityIconDictionary = {
+    'skill' : 'abilities/class/',
+    'red' : 'abilities/generic/red',
+    'purple' : 'abilities/generic/purple',
+    'yellow' : 'abilities/generic/yellow',
+    'white' : 'abilities/generic/white',
+}
+
+const travelIconDictionary = {
+    'up' : 'abilities/generic/travel_up_1',
+    'down' : 'abilities/generic/travel_down_2',
+    'right' : 'abilities/generic/travel_right_3',
+    'left' : 'abilities/generic/travel_left_4',
+}
+
+function generateIconHTML(type, travelnode = new TravelNode(), classs = "", bAllocated = false) {
+
+    let result = "";
+
+    if (typeof travelnode == TravelNode)
+        result += travelnode.generateIconHTML();
+
+    if (type == 'travel')
+        return;
+    
+    if (type == 'skill')
+        return result + `<img src="${abilityIconDictionary[type] + classs + (bAllocated ? '/skill_a.png' : '/skill.png')}" style="z-index: 5;"></img>`;
+
+    if (type in abilityIconDictionary)
+        result += `<img src="${abilityIconDictionary[type] + (bAllocated ? '_a.png' : '.png')}" style="z-index: 5;"></img>`;
+
+    return result;
 }
 
 class Ability
-{
+{   
+    constructor(id, name, description, archetype, pointsRequired, archeotypePointsRequired, type, requires) {
+        this.id = Number(id) ? id : -1;
+        this.name = name;
+        this.description = description;
+        this.archetype = archetype;
+        this.pointsRequired = Number(pointsRequired) ? (pointsRequired < 0 ? 0 : pointsRequired) : 0;
+        this.archeotypePointsRequired = Number(archeotypePointsRequired) ? (archeotypePointsRequired < 0 ? 0 : archeotypePointsRequired) : 0;
+        this.type = type;
+        this.requires = requires;
+    }
+
     /**
      * ID
      * @var int
      */
     id;
-    
+
     /**
      * Top-most text
      * @var string
@@ -187,69 +242,100 @@ class Ability
      * @var int
      */
     archeotypePointsRequired;
+
+    /**
+     * Min archetype points required
+     * @var int
+     */
+    archeotypePointsRequired;
+
+    /**
+     * Ability type
+     * @var string
+     */
+    type;
+
+    /**
+     * ID of the required ability
+     * @var int
+     */
+    requires;
 }
 
-class Cell
-{
+class TravelNode {
     /**
-     * Returns a table column element
-     * @param  Map
-     * @param  Map
-     * @return element
+     * up : empty/0 means unconnected, 1 means connected, 2 means allocated
+     * @var int
      */
-    renderCellContents(neighborMap, connectionsMap = new Map())
-    {
-        const cell = document.createElement('td');
-        return cell;
+    up;
+
+    /**
+     * down : empty/0 means unconnected, 1 means connected, 2 means allocated
+     * @var int
+     */
+    down;
+
+    /**
+     * left : empty/0 means unconnected, 1 means connected, 2 means allocated
+     * @var int
+     */
+    left;
+
+    /**
+     * right : empty/0 means unconnected, 1 means connected, 2 means allocated
+     * @var int
+     */
+    right;
+
+    generateIconHTML() {
+        result = "";
+
+        switch (up) {
+            case 1 :
+                result += '<img src="abilities/generic/travel_up_1.png" style="z-index: 1;"></img>\n';
+                break;
+            case 2 :
+                result += '<img src="abilities/generic/travel_up_1_a.png" style="z-index: 1;"></img>\n';
+                break;
+            default :
+                break;
+        }
+
+        switch (down) {
+            case 1 :
+                result += '<img src="abilities/generic/travel_down_2.png" style="z-index: 2;"></img>\n';
+                break;
+            case 2 :
+                result += '<img src="abilities/generic/travel_down_2_a.png" style="z-index: 2;"></img>\n';
+                break;
+            default :
+                break;
+        }
+
+        switch (left) {
+            case 1 :
+                result += '<img src="abilities/generic/travel_left_3.png" style="z-index: 3;"></img>\n';
+                break;
+            case 2 :
+                result += '<img src="abilities/generic/travel_left_3_a.png" style="z-index: 3;"></img>\n';
+                break;
+            default :
+                break;
+        }
+
+        switch (right) {
+            case 1 :
+                result += '<img src="abilities/generic/travel_right_4.png" style="z-index: 4;"></img>\n';
+                break;
+            case 2 :
+                result += '<img src="abilities/generic/travel_right_4_a.png" style="z-index: 4;"></img>\n';
+                break;
+            default :
+                break;
+        }
+
+        return result;
     }
-}
-
-class AbilityCell extends Cell
-{
-    /**
-     * Ability occupying the spot (nullable)
-     * @var Ability
-     */
-    ability;
-
-    renderCellContents(neighborMap, connectionsMap = new Map())
-    {
-        const cell = super.renderCellContents(neighborMap, connectionsMap);
-        
-        return cell;
-    }
-
-    renderHover()
-    {
-        
-    }
-}
-
-class TravelCell extends Cell
-{
-    /**
-     * Whether the cell is connected to the one above
-     * @var bool
-     */
-    bConnectedUp;
-
-    /**
-     * Whether the cell is connected to the one below
-     * @var bool
-     */
-    bConnectedDown;
-
-    /**
-     * Whether the cell is connected to the one on the left
-     * @var bool
-     */
-    bConnectedLeft;
-
-    /**
-     * Whether the cell is connected to the one on the right
-     * @var bool
-     */
-    bConnectedRight;
 }
 
 class Properties {
@@ -288,12 +374,6 @@ class Properties {
      * @var int
      */
     pagesDisplayed;
-
-    /**
-     * Current page
-     * @var int
-     */
-    currentPage;
     
     /**
      * Whether or not you can go up the tree
@@ -311,16 +391,46 @@ class BaseTree
     properties;
 
     /**
-     * archetype : [ability1, ability2]
-     * @var Map
+     * Archetypes
+     * @var string[]
      */
-    abilities = {'' : []};
+    archetypes = [];
+
+    /**
+     * Abilities
+     * @var Ability[]
+     */
+    abilities = [];
 
     /**
      * A map of cells, keys are cell number if counted left to right, up to down, starting at 1
-     * @var Map
+     * @var {"cellNumber" : "ability"}
      */
     cellMap;
+
+    /**
+     * Current page
+     * @var int
+     */
+    currentPage;
+
+    constructor() {
+        this.properties = new Properties();
+        this.readProperties();
+    }
+
+    readProperties(classSelectId = "classSelect", maxAbilityPointsId = "maxAbilityPoints", loopTreeId = "loopTreeSwitch", pagesId = "treePages",
+        rowsPerPageId = "rowsPerPage", pagesDisplayedId = "pagesDisplayed", bTravesableUp = "travelUpSwitch") {
+
+        this.properties.class = document.getElementById(classSelectId).value;
+        this.properties.maxAbilityPoints = document.getElementById(maxAbilityPointsId).value;
+        this.properties.loopTree = document.getElementById(loopTreeId).value;
+        this.properties.pages = document.getElementById(pagesId).value;
+        this.properties.rowsPerPage = document.getElementById(rowsPerPageId).value;
+        this.properties.bTravesableUp = document.getElementById(bTravesableUp).value;
+
+        this.pagesDisplayed = document.getElementById(pagesDisplayedId).value;
+    }
 
     editArchetype(name = "", nameFormID = "archetypeNameInput") {   
 
@@ -342,100 +452,410 @@ class BaseTree
 
     saveArchetype(nameFormID = "archetypeNameInput") {
         const nameInputElement = document.getElementById(nameFormID);
-        if (nameInputElement == null || nameInputElement.value == "")
+        if (!nameInputElement || nameInputElement.value == "" || this.archetypes.includes(nameInputElement.value) )
             return;
 
         const oldname = nameInputElement.oldname || "";
-
+        const newname = nameInputElement.value;
+        
         if (oldname == "") {
+            
+            this.archetypes.push(newname);
+            
+        } else {
 
-            this.abilities[nameInputElement.value] = [];
+            const existingIndex = this.archetypes.indexOf(oldname);
+            this.archetypes[existingIndex] = newname;
+            this.updateArchetype(oldname, newname);
+
+        }
+        
+        this.renderArchetypes();
+    }
+
+    deleteArchetype(name) {
+        if (typeof name != "string" || name == "")
+            return;
+
+        
+        const index = this.archetypes.indexOf(name);
+        if (index > -1)
+            this.archetypes.splice(index, 1);
+
+        this.updateArchetype(name);        
+        this.renderArchetypes();
+    }
+
+    renderArchetypes(containerID = "archetypeContainer") {
+        const container = document.getElementById(containerID);
+        if (container == null)
+            return;
+        
+        container.innerHTML = "";
+        
+        for (let archetype of this.archetypes) {
+
+            const div = document.createElement("div");
+            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1');
+
+            const text = document.createElement("div");
+            text.classList.add('flex-fill', 'overflow-hidden');
+            text.innerHTML = minecraftToHTML(archetype);
+            div.appendChild(text);
+            
+            const editbtn = document.createElement("button");
+            editbtn.classList.add('small-btn', 'me-1', 'ms-2');
+            editbtn.type = "button";
+            editbtn.style = "background-color: transparent;";
+            editbtn.title = "Edit";
+            editbtn.innerHTML = "✒️";
+            editbtn.setAttribute('data-bs-toggle', 'modal');
+            editbtn.setAttribute('data-bs-target', '#archetypeModal');
+            editbtn.addEventListener('click', (e) => this.editArchetype(archetype));
+            div.appendChild(editbtn);
+            
+            const delbtn = document.createElement("button");
+            delbtn.classList.add('small-btn');
+            delbtn.type = "button";
+            delbtn.style = "background-color: transparent;";
+            delbtn.title = "Delete";
+            delbtn.innerHTML = "💀";
+            delbtn.addEventListener('click', (e) => this.deleteArchetype(archetype));
+            div.appendChild(delbtn);
+            
+            container.appendChild(div);
+
+        }
+    }
+
+    updateArchetype(oldarchetype, newarchetype = "") {
+
+        for (let ability of this.abilities) {
+            if (ability.archetype = oldarchetype)
+                ability.archetype = newarchetype;
+        }
+        
+        this.renderAbilities();
+    }
+    /*
+    getAbilityByID(abilityId = -1) {
+        if (abilityId < 0)
+            return new Ability();
+
+        let result = new Ability();
+
+        for (let ability in this.abilities) {
+
+            if (ability.id != abilityId)
+                continue;
+
+            result.name = ability.name;
+            result.description = ability.description;
+            result.archetype = ability.archetype;
+            result.pointsRequired = ability.pointsRequired;
+            result.archeotypePointsRequired = ability.archeotypePointsRequired;
+            result.type = ability.type;
+            break;
+        }
+
+        return result;
+    }
+    */
+    renderAbilityTypeSelector(selected = "skill", containerId = "abilityTypeInput") {
+
+        const container = document.getElementById(containerId);
+        if (!container)
+            return;
+
+        container.innerHTML = "";
+        container.value = selected;
+
+        Object.keys(abilityIconDictionary).forEach( (type) => {
+            const div = document.createElement('div');
+            div.classList.add("ability-icon");
+            div.innerHTML += generateIconHTML(type, null, this.properties.class, type == selected);
+            container.appendChild(div);
+            div.addEventListener("click", (e) => { this.renderAbilityTypeSelector(type) });
+        });
+
+    }
+
+    renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
+        pointsRequiredFormID = "pointsRequiredInput", archetypePointsRequiredFormID = "archetypePointsRequiredInput", containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput") {
+
+        const nameInputElement = document.getElementById(nameFormID);
+        const descriptionInputElement = document.getElementById(descriptionFormID);
+        const archetypeInputElement = document.getElementById(archetypeFormID);
+        const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
+        const archeotypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
+        const container = document.getElementById(containerId);
+
+        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archeotypePointsRequiredInputElement || !prerequisiteInputElement || !container)
+            return;
+
+        const id = prerequisiteInputElement.value;
+        const index = this.abilities.findIndex( (a) => {return a.id == id} );
+        
+        if (archetypeInputElement.value == "") {
+            container.innerHTML = `
+                ${minecraftToHTML(nameInputElement.value)}<br><br>
+                ${minecraftToHTML(descriptionInputElement.value)}<br><br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>
+            `;
+        } else {
+            container.innerHTML = `
+                ${minecraftToHTML(nameInputElement.value)}<br><br>
+                ${minecraftToHTML(descriptionInputElement.value)}<br><br>
+                ${minecraftToHTML(archetypeInputElement.value + '&nbsp&nbspArchetype')}<br><br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>
+                <span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Points:&nbsp&nbsp</span>${archeotypePointsRequiredInputElement.value}<br>
+            `;
+        }
+        
+        if (index != null && index >= 0)
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(this.abilities[index].name, true)}`;
+    }
+
+    renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
+
+        const container = document.getElementById(containerId);
+        const ability = this.abilities.find( (a) => {return a.id == abilityId} );
+
+        if (!container || !ability)
+            return;
+
+        container.hidden = false;
+        
+        if (ability.archetype == "") {
+            container.innerHTML = `
+                ${minecraftToHTML(ability.name)}<br><br>
+                ${minecraftToHTML(ability.description)}<br><br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>
+            `;
+        } else {
+            container.innerHTML = `
+                ${minecraftToHTML(ability.name)}<br><br>
+                ${minecraftToHTML(ability.description)}<br><br>
+                ${minecraftToHTML(ability.archetype + '&nbsp&nbspArchetype')}<br><br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>
+                <span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Points:&nbsp&nbsp</span>${ability.archeotypePointsRequired}<br>
+            `;
+        }
+        
+        let requiredAbility = this.abilities.find( (a) => {return a.id == ability.requires} )
+        if (requiredAbility)
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(requiredAbility.name, true)}`;
+    }
+
+    hideHoverAbilityTooltip(containerId = "cursorTooltip") {
+        const container = document.getElementById(containerId);
+
+        if (!container)
+            return;
+
+        container.hidden = true;
+        container.innerHTML = "";
+    }
+
+    editAbility(id = -1,
+        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = "pointsRequiredInput",
+        archetypePointsRequiredFormID = "archetypePointsRequiredInput", typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {   
+
+        const nameInputElement = document.getElementById(nameFormID);
+        const descriptionInputElement = document.getElementById(descriptionFormID);
+        const archetypeInputElement = document.getElementById(archetypeFormID);
+        const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
+        const archeotypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const typeInputElement = document.getElementById(typeFormID);
+        const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
+        
+        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement || !pointsRequiredInputElement || !archeotypePointsRequiredInputElement || !typeInputElement || !prerequisiteInputElement)
+            return;
+        
+        if (id < 0) {
+
+            archetypeInputElement.innerHTML = `<option selected value="">Archetype (none)</option>`;
+            for (let archetype of this.archetypes) {
+
+                archetypeInputElement.innerHTML += `<option value="${archetype}">${minecraftToHTML(archetype)}</option>`;
+
+            }
+
+            prerequisiteInputElement.innerHTML = `<option selected value="-1">Prerequisite (none)</option>`;
+            for (let ability of this.abilities) {
+
+                prerequisiteInputElement.innerHTML += `<option value="${ability.id}">${minecraftToHTML(ability.name)}</option>`;
+
+            }
+
+            nameInputElement.abilityId = "";
+            nameInputElement.value = "";
+            descriptionInputElement.value = "";
+            pointsRequiredInputElement.value = 1;
+            archeotypePointsRequiredInputElement.value = 0;
+            prerequisiteInputElement.value = -1;
+            this.renderAbilityTypeSelector();
 
         } else {
 
-            this.abilities[nameInputElement.value] = nameInputElement[nameInputElement.oldname] || [];
-            nameInputElement[nameInputElement.oldname] = null;
+            const index = this.abilities.findIndex( (a) => {return a.id == id} );
 
-        }
-    }
+            if (index == null || index < 0)
+                return;
 
-    /**
-     * Returns the html ready string for populating a cell with a clickable (optional)
-     * and hoverable picture
-     * If bInEditMode is set to true
-     * @param  bool  bInEditMode
-     * @return strinf
-     */
-    createTable(bInEditMode)
-    {
-        const table = document.getElementById('skill-tree');
-        if (table == null)
-            return;
-        table.innerHTML = '';
+            archetypeInputElement.innerHTML = `<option value="">(none)</option>`;
+            for (let archetype of this.archetypes) {
 
-        for (let page = 1; page <= pages; page++)
-        {
-            //Row showcasing page number
-            const pageDisplay = document.createElement('tr');
-            pageDisplay.innerHTML = `<td colspan=${treeWidth}>Page ${page}</td>`;
-            table.appendChild(pageDisplay);
-
-            //Actual skill tree
-            for (let row = 1; row <= rowsPerPage; row++)
-            {
-                const rowElement = document.createElement('tr');
-
-                //Adjust cell number to include previous rows
-                const adj = (row - 1) * treeWidth + 1;
-                for (let cell = $adj; cell < adj + treeWidth; cell++)
-                {
-                    const bNotEmpty = this.cellMap.has(cell);
-                    const bAbilityCell = bNotEmpty && cellMap[cell] instanceof AbilityCell;
-
-                    //Create the cell and assign it an id based on its number reading left to right top to bottom (excluding page # displays)
-                    if (bNotEmpty && cellMap[cell] instanceof Cell)
-                    {
-                        const cellElement = this.cellMap[cell].renderCellContents();
-                    } else
-                    {
-                        const cellElement = document.createElement('td');
-                    }
-                    cellElement.id = cell;
-
-                    //If the cell contains an ability, give it a hover event displaying said ability's description
-                    if (bAbilityCell)
-                        cellElement.onhover = this.cellMap[cell].renderHover();
-
-                    //Differantiate between tree editing and testing modes
-                    if (bInEditMode)
-                        cellElement.onclick = this.editOnClick(cell);
-                    else if (bAbilityCell)
-                        cellElement.onclick = this.allocateOnClick(cell);
-                    
-                    
-                    
-
-                    table.appendChild(pageDisplay);
-                }
-                table.appendChild(rowElement);
+                archetypeInputElement.innerHTML += `<option${archetype == this.abilities[index].archetype ? " selected" : ""} value="${archetype}">${minecraftToHTML(archetype)}</option>`;
+            
             }
+
+            prerequisiteInputElement.innerHTML = `<option value="-1">(none)</option>`;
+            for (let ability of this.abilities) {
+
+                if (ability.id == id)
+                    continue;
+
+                prerequisiteInputElement.innerHTML += `<option value="${ability.id}"${ability.id == this.abilities[index].requires ? " selected" : ""}>${minecraftToHTML(ability.name)}</option>`;
+
+            }
+
+            nameInputElement.abilityId = id;
+            nameInputElement.value = this.abilities[index].name;
+            descriptionInputElement.value = this.abilities[index].description;
+            pointsRequiredInputElement.value = this.abilities[index].pointsRequired;
+            archeotypePointsRequiredInputElement.value = this.abilities[index].archeotypePointsRequired;
+            this.renderAbilityTypeSelector(this.abilities[index].type);
+            
         }
+
+        nameInputElement.dispatchEvent(new Event('input'));
+        descriptionInputElement.dispatchEvent(new Event('input'));
     }
 
-    /**
-     * Takes in a cell mapping and a cell ID; using treeWidth checks whether there are cells ajacent to it
-     * returns a map of corresponding booleans
-     * @param  bool  bInEditMode
-     * @return strinf
-     */
-    checkAjacent(map, cell)
-    {
-        const result = new Map(
-            'up', map.has(cell - this.treeWidth),
-            'down', map.has(cell + this.treeWidth),
-            'left', map.has(cell - 1),
-            'right', map.has(cell + 1)
-        );
-        return result;
+    saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = "pointsRequiredInput",
+    archetypePointsRequiredFormID = "archetypePointsRequiredInput", typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {
+
+        const nameInputElement = document.getElementById(nameFormID);
+        const descriptionInputElement = document.getElementById(descriptionFormID);
+        const archetypeInputElement = document.getElementById(archetypeFormID);
+        const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
+        const archeotypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const typeInputElement = document.getElementById(typeFormID);
+        const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
+
+        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archeotypePointsRequiredInputElement || !prerequisiteInputElement)
+            return;
+        
+        const id = nameInputElement.abilityId;
+        const index = this.abilities.findIndex( (a) => {return a.id == id} );
+        
+        if (index == null || index < 0) {
+
+            let maxId = 0;
+            for (let ability of this.abilities) {
+                maxId = Math.max(maxId, ability.id);
+            }
+
+            const newAbility = new Ability(maxId + 1, nameInputElement.value, descriptionInputElement.value, archetypeInputElement.value,
+                pointsRequiredInputElement.value, archeotypePointsRequiredInputElement.value, typeInputElement.value, pointsRequiredInputElement.value);
+
+            this.abilities.push(newAbility);
+            nameInputElement.abilityId = newAbility.id;
+
+        } else {
+
+            this.abilities[index].name = nameInputElement.value;
+            this.abilities[index].description = descriptionInputElement.value;
+            this.abilities[index].archetype = archetypeInputElement.value;
+            this.abilities[index].pointsRequired = pointsRequiredInputElement.value;
+            this.abilities[index].archeotypePointsRequired = archeotypePointsRequiredInputElement.value;
+            this.abilities[index].type = typeInputElement.value;
+            this.abilities[index].requires = prerequisiteInputElement.value;
+
+        }
+
+        this.renderAbilities();
     }
+
+    deleteAbility(id = -1) {
+
+        if (id == null || id < 0)
+            return;
+
+        const index = this.abilities.findIndex( (a) => {return a.id == id} );
+        
+        if (index > -1)
+            this.abilities.splice(index, 1);
+ 
+        this.renderAbilities();
+    }
+    
+    renderAbilities(containerID = "abilityContainer") {
+        
+        const container = document.getElementById(containerID);
+        if (container == null)
+            return;
+        
+        container.innerHTML = "";
+
+        let priorityMap = {};
+        Object.keys(abilityIconDictionary).forEach( (elem, i) => {
+            priorityMap[elem] = i;
+        });
+
+        this.abilities.sort((a, b) => {
+            
+            if (a.type == null)
+                return 1;
+            if (b.type == null)
+                return -1;
+
+            return priorityMap[a.type] - priorityMap[b.type];
+        })
+        
+        for (let ability of this.abilities) {
+
+            const div = document.createElement("div");
+            div.classList.add('d-inline-flex', 'align-items-center', 'minecraftTooltip', 'w-100', 'mb-1');
+
+            const imgholder = document.createElement("div");
+            imgholder.style = "width: 56px; text-align: center;";
+            div.appendChild(imgholder);
+            imgholder.innerHTML = generateIconHTML(ability.type, null, this.properties.class, true);
+
+            imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(ability.id); });
+            imgholder.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
+
+            const text = document.createElement("div");
+            text.classList.add('flex-fill', 'align-items-center', 'overflow-hidden', 'ms-2');
+            text.innerHTML = minecraftToHTML(ability.name);
+            div.appendChild(text);
+            
+            const editbtn = document.createElement("button");
+            editbtn.classList.add('small-btn', 'me-1', 'ms-2');
+            editbtn.type = "button";
+            editbtn.style = "background-color: transparent;";
+            editbtn.title = "Edit";
+            editbtn.innerHTML = "✒️";
+            editbtn.setAttribute('data-bs-toggle', 'modal');
+            editbtn.setAttribute('data-bs-target', '#abilityModal');
+            editbtn.addEventListener('click', (e) => this.editAbility(ability.id));
+            div.appendChild(editbtn);
+            
+            const delbtn = document.createElement("button");
+            delbtn.classList.add('small-btn');
+            delbtn.type = "button";
+            delbtn.style = "background-color: transparent;";
+            delbtn.title = "Delete";
+            delbtn.innerHTML = "💀";
+            delbtn.addEventListener('click', (e) => this.deleteAbility(ability.id));
+            div.appendChild(delbtn);
+            
+            container.appendChild(div);
+
+        }
+    }
+    
 }

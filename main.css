@@ -13,8 +13,32 @@ section {
 
 }
 
+.ability-icon img {
+  position: relative;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+}
+
+.ability-icon {
+  width: 36px;
+  height: 36px;
+  overflow: visible;
+}
+
+#cursorTooltip {
+  position: fixed;
+  max-width: 500px;
+}
+
 #treeTable td * {
   aspect-ratio: 1 / 1;
+}
+
+.small-btn {
+  height: 25px;
+  width: 25px;
+  padding: 0;
 }
 
 .modal {
@@ -31,6 +55,7 @@ section {
   font-family: minecraft;
   text-shadow: 1px 2px 0 color-mix(in srgb, currentColor 24%, black);
   min-height: 30px;
+  border-radius: 4px;
 }
 
 @font-face {
