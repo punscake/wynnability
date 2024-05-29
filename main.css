@@ -58,6 +58,26 @@ section {
   border-radius: 4px;
 }
 
+.history-record-overriden {
+  text-decoration: line-through;
+  margin: 6px;
+  padding: 3px 6px 3px 6px;
+  border-color: #0b011b;
+  color:#5c5d5f;
+}
+
+.history-record-selected {
+  font-weight: bold;
+  margin: 6px;
+  padding: 3px 6px 3px 6px;
+  background-color: #270327;
+}
+
+.history-record-not-selected {
+  margin: 6px;
+  padding: 3px 6px 3px 6px;
+}
+
 @font-face {
   font-family: 'minecraft';
   src: url('fonts/Minecraft.ttf');

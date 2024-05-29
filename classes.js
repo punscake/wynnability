@@ -37,7 +37,7 @@ const codeDictionaryStyle = {
 const minecraftDelimiter = '§';
 
 function sanitizeHTML(text) {
-    return text.replace(/</g, '&lt;');
+    return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter = minecraftDelimiter)
@@ -196,70 +196,64 @@ function generateIconHTML(type, travelnode = new TravelNode(), classs = "", bAll
 
 class Ability
 {   
-    constructor(id, name, description, archetype, pointsRequired, archeotypePointsRequired, type, requires) {
-        this.id = Number(id) ? id : -1;
-        this.name = name;
-        this.description = description;
-        this.archetype = archetype;
-        this.pointsRequired = Number(pointsRequired) ? (pointsRequired < 0 ? 0 : pointsRequired) : 0;
-        this.archeotypePointsRequired = Number(archeotypePointsRequired) ? (archeotypePointsRequired < 0 ? 0 : archeotypePointsRequired) : 0;
-        this.type = type;
-        this.requires = requires;
-    }
-
     /**
      * ID
      * @var int
      */
-    id;
+    id = 0;
 
     /**
      * Top-most text
      * @var string
      */
-    name;
+    name = '';
 
     /**
      * Description
      * @var string
      */
-    description;
+    description = '';
 
     /**
      * Archetype
-     * @var Archetype
+     * @var string
      */
-    archetype;
+    archetype = '';
 
     /**
      * Ability point requirement
      * @var int
      */
-    pointsRequired;
+    pointsRequired = 0;
 
     /**
      * Min archetype points required
      * @var int
      */
-    archeotypePointsRequired;
-
-    /**
-     * Min archetype points required
-     * @var int
-     */
-    archeotypePointsRequired;
+    archetypePointsRequired = 0;
 
     /**
      * Ability type
      * @var string
      */
-    type;
+    type = '';
 
     /**
      * ID of the required ability
      * @var int
      */
-    requires;
+    requires = -1;
+
+    constructor({id = -1, name = '', description = '', archetype = '', pointsRequired = 0, archetypePointsRequired = 0, type = 'skill', requires = -1}) {
+        this.id = Number(id) ? Number(id) : -1;
+        this.name = name ? name : '';
+        this.description = description ? description : '';
+        this.archetype = archetype ? archetype : '';
+        this.pointsRequired = Number(pointsRequired) ? (Number(pointsRequired) < 0 ? 0 : Number(pointsRequired)) : 0;
+        this.archetypePointsRequired = Number(archetypePointsRequired) ? (Number(archetypePointsRequired) < 0 ? 0 : Number(archetypePointsRequired)) : 0;
+        this.type = type ? type : 'skill';
+        this.requires = Number(requires) ? Number(requires) : -1;
+    }
 }
 
 class TravelNode {
@@ -267,25 +261,32 @@ class TravelNode {
      * up : empty/0 means unconnected, 1 means connected, 2 means allocated
      * @var int
      */
-    up;
+    up = 0;
 
     /**
      * down : empty/0 means unconnected, 1 means connected, 2 means allocated
      * @var int
      */
-    down;
+    down = 0;
 
     /**
      * left : empty/0 means unconnected, 1 means connected, 2 means allocated
      * @var int
      */
-    left;
+    left = 0;
 
     /**
      * right : empty/0 means unconnected, 1 means connected, 2 means allocated
      * @var int
      */
-    right;
+    right = 0;
+
+    constructor({up = 0, down = 0, left = 0, right = 0} = {}) {
+        this.up = Number(up) ? Number(up) : 0;
+        this.down = Number(down) ? Number(down) : 0;
+        this.left = Number(left) ? Number(left) : 0;
+        this.right = Number(right) ? Number(right) : 0;
+    }
 
     generateIconHTML() {
         result = "";
@@ -343,43 +344,72 @@ class Properties {
      * Class
      * @var string
      */
-    class;
+    classs = '';
 
     /**
      * Maximum ability points unsigned
      * @var int
      */
-    maxAbilityPoints;
+    maxAbilityPoints = 1;
 
     /**
      * Whether the tree can loop along the left and right edge
      * @var bool
      */
-    loopTree;
+    loopTree = false;
 
     /**
      * Number of ability tree pages unsigned
      * @var int
      */
-    pages;
+    pages = 1;
 
     /**
      * How many cells per page
      * @var int
      */
-    rowsPerPage;
+    rowsPerPage = 6;
 
     /**
      * How many pages are drawn
      * @var int
      */
-    pagesDisplayed;
+    pagesDisplayed = 1;
     
     /**
      * Whether or not you can go up the tree
      * @var bool
      */
-    bTravesableUp;
+    bTravesableUp = false;
+
+    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = 1, loopTree = false, pages = 1, rowsPerPage = 6, pagesDisplayed = 1, bTravesableUp = false}) {
+        this.classs = String(classs) ? String(classs) : Object.keys(classDictionary)[0];
+        this.maxAbilityPoints = Number(maxAbilityPoints) ? Number(maxAbilityPoints) : 1;
+        this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
+        this.pages = Number(pages) ? Number(pages) : 1;
+        this.rowsPerPage = Number(rowsPerPage) ? Number(rowsPerPage) : 6;
+        this.pagesDisplayed = Number(pagesDisplayed) ? Number(pagesDisplayed) : 1;
+        this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
+    }
+}
+
+class StateLog {
+    /**
+     * Latest change description
+     * @var string
+     */
+    change;
+
+    /**
+     * JSON string representing the state
+     * @var string
+     */
+    state;
+
+    constructor({changeDescription, state}) {
+        this.change = String(changeDescription) ? String(changeDescription) : '';
+        this.state = String(state) ? String(state) : '';
+    }
 }
 
 class BaseTree
@@ -403,6 +433,18 @@ class BaseTree
     abilities = [];
 
     /**
+     * Recorded changes queue
+     * @var StateLog[]
+     */
+    history = [];
+
+    /**
+     * Current history state
+     * @var int
+     */
+    currentHistoryState = 0;
+
+    /**
      * A map of cells, keys are cell number if counted left to right, up to down, starting at 1
      * @var {"cellNumber" : "ability"}
      */
@@ -415,21 +457,167 @@ class BaseTree
     currentPage;
 
     constructor() {
-        this.properties = new Properties();
         this.readProperties();
+    }
+
+    toJSON() {
+        var result = {};
+        for (var x in this) {
+            if (x !== "history" && x !== "currentHistoryState") {
+                result[x] = this[x];
+            }
+        }
+        return result;
     }
 
     readProperties(classSelectId = "classSelect", maxAbilityPointsId = "maxAbilityPoints", loopTreeId = "loopTreeSwitch", pagesId = "treePages",
         rowsPerPageId = "rowsPerPage", pagesDisplayedId = "pagesDisplayed", bTravesableUp = "travelUpSwitch") {
+        
+        this.properties = new Properties({
+            classs : document.getElementById(classSelectId).value,
+            maxAbilityPoints : document.getElementById(maxAbilityPointsId).value,
+            loopTree : document.getElementById(loopTreeId).value,
+            pages : document.getElementById(pagesId).value,
+            rowsPerPage : document.getElementById(rowsPerPageId).value,
+            pagesDisplayed : document.getElementById(pagesDisplayedId).value,
+            bTravesableUp : document.getElementById(bTravesableUp).value
+        });
+    }
 
-        this.properties.class = document.getElementById(classSelectId).value;
-        this.properties.maxAbilityPoints = document.getElementById(maxAbilityPointsId).value;
-        this.properties.loopTree = document.getElementById(loopTreeId).value;
-        this.properties.pages = document.getElementById(pagesId).value;
-        this.properties.rowsPerPage = document.getElementById(rowsPerPageId).value;
-        this.properties.bTravesableUp = document.getElementById(bTravesableUp).value;
+    saveState(change = '', jsonContainerID = "json-container") {
+        
+        let state = JSON.stringify(this, null, 0);
 
-        this.pagesDisplayed = document.getElementById(pagesDisplayedId).value;
+        const numOfPreservedStates = this.currentHistoryState + 1;
+
+        if (this.history.length > numOfPreservedStates) 
+            this.history.splice(this.currentHistoryState + 1, this.history.length - numOfPreservedStates);
+        
+        const maxSaveStates = Number(document.getElementById('maxSaveStates').value) ?? 10;
+        
+        const removeElementsBeforeID = this.history.length - maxSaveStates + 1;
+        
+        if (removeElementsBeforeID > 0) {
+            
+            let newHistory = [];
+            
+            this.history.forEach( (element, index) => {
+
+                if (index < removeElementsBeforeID)
+                    return;
+
+                newHistory.push(element);
+            });
+
+            this.history = newHistory;
+        }
+
+        const newStateLog = new StateLog({changeDescription : change, state : state});
+
+        this.currentHistoryState = this.history.push(newStateLog) - 1;
+
+        document.getElementById("json-container").value = state;
+
+        this.renderStates();
+    }
+
+    loadStateIncrementally(increment) {
+
+        this.loadState(this.currentHistoryState + increment);
+
+    }
+
+    loadState(stateIndex = -1) {
+        if (stateIndex < 0 || stateIndex + 1 > this.history.length)
+            return;
+
+        this.currentHistoryState = stateIndex;
+
+        this.loadFromJSON(this.history[stateIndex].state);
+
+        this.renderStates();
+    }
+
+    renderStates(historyContainerID = 'historyContainer') {
+
+        const container = document.getElementById(historyContainerID);
+        if (container == null) {
+            return;
+        }
+        
+        container.innerHTML = "";
+
+        for (let i = this.history.length - 1; i > this.currentHistoryState; i--) {
+
+            const div = document.createElement("div");
+            div.classList.add('history-record-overriden', 'minecraftTooltip');
+            div.addEventListener('click', (e) => this.loadState(i));
+            div.innerHTML = this.history[i].change;
+            container.appendChild(div);
+
+        }
+
+        const div = document.createElement("div");
+        div.classList.add('history-record-selected', 'minecraftTooltip');
+        div.addEventListener('click', (e) => this.loadState(this.currentHistoryState));
+        div.innerHTML = this.history[this.currentHistoryState].change;
+        container.appendChild(div);
+
+        for (let i = this.currentHistoryState - 1; i >= 0; i--) {
+
+            const div = document.createElement("div");
+            div.classList.add('history-record-not-selected', 'minecraftTooltip');
+            div.addEventListener('click', (e) => this.loadState(i));
+            div.innerHTML = this.history[i].change;
+            container.appendChild(div);
+
+        }
+    }
+
+    updateEverything() {
+        this.renderArchetypes();
+        this.renderAbilities();
+    }
+
+    loadTree(jsonContainerID = "json-container") {
+        const jsonContainer = document.getElementById(jsonContainerID);
+        if (jsonContainer == null) {
+            return;
+        }
+
+        this.loadFromJSON(jsonContainer.value);
+
+        this.updateEverything();
+        this.saveState('Loaded tree from JSON')
+    }
+
+    loadFromJSON(json) {
+        const obj = JSON.parse(json);
+
+        this.properties = new Properties(obj.properties);
+        
+        const archetypes = obj.archetypes;
+        if (Array.isArray(archetypes)) {
+
+            this.archetypes = [];
+
+            archetypes.forEach(element => {
+                this.archetypes.push(element);
+            });
+        }
+
+        const abilities = obj.abilities;
+        if (Array.isArray(abilities)) {
+
+            this.abilities = [];
+
+            abilities.forEach(element => {
+                this.abilities.push(new Ability(element));
+            });
+        }
+
+        document.getElementById("json-container").value = json;
+        this.updateEverything();
     }
 
     editArchetype(name = "", nameFormID = "archetypeNameInput") {   
@@ -454,19 +642,21 @@ class BaseTree
         const nameInputElement = document.getElementById(nameFormID);
         if (!nameInputElement || nameInputElement.value == "" || this.archetypes.includes(nameInputElement.value) )
             return;
-
+        
         const oldname = nameInputElement.oldname || "";
         const newname = nameInputElement.value;
         
         if (oldname == "") {
             
             this.archetypes.push(newname);
+            this.saveState('Added archetype');
             
         } else {
 
             const existingIndex = this.archetypes.indexOf(oldname);
             this.archetypes[existingIndex] = newname;
             this.updateArchetype(oldname, newname);
+            this.saveState(`Edited archetype: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
 
         }
         
@@ -484,6 +674,7 @@ class BaseTree
 
         this.updateArchetype(name);        
         this.renderArchetypes();
+        this.saveState(`Deleted archetype: ${minecraftToHTML(name)}`);
     }
 
     renderArchetypes(containerID = "archetypeContainer") {
@@ -553,7 +744,7 @@ class BaseTree
             result.description = ability.description;
             result.archetype = ability.archetype;
             result.pointsRequired = ability.pointsRequired;
-            result.archeotypePointsRequired = ability.archeotypePointsRequired;
+            result.archetypePointsRequired = ability.archetypePointsRequired;
             result.type = ability.type;
             break;
         }
@@ -573,7 +764,7 @@ class BaseTree
         Object.keys(abilityIconDictionary).forEach( (type) => {
             const div = document.createElement('div');
             div.classList.add("ability-icon");
-            div.innerHTML += generateIconHTML(type, null, this.properties.class, type == selected);
+            div.innerHTML += generateIconHTML(type, null, this.properties.classs, type == selected);
             container.appendChild(div);
             div.addEventListener("click", (e) => { this.renderAbilityTypeSelector(type) });
         });
@@ -587,11 +778,11 @@ class BaseTree
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
-        const archeotypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
         const container = document.getElementById(containerId);
 
-        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archeotypePointsRequiredInputElement || !prerequisiteInputElement || !container)
+        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archetypePointsRequiredInputElement || !prerequisiteInputElement || !container)
             return;
 
         const id = prerequisiteInputElement.value;
@@ -609,7 +800,7 @@ class BaseTree
                 ${minecraftToHTML(descriptionInputElement.value)}<br><br>
                 ${minecraftToHTML(archetypeInputElement.value + '&nbsp&nbspArchetype')}<br><br>
                 <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>
-                <span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Points:&nbsp&nbsp</span>${archeotypePointsRequiredInputElement.value}<br>
+                <span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Points:&nbsp&nbsp</span>${archetypePointsRequiredInputElement.value}<br>
             `;
         }
         
@@ -639,7 +830,7 @@ class BaseTree
                 ${minecraftToHTML(ability.description)}<br><br>
                 ${minecraftToHTML(ability.archetype + '&nbsp&nbspArchetype')}<br><br>
                 <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>
-                <span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Points:&nbsp&nbsp</span>${ability.archeotypePointsRequired}<br>
+                <span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Points:&nbsp&nbsp</span>${ability.archetypePointsRequired}<br>
             `;
         }
         
@@ -666,11 +857,11 @@ class BaseTree
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
-        const archeotypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const typeInputElement = document.getElementById(typeFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
         
-        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement || !pointsRequiredInputElement || !archeotypePointsRequiredInputElement || !typeInputElement || !prerequisiteInputElement)
+        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement || !pointsRequiredInputElement || !archetypePointsRequiredInputElement || !typeInputElement || !prerequisiteInputElement)
             return;
         
         if (id < 0) {
@@ -693,7 +884,7 @@ class BaseTree
             nameInputElement.value = "";
             descriptionInputElement.value = "";
             pointsRequiredInputElement.value = 1;
-            archeotypePointsRequiredInputElement.value = 0;
+            archetypePointsRequiredInputElement.value = 0;
             prerequisiteInputElement.value = -1;
             this.renderAbilityTypeSelector();
 
@@ -725,7 +916,7 @@ class BaseTree
             nameInputElement.value = this.abilities[index].name;
             descriptionInputElement.value = this.abilities[index].description;
             pointsRequiredInputElement.value = this.abilities[index].pointsRequired;
-            archeotypePointsRequiredInputElement.value = this.abilities[index].archeotypePointsRequired;
+            archetypePointsRequiredInputElement.value = this.abilities[index].archetypePointsRequired;
             this.renderAbilityTypeSelector(this.abilities[index].type);
             
         }
@@ -741,11 +932,11 @@ class BaseTree
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
-        const archeotypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const typeInputElement = document.getElementById(typeFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
 
-        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archeotypePointsRequiredInputElement || !prerequisiteInputElement)
+        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archetypePointsRequiredInputElement || !prerequisiteInputElement)
             return;
         
         const id = nameInputElement.abilityId;
@@ -758,22 +949,35 @@ class BaseTree
                 maxId = Math.max(maxId, ability.id);
             }
 
-            const newAbility = new Ability(maxId + 1, nameInputElement.value, descriptionInputElement.value, archetypeInputElement.value,
-                pointsRequiredInputElement.value, archeotypePointsRequiredInputElement.value, typeInputElement.value, pointsRequiredInputElement.value);
+            const newAbility = new Ability({
+                id : maxId + 1,
+                name : nameInputElement.value,
+                description : descriptionInputElement.value,
+                archetype : archetypeInputElement.value,
+                pointsRequired : pointsRequiredInputElement.value,
+                archetypePointsRequired : archetypePointsRequiredInputElement.value,
+                type : typeInputElement.value,
+                requires : pointsRequiredInputElement.value
+            });
 
             this.abilities.push(newAbility);
             nameInputElement.abilityId = newAbility.id;
 
+            this.saveState(`Added ability: ${minecraftToHTML(nameInputElement.value)}`);
+
         } else {
+
+            const oldName = this.abilities[index].name;
 
             this.abilities[index].name = nameInputElement.value;
             this.abilities[index].description = descriptionInputElement.value;
             this.abilities[index].archetype = archetypeInputElement.value;
             this.abilities[index].pointsRequired = pointsRequiredInputElement.value;
-            this.abilities[index].archeotypePointsRequired = archeotypePointsRequiredInputElement.value;
+            this.abilities[index].archetypePointsRequired = archetypePointsRequiredInputElement.value;
             this.abilities[index].type = typeInputElement.value;
             this.abilities[index].requires = prerequisiteInputElement.value;
 
+            this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);
         }
 
         this.renderAbilities();
@@ -787,7 +991,7 @@ class BaseTree
         const index = this.abilities.findIndex( (a) => {return a.id == id} );
         
         if (index > -1)
-            this.abilities.splice(index, 1);
+            this.saveState(`Deleted ability: ${minecraftToHTML( this.abilities.splice(index, 1)[0].name )}`);
  
         this.renderAbilities();
     }
@@ -823,7 +1027,7 @@ class BaseTree
             const imgholder = document.createElement("div");
             imgholder.style = "width: 56px; text-align: center;";
             div.appendChild(imgholder);
-            imgholder.innerHTML = generateIconHTML(ability.type, null, this.properties.class, true);
+            imgholder.innerHTML = generateIconHTML(ability.type, null, this.properties.classs, true);
 
             imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(ability.id); });
             imgholder.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
