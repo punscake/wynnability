@@ -13,26 +13,45 @@ section {
 
 }
 
-.ability-icon img {
+#treeTableBody tr td {
+  padding: 0px;
+}
+
+.centered-element-container * {
+  position: absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.centered-element-container {
+  position: relative;
+  height: auto;
+  overflow: visible;
+  aspect-ratio: 1 / 1;
+}
+
+.ability-type-selector * {
+  position: relative;
+}
+
+#treeNodeEdit {
+  table-layout: fixed;
   position: relative;
   top:50%;
   left:50%;
   transform:translate(-50%, -50%);
-}
-
-.ability-icon {
-  width: 36px;
-  height: 36px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   overflow: visible;
 }
 
 #cursorTooltip {
   position: fixed;
+  z-index: 10;
   max-width: 500px;
-}
-
-#treeTable td * {
-  aspect-ratio: 1 / 1;
 }
 
 .small-btn {
@@ -58,12 +77,18 @@ section {
   border-radius: 4px;
 }
 
+.selected-ability {
+  background-color: #270327;
+  border-color: #612bb8;
+}
+
 .history-record-overriden {
   text-decoration: line-through;
   margin: 6px;
   padding: 3px 6px 3px 6px;
   border-color: #0b011b;
   color:#5c5d5f;
+  text-shadow: none;
 }
 
 .history-record-selected {
@@ -71,11 +96,28 @@ section {
   margin: 6px;
   padding: 3px 6px 3px 6px;
   background-color: #270327;
+  border-color: #612bb8;
+  text-shadow: none;
 }
 
 .history-record-not-selected {
   margin: 6px;
   padding: 3px 6px 3px 6px;
+  text-shadow: none;  
+}
+
+.page-display {
+  background-image: url(background/divider.png);
+  background-repeat: no-repeat;
+  background-size: 100% auto;
+  aspect-ratio: 158 / 22;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-family: minecraft;
+  color: #5FD3DC;
 }
 
 @font-face {

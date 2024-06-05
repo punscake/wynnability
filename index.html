@@ -15,15 +15,19 @@
 
         <div class="d-flex align-items-center">
 
-          <button onclick="" class="btn btn-primary me-2">Copy</button>
+          <button onclick="copyFromField('json-container')" class="btn btn-primary me-2" title="Copies a shareable JSON">Copy</button>
           
-          <button onclick="" class="btn btn-primary me-2">Download</button>
+          <button onclick="tree.downloadJSON()" class="btn btn-primary me-2" title="Saves current configuration in a shareable file">Download</button>
 
-          <button onclick="tree.loadTree()" class="btn btn-primary me-2">Load</button>
+          <button onclick="tree.loadTree()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
           
 
           <form>
-            <input type="textbox" id="json-container" class="me-2 overflow-hidden">
+            <!-- Prevent implicit submission of the form -->
+            <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+
+            <input type="textbox" id="json-container" class="me-2 overflow-hidden" onfocus="this.select()">
+
           </form>
 
         </div>
@@ -35,22 +39,28 @@
       <div class="collapse" id="extraSettings">
 
         <form>
+          <!-- Prevent implicit submission of the form -->
+          <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
           <div class="row ps-2 pe-2">
     
-            <div class="col-xs-12 col-sm-6 col-lg-3 pt-4">
+            <div class="col-xs-12 col-sm-6 col-lg-3 d-flex flex-column align-items-center justify-content-center">
 
-              <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect">
+              <div class="pt-2" style="width:85%">
 
-                <option selected value="Archer">Archer</option>
-                <option value="Warrior">Warrior</option>
-                <option value="Assassin">Assassin</option>
-                <option value="Mage">Mage</option>
-                <option value="Shaman">Shaman</option>
+                <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect">
+  
+                  <option selected value="Archer">Archer</option>
+                  <option value="Warrior">Warrior</option>
+                  <option value="Assassin">Assassin</option>
+                  <option value="Mage">Mage</option>
+                  <option value="Shaman">Shaman</option>
+  
+                </select>
+  
+                <button class="w-100 btn btn-primary mt-2">Load default tree</button>
 
-              </select>
-
-              <button class="w-100 btn btn-primary mt-2">Load default tree</button>
+              </div>
 
             </div>
     
@@ -123,29 +133,21 @@
         <div class="col-xs-12 col-sm-12 col-md-6 p-0" style="max-width: 500px;">
 
           <div class="w-100 text-center">
-            <img src="background/page_up.png" width="auto" height="40" onclick="">
+            <img src="background/page_up.png" width="auto" height="40" onclick="tree.incrementPage(-1)">
             <img src="background/orb.png" width="auto" height="40">
-            <img src="background/page_down.png" width="auto" height="40" onclick="">
+            <img src="background/page_down.png" width="auto" height="40" onclick="tree.incrementPage(1)">
           </div>
 
           <div class="w-100 h-auto" style="aspect-ratio: 370 / 44; background-image: url(background/tree_top.png); background-repeat: no-repeat; background-size: 100% auto;">
             
           </div>
 
-          <div class="w-100 h-auto" style="aspect-ratio: 370 / 44; background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto; min-height: 350px; padding: 0px calc(100% / 370 * 26) 0px calc(100% / 370 * 26);">
+          <div class="w-100 h-auto" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto; min-height: 350px; padding: 0px calc(100% / 370 * 26) 0px calc(100% / 370 * 26);">
             
-            <table class="table w-100" id="treeTable">
-              <tr>
-                <td class="table-primary"><div></div></td>
-                <td class="table-secondary"></td>
-                <td class="table-primary"></td>
-                <td class="table-secondary"></td>
-                <td class="table-primary"></td>
-                <td class="table-secondary"></td>
-                <td class="table-primary"></td>
-                <td class="table-secondary"></td>
-                <td class="table-primary"></td>
-              </tr>
+            <table class="w-100 m-0" style="table-layout: fixed">
+
+              <tbody id="treeTableBody"></tbody>
+              
             </table>
 
           </div>
@@ -155,9 +157,9 @@
           </div>
 
           <div class="w-100 text-center">
-            <img src="background/page_up.png" width="auto" height="40" onclick="">
+            <img src="background/page_up.png" width="auto" height="40" onclick="tree.incrementPage(-1)">
             <img src="background/orb.png" width="auto" height="40">
-            <img src="background/page_down.png" width="auto" height="40" onclick="">
+            <img src="background/page_down.png" width="auto" height="40" onclick="tree.incrementPage(1)">
           </div>
 
         </div>
@@ -247,7 +249,9 @@
         <div class="modal-content">
 
           <form>
-
+          <!-- Prevent implicit submission of the form -->
+          <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+          
           <div class="modal-header justify-content-between">
 
             <h1 class="modal-title fs-5 text-light ms-1" id="archetypeModalLabel">Archetype</h1>
@@ -304,6 +308,8 @@
         <div class="modal-content">
 
           <form>
+          <!-- Prevent implicit submission of the form -->
+          <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
           <div class="modal-header justify-content-between">
 
@@ -367,7 +373,7 @@
 
           <div class="modal-footer justify-content-between">
 
-            <div class="d-flex justify-content-between align-items-center flex-fill" style="max-width: 230px;" id="abilityTypeInput"></div>
+            <div class="d-flex justify-content-between align-items-center flex-fill" style="max-width: 230px; min-height: 56px;" id="abilityTypeInput"></div>
 
             <div>
 
@@ -398,6 +404,13 @@
 
       archetypeModal.addEventListener('shown.bs.modal', () => {
         archetypeNameInput.focus();
+      })
+
+      const abilityModal = document.getElementById('abilityModal');
+      const abilityNameInput = document.getElementById('abilityNameInput');
+
+      abilityModal.addEventListener('shown.bs.modal', () => {
+        abilityNameInput.focus();
       })
 
       document.addEventListener("DOMContentLoaded", (event) => {

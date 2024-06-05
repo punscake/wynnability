@@ -8,6 +8,27 @@ function getByValue(map, searchValue)
     }
 }
 
+function copyFromField(fieldID) {
+
+    const field = document.getElementById(fieldID);
+    if (field == null || field.value == null)
+        return;
+
+    if (!navigator.clipboard) {
+        field.select();
+        document.execCommand('copy');
+        return;
+    }
+
+    navigator.clipboard.writeText(field.value);
+    
+}
+
+const EDITPATHTEMPCLASS = 'cell-edit-temp-element';
+const MAXSELECTEDCELLS = 40;
+const CELLIDPREFIX = 'cell-';
+const COLUMNS = 9;
+
 const codeDictionaryColor = {
     '0' : '#000000',
     '1' : '#0000AA',
@@ -175,33 +196,46 @@ const travelIconDictionary = {
     'left' : 'abilities/generic/travel_left_4',
 }
 
-function generateIconHTML(type, travelnode = new TravelNode(), classs = "", bAllocated = false) {
+const reverseDirectionDictionary = {
+    'up' : 'down',
+    'down' : 'up',
+    'right' : 'left',
+    'left' : 'right',
+}
 
-    let result = "";
+function generateIconDiv(type, travelnode = new TravelNode(), classs = "", bAllocated = false, bScaleAbilityIcon = false) {
 
-    if (typeof travelnode == TravelNode)
-        result += travelnode.generateIconHTML();
+    let result = document.createElement('div');
+    result.classList.add('centered-element-container');
 
-    if (type == 'travel')
-        return;
-    
+    if (travelnode instanceof TravelNode)
+        result.innerHTML = travelnode.generateIconHTML();
+
+    let url = null;
+  
     if (type == 'skill')
-        return result + `<img src="${abilityIconDictionary[type] + classs + (bAllocated ? '/skill_a.png' : '/skill.png')}" style="z-index: 5;"></img>`;
+        url = abilityIconDictionary[type] + classs + (bAllocated ? '/skill_a.png' : '/skill.png');
 
-    if (type in abilityIconDictionary)
-        result += `<img src="${abilityIconDictionary[type] + (bAllocated ? '_a.png' : '.png')}" style="z-index: 5;"></img>`;
+    else if (type in abilityIconDictionary)
+        url = abilityIconDictionary[type] + (bAllocated ? '_a.png' : '.png');
+
+    if (url != null) {
+        let img = document.createElement('img');
+
+        img.src = url;
+        img.style.zIndex = 11;
+    
+        if (bScaleAbilityIcon)
+            img.onload = (e) => {img.style.width = `${img.naturalWidth * 100 / 36}%`};
+    
+        result.appendChild(img);
+    }
 
     return result;
 }
 
 class Ability
 {   
-    /**
-     * ID
-     * @var int
-     */
-    id = 0;
-
     /**
      * Top-most text
      * @var string
@@ -244,8 +278,7 @@ class Ability
      */
     requires = -1;
 
-    constructor({id = -1, name = '', description = '', archetype = '', pointsRequired = 0, archetypePointsRequired = 0, type = 'skill', requires = -1}) {
-        this.id = Number(id) ? Number(id) : -1;
+    constructor({name = '', description = '', archetype = '', pointsRequired = 0, archetypePointsRequired = 0, type = 'skill', requires = -1}) {
         this.name = name ? name : '';
         this.description = description ? description : '';
         this.archetype = archetype ? archetype : '';
@@ -289,53 +322,63 @@ class TravelNode {
     }
 
     generateIconHTML() {
-        result = "";
 
-        switch (up) {
+        let result = '';
+
+        if (this.up == 2 || this.down == 2 || this.left == 2 || this.right == 2)
+            result += '<img src="abilities/generic/travel_center_6_a.png" class="ability-icon" style="z-index: 6;"></img>\n';
+        else
+            result += '<img src="abilities/generic/travel_center_1.png" class="ability-icon" style="z-index: 1;"></img>\n';
+
+        switch (this.left) {
             case 1 :
-                result += '<img src="abilities/generic/travel_up_1.png" style="z-index: 1;"></img>\n';
+                result += '<img src="abilities/generic/travel_left_2.png" class="ability-icon" style="z-index: 2;"></img>\n';
                 break;
             case 2 :
-                result += '<img src="abilities/generic/travel_up_1_a.png" style="z-index: 1;"></img>\n';
+                result += '<img src="abilities/generic/travel_left_7_a.png" class="ability-icon" style="z-index: 7;"></img>\n';
                 break;
             default :
                 break;
         }
 
-        switch (down) {
+        switch (this.down) {
             case 1 :
-                result += '<img src="abilities/generic/travel_down_2.png" style="z-index: 2;"></img>\n';
+                result += '<img src="abilities/generic/travel_down_3.png" class="ability-icon" style="z-index: 3;"></img>\n';
                 break;
             case 2 :
-                result += '<img src="abilities/generic/travel_down_2_a.png" style="z-index: 2;"></img>\n';
+                result += '<img src="abilities/generic/travel_down_8_a.png" class="ability-icon" style="z-index: 8;"></img>\n';
                 break;
             default :
                 break;
         }
 
-        switch (left) {
+        switch (this.right) {
             case 1 :
-                result += '<img src="abilities/generic/travel_left_3.png" style="z-index: 3;"></img>\n';
+                result += '<img src="abilities/generic/travel_right_4.png" class="ability-icon" style="z-index: 4;"></img>\n';
                 break;
             case 2 :
-                result += '<img src="abilities/generic/travel_left_3_a.png" style="z-index: 3;"></img>\n';
+                result += '<img src="abilities/generic/travel_right_9_a.png" class="ability-icon" style="z-index: 9;"></img>\n';
                 break;
             default :
                 break;
         }
 
-        switch (right) {
+        switch (this.up) {
             case 1 :
-                result += '<img src="abilities/generic/travel_right_4.png" style="z-index: 4;"></img>\n';
+                result += '<img src="abilities/generic/travel_up_5.png" class="ability-icon" style="z-index: 5;"></img>\n';
                 break;
             case 2 :
-                result += '<img src="abilities/generic/travel_right_4_a.png" style="z-index: 4;"></img>\n';
+                result += '<img src="abilities/generic/travel_up_10_a.png" class="ability-icon" style="z-index: 10;"></img>\n';
                 break;
             default :
                 break;
         }
 
         return result;
+    }
+
+    hasConnections() {
+        return this.up != 0 || this.down != 0 || this.left != 0 || this.right != 0;
     }
 }
 
@@ -428,9 +471,15 @@ class BaseTree
 
     /**
      * Abilities
-     * @var Ability[]
+     * @var {id : Ability}
      */
-    abilities = [];
+    abilities = {};
+
+    /**
+     * Selected ability id, waiting to be placed on the tree
+     * @var int
+     */
+    selectedAbilityID = -1;
 
     /**
      * Recorded changes queue
@@ -446,24 +495,33 @@ class BaseTree
 
     /**
      * A map of cells, keys are cell number if counted left to right, up to down, starting at 1
-     * @var {"cellNumber" : "ability"}
+     * @var {int : {'travelNode' : TravelNode, 'abilityID' : int}}
      */
-    cellMap;
+    cellMap = {};
 
     /**
      * Current page
      * @var int
      */
-    currentPage;
+    currentPage = 1;
+
+    /**
+     * Used by initializeEditNode method to keep track of affected cells
+     * @var int[]
+     */
+    selectedCells = [];
 
     constructor() {
         this.readProperties();
+        this.renderTree();
+        window.addEventListener("mouseup", (e) => {this.finallizeEditNode()});
     }
 
+    // Serialization and history
     toJSON() {
         var result = {};
         for (var x in this) {
-            if (x !== "history" && x !== "currentHistoryState") {
+            if (x !== "history" && x !== "currentHistoryState" && x !== "selectedAbilityID" && x !== "currentPage"  && x !== "selectedCells") {
                 result[x] = this[x];
             }
         }
@@ -486,7 +544,7 @@ class BaseTree
 
     saveState(change = '', jsonContainerID = "json-container") {
         
-        let state = JSON.stringify(this, null, 0);
+        const state = JSON.stringify(this, null, 0);
 
         const numOfPreservedStates = this.currentHistoryState + 1;
 
@@ -606,20 +664,31 @@ class BaseTree
             });
         }
 
-        const abilities = obj.abilities;
-        if (Array.isArray(abilities)) {
+        const abilities = obj.abilities;        
+        this.abilities = {};            
+        Object.keys(abilities).forEach( id => {
 
-            this.abilities = [];
+            this.abilities[id] = new Ability(abilities[id]);
 
-            abilities.forEach(element => {
-                this.abilities.push(new Ability(element));
-            });
-        }
+        });
 
         document.getElementById("json-container").value = json;
         this.updateEverything();
     }
 
+    downloadJSON() {
+        const json = JSON.stringify(this, null, 0);
+
+        const link = document.createElement("a");
+        const file = new Blob([json], { type: 'text/plain' });
+        link.href = URL.createObjectURL(file);
+        link.download = `Wynnability_${this.properties.classs}.json`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    }
+    // End serialization and history
+
+    // Archetypes
     editArchetype(name = "", nameFormID = "archetypeNameInput") {   
 
         const nameInputElement = document.getElementById(nameFormID);
@@ -643,7 +712,7 @@ class BaseTree
         if (!nameInputElement || nameInputElement.value == "" || this.archetypes.includes(nameInputElement.value) )
             return;
         
-        const oldname = nameInputElement.oldname || "";
+        const oldname = nameInputElement.oldname ?? "";
         const newname = nameInputElement.value;
         
         if (oldname == "") {
@@ -722,36 +791,15 @@ class BaseTree
     updateArchetype(oldarchetype, newarchetype = "") {
 
         for (let ability of this.abilities) {
-            if (ability.archetype = oldarchetype)
+            if (ability.archetype == oldarchetype)
                 ability.archetype = newarchetype;
         }
         
         this.renderAbilities();
     }
-    /*
-    getAbilityByID(abilityId = -1) {
-        if (abilityId < 0)
-            return new Ability();
+    // End archetypes
 
-        let result = new Ability();
-
-        for (let ability in this.abilities) {
-
-            if (ability.id != abilityId)
-                continue;
-
-            result.name = ability.name;
-            result.description = ability.description;
-            result.archetype = ability.archetype;
-            result.pointsRequired = ability.pointsRequired;
-            result.archetypePointsRequired = ability.archetypePointsRequired;
-            result.type = ability.type;
-            break;
-        }
-
-        return result;
-    }
-    */
+    // Abilities
     renderAbilityTypeSelector(selected = "skill", containerId = "abilityTypeInput") {
 
         const container = document.getElementById(containerId);
@@ -762,9 +810,8 @@ class BaseTree
         container.value = selected;
 
         Object.keys(abilityIconDictionary).forEach( (type) => {
-            const div = document.createElement('div');
-            div.classList.add("ability-icon");
-            div.innerHTML += generateIconHTML(type, null, this.properties.classs, type == selected);
+            const div = generateIconDiv(type, null, this.properties.classs, type == selected, false);
+            div.classList.add('ability-type-selector');
             container.appendChild(div);
             div.addEventListener("click", (e) => { this.renderAbilityTypeSelector(type) });
         });
@@ -786,7 +833,6 @@ class BaseTree
             return;
 
         const id = prerequisiteInputElement.value;
-        const index = this.abilities.findIndex( (a) => {return a.id == id} );
         
         if (archetypeInputElement.value == "") {
             container.innerHTML = `
@@ -804,16 +850,16 @@ class BaseTree
             `;
         }
         
-        if (index != null && index >= 0)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(this.abilities[index].name, true)}`;
+        if (this.abilities[id] != null)
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(this.abilities[id].name, true)}`;
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
 
         const container = document.getElementById(containerId);
-        const ability = this.abilities.find( (a) => {return a.id == abilityId} );
+        const ability = this.abilities[abilityId];
 
-        if (!container || !ability)
+        if (!container || !ability || this.selectedCells.length > 0)
             return;
 
         container.hidden = false;
@@ -834,7 +880,7 @@ class BaseTree
             `;
         }
         
-        let requiredAbility = this.abilities.find( (a) => {return a.id == ability.requires} )
+        let requiredAbility = this.abilities[ability.requires]
         if (requiredAbility)
             container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(requiredAbility.name, true)}`;
     }
@@ -849,7 +895,7 @@ class BaseTree
         container.innerHTML = "";
     }
 
-    editAbility(id = -1,
+    editAbility(abilityID = -1,
         nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = "pointsRequiredInput",
         archetypePointsRequiredFormID = "archetypePointsRequiredInput", typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {   
 
@@ -864,7 +910,7 @@ class BaseTree
         if (!nameInputElement || !descriptionInputElement || !archetypeInputElement || !pointsRequiredInputElement || !archetypePointsRequiredInputElement || !typeInputElement || !prerequisiteInputElement)
             return;
         
-        if (id < 0) {
+        if (abilityID < 0) {
 
             archetypeInputElement.innerHTML = `<option selected value="">Archetype (none)</option>`;
             for (let archetype of this.archetypes) {
@@ -874,9 +920,9 @@ class BaseTree
             }
 
             prerequisiteInputElement.innerHTML = `<option selected value="-1">Prerequisite (none)</option>`;
-            for (let ability of this.abilities) {
+            for (let id of Object.keys(this.abilities)) {
 
-                prerequisiteInputElement.innerHTML += `<option value="${ability.id}">${minecraftToHTML(ability.name)}</option>`;
+                prerequisiteInputElement.innerHTML += `<option value="${id}">${minecraftToHTML(this.abilities[id].name)}</option>`;
 
             }
 
@@ -890,34 +936,32 @@ class BaseTree
 
         } else {
 
-            const index = this.abilities.findIndex( (a) => {return a.id == id} );
-
-            if (index == null || index < 0)
+            if (this.abilities[abilityID] == null)
                 return;
 
             archetypeInputElement.innerHTML = `<option value="">(none)</option>`;
             for (let archetype of this.archetypes) {
 
-                archetypeInputElement.innerHTML += `<option${archetype == this.abilities[index].archetype ? " selected" : ""} value="${archetype}">${minecraftToHTML(archetype)}</option>`;
+                archetypeInputElement.innerHTML += `<option${archetype == this.abilities[abilityID].archetype ? " selected" : ""} value="${archetype}">${minecraftToHTML(archetype)}</option>`;
             
             }
 
             prerequisiteInputElement.innerHTML = `<option value="-1">(none)</option>`;
-            for (let ability of this.abilities) {
+            for (let id of Object.keys(this.abilities)) {
 
-                if (ability.id == id)
+                if (id == abilityID)
                     continue;
 
-                prerequisiteInputElement.innerHTML += `<option value="${ability.id}"${ability.id == this.abilities[index].requires ? " selected" : ""}>${minecraftToHTML(ability.name)}</option>`;
+                prerequisiteInputElement.innerHTML += `<option value="${id}"${id == this.abilities[abilityID].requires ? " selected" : ""}>${minecraftToHTML(this.abilities[id].name)}</option>`;
 
             }
 
-            nameInputElement.abilityId = id;
-            nameInputElement.value = this.abilities[index].name;
-            descriptionInputElement.value = this.abilities[index].description;
-            pointsRequiredInputElement.value = this.abilities[index].pointsRequired;
-            archetypePointsRequiredInputElement.value = this.abilities[index].archetypePointsRequired;
-            this.renderAbilityTypeSelector(this.abilities[index].type);
+            nameInputElement.abilityId = abilityID;
+            nameInputElement.value = this.abilities[abilityID].name;
+            descriptionInputElement.value = this.abilities[abilityID].description;
+            pointsRequiredInputElement.value = this.abilities[abilityID].pointsRequired;
+            archetypePointsRequiredInputElement.value = this.abilities[abilityID].archetypePointsRequired;
+            this.renderAbilityTypeSelector(this.abilities[abilityID].type);
             
         }
 
@@ -939,43 +983,41 @@ class BaseTree
         if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archetypePointsRequiredInputElement || !prerequisiteInputElement)
             return;
         
-        const id = nameInputElement.abilityId;
-        const index = this.abilities.findIndex( (a) => {return a.id == id} );
+        const abilityID = nameInputElement.abilityId;
         
-        if (index == null || index < 0) {
+        if (this.abilities[abilityID] == null) {
 
             let maxId = 0;
-            for (let ability of this.abilities) {
-                maxId = Math.max(maxId, ability.id);
+            for (let id of Object.keys(this.abilities)) {
+                maxId = Math.max(maxId, Number(id));
             }
 
             const newAbility = new Ability({
-                id : maxId + 1,
                 name : nameInputElement.value,
                 description : descriptionInputElement.value,
                 archetype : archetypeInputElement.value,
                 pointsRequired : pointsRequiredInputElement.value,
                 archetypePointsRequired : archetypePointsRequiredInputElement.value,
                 type : typeInputElement.value,
-                requires : pointsRequiredInputElement.value
+                requires : prerequisiteInputElement.value
             });
 
-            this.abilities.push(newAbility);
-            nameInputElement.abilityId = newAbility.id;
+            this.abilities[maxId + 1] = newAbility;
+            nameInputElement.abilityId = maxId + 1;
 
             this.saveState(`Added ability: ${minecraftToHTML(nameInputElement.value)}`);
 
         } else {
 
-            const oldName = this.abilities[index].name;
+            const oldName = this.abilities[abilityID].name;
 
-            this.abilities[index].name = nameInputElement.value;
-            this.abilities[index].description = descriptionInputElement.value;
-            this.abilities[index].archetype = archetypeInputElement.value;
-            this.abilities[index].pointsRequired = pointsRequiredInputElement.value;
-            this.abilities[index].archetypePointsRequired = archetypePointsRequiredInputElement.value;
-            this.abilities[index].type = typeInputElement.value;
-            this.abilities[index].requires = prerequisiteInputElement.value;
+            this.abilities[abilityID].name = nameInputElement.value;
+            this.abilities[abilityID].description = descriptionInputElement.value;
+            this.abilities[abilityID].archetype = archetypeInputElement.value;
+            this.abilities[abilityID].pointsRequired = pointsRequiredInputElement.value;
+            this.abilities[abilityID].archetypePointsRequired = archetypePointsRequiredInputElement.value;
+            this.abilities[abilityID].type = typeInputElement.value;
+            this.abilities[abilityID].requires = prerequisiteInputElement.value;
 
             this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);
         }
@@ -988,12 +1030,23 @@ class BaseTree
         if (id == null || id < 0)
             return;
 
-        const index = this.abilities.findIndex( (a) => {return a.id == id} );
-        
-        if (index > -1)
-            this.saveState(`Deleted ability: ${minecraftToHTML( this.abilities.splice(index, 1)[0].name )}`);
- 
-        this.renderAbilities();
+        if (this.abilities[id] != null) {
+            this.removeAbilityAsRequirement(id);
+            const name = this.abilities[id].name;
+            delete this.abilities[id];
+            this.saveState(`Deleted ability: ${minecraftToHTML(name)}`);
+            this.renderAbilities();
+        }
+
+    }
+
+    removeAbilityAsRequirement(abilityId = -1) {
+
+        for (let id of Object.keys(this.abilities)) {
+            if (this.abilities[id].requires == abilityId)
+                this.abilities[id].requires = -1;
+        }
+
     }
     
     renderAbilities(containerID = "abilityContainer") {
@@ -1009,32 +1062,50 @@ class BaseTree
             priorityMap[elem] = i;
         });
 
-        this.abilities.sort((a, b) => {
+        let sortedAbilityIDs = Object.keys(this.abilities).sort((a, b) => {
             
-            if (a.type == null)
+            if (this.abilities[a].type == null)
                 return 1;
-            if (b.type == null)
+            if (this.abilities[b].type == null)
                 return -1;
 
-            return priorityMap[a.type] - priorityMap[b.type];
+            return priorityMap[this.abilities[a].type] - priorityMap[this.abilities[b].type];
         })
-        
-        for (let ability of this.abilities) {
+
+        for (let id of sortedAbilityIDs) {
 
             const div = document.createElement("div");
+
+            if (id == this.selectedAbilityID) {
+
+                div.classList.add('selected-ability');
+                div.addEventListener('click', (e) => {
+                    if (e.target.nodeName != 'BUTTON')
+                        this.selectAbility(-1);
+                });
+
+            } else {
+
+                div.addEventListener('click', (e) => {
+                    if (e.target.nodeName != 'BUTTON')
+                        this.selectAbility(id);
+                });
+
+            }
+
             div.classList.add('d-inline-flex', 'align-items-center', 'minecraftTooltip', 'w-100', 'mb-1');
 
             const imgholder = document.createElement("div");
             imgholder.style = "width: 56px; text-align: center;";
             div.appendChild(imgholder);
-            imgholder.innerHTML = generateIconHTML(ability.type, null, this.properties.classs, true);
+            imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, true, false));
 
-            imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(ability.id); });
+            imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(id); });
             imgholder.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'align-items-center', 'overflow-hidden', 'ms-2');
-            text.innerHTML = minecraftToHTML(ability.name);
+            text.innerHTML = minecraftToHTML(this.abilities[id].name);
             div.appendChild(text);
             
             const editbtn = document.createElement("button");
@@ -1045,7 +1116,7 @@ class BaseTree
             editbtn.innerHTML = "✒️";
             editbtn.setAttribute('data-bs-toggle', 'modal');
             editbtn.setAttribute('data-bs-target', '#abilityModal');
-            editbtn.addEventListener('click', (e) => this.editAbility(ability.id));
+            editbtn.addEventListener('click', (e) => this.editAbility(id));
             div.appendChild(editbtn);
             
             const delbtn = document.createElement("button");
@@ -1054,12 +1125,385 @@ class BaseTree
             delbtn.style = "background-color: transparent;";
             delbtn.title = "Delete";
             delbtn.innerHTML = "💀";
-            delbtn.addEventListener('click', (e) => this.deleteAbility(ability.id));
+            delbtn.addEventListener('click', (e) => this.deleteAbility(id));
             div.appendChild(delbtn);
             
             container.appendChild(div);
 
         }
     }
+
+    selectAbility(abilityID = -1) {
+
+        this.selectedAbilityID = abilityID;
+        this.renderAbilities();
+
+    }
+    // End abilities
+
+    // Tree editing
+    incrementPage(increment = 0) {
+
+        this.setCurrentPage(this.currentPage + increment);
+        this.renderTree();
+
+    }
+
+    setCurrentPage(page = this.currentPage) {
+
+        if (page == null || typeof page != "number" || page < 1)
+            return;
+
+        this.currentPage = Math.max( Math.min(page, this.properties.pages - this.properties.pagesDisplayed + 1), 1 );
+
+    }
+
+    getAjacentCells(cellKey, bUseCellsAsKeys = false) {
+
+        let result = {};
+
+        const totalCells = this.properties.pages * this.properties.rowsPerPage * COLUMNS;
+
+        //up
+        const upKey = cellKey - COLUMNS;
+        if (upKey > 0) {
+
+            if (bUseCellsAsKeys)
+                result[upKey] = 'up';
+            else
+                result['up'] = upKey;
+
+        }
+            
+
+        //down
+        const downKey = cellKey + COLUMNS;
+        if (downKey < totalCells) {
+
+            if (bUseCellsAsKeys)
+                result[downKey] = 'down';
+            else
+                result['down'] = downKey;
+
+        }
+
+        //position in row = (cellKey % cells per page) % cells per row
+        let cellPositionInRow = cellKey % (this.properties.rowsPerPage * COLUMNS) % COLUMNS;
+        cellPositionInRow = cellPositionInRow == 0 ? COLUMNS : cellPositionInRow;
+        
+        //left
+        if (cellPositionInRow > 1) {
+
+            if (bUseCellsAsKeys)
+                result[cellKey - 1] = 'left';
+            else
+                result['left'] = cellKey - 1;
+
+        } else if(this.properties.loopTree) {
+
+            if (bUseCellsAsKeys)
+                result[cellKey - 1 + COLUMNS] = 'left';
+            else
+                result['left'] = cellKey - 1 + COLUMNS;
+
+        }
+
+        //right
+        if (cellPositionInRow < COLUMNS) {
+
+            if (bUseCellsAsKeys)
+                result[cellKey + 1] = 'right';
+            else
+                result['right'] = cellKey + 1;
+
+        } else if(this.properties.loopTree) {
+
+            if (bUseCellsAsKeys)
+                result[cellKey + 1 - COLUMNS] = 'right';
+            else
+                result['right'] = cellKey + 1 - COLUMNS;
+
+        }
+
+        return result;
+
+    }
+
+    /**
+     * Returns which direction cellKey2 is from cellKey1
+     * @returns {string}
+     */
+    determineCellRelation(cellKey1, cellKey2) {
+
+        const dif = cellKey2 - cellKey1;
+
+        if (dif == COLUMNS)
+            return 'down';
+        if (dif == -COLUMNS)
+            return 'up';
+        if (dif == 1)
+            return 'right';
+        if (dif == -1)
+            return 'left';
+
+        return null;
+
+    }
+
+    connectCells(cellKey1, cellKey2, bDisconnectIfConnected = true) {
+        
+        const direction = this.determineCellRelation(cellKey1, cellKey2);
+
+        if (direction == null)
+            return;
+
+        const reverseDirection = reverseDirectionDictionary[direction];
+
+        this.cellMap[cellKey1] = this.cellMap[cellKey1] ?? {};
+        this.cellMap[cellKey2] = this.cellMap[cellKey2] ?? {};
+
+        if (this.cellMap[cellKey1]['travelNode'] == null)
+            this.cellMap[cellKey1]['travelNode'] = new TravelNode();
+        
+        if (this.cellMap[cellKey2]['travelNode'] == null)
+            this.cellMap[cellKey2]['travelNode'] = new TravelNode();
+            
+        if ( bDisconnectIfConnected && this.cellMap[cellKey1]['travelNode'][direction] != 0 && this.cellMap[cellKey2]['travelNode'][reverseDirection] != 0 ) {
+
+            this.cellMap[cellKey1]['travelNode'][direction] = 0;
+            this.cellMap[cellKey2]['travelNode'][reverseDirection] = 0;
+
+            if (!this.cellMap[cellKey1]['travelNode'].hasConnections() && this.cellMap[cellKey1]['abilityID'] == null)
+                this.cellMap[cellKey1] = null;
+
+            if (!this.cellMap[cellKey2]['travelNode'].hasConnections() && this.cellMap[cellKey2]['abilityID'] == null)
+                this.cellMap[cellKey2] = null;
+
+        } else {
+
+            this.cellMap[cellKey1]['travelNode'][direction] = 1;
+            this.cellMap[cellKey2]['travelNode'][reverseDirection] = 1;
+
+        }
+    }
+
+    initializeEditNode(cellKey) {
+
+        if (this.selectedCells.length > 0 || cellKey == null || Number(cellKey) < 1 || Number(cellKey) > this.properties.pages * this.properties.rowsPerPage * COLUMNS)
+            return;
+
+        this.selectedCells.push(cellKey);
+
+        const cellElem = document.getElementById(CELLIDPREFIX + cellKey).firstChild;
+        cellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + this.selectedCells.length - 1}" src="abilities/generic/travel_center_6_a.png" style="z-index: 26;" draggable="false"></img>\n`;
     
+    }
+
+    continueEditNode(cellKey) {
+
+        const selectedCellsLength = this.selectedCells.length;
+
+        if (selectedCellsLength == 0 || cellKey == null || Number(cellKey) < 1 || Number(cellKey) > this.properties.pages * this.properties.rowsPerPage * COLUMNS)
+            return;
+
+        if (selectedCellsLength > MAXSELECTEDCELLS) {
+
+            this.finallizeEditNodes();
+            return;
+
+        }
+        
+        const ajacentCellsMap = this.getAjacentCells(cellKey, true);
+        const prevCellKey = this.selectedCells[selectedCellsLength - 1];
+        
+        // if cell is not ajacent to the last one - ignore it
+        if ( ajacentCellsMap[prevCellKey] == null )
+            return;
+        
+        // if backtracked - remove last element and visuals
+        if (cellKey == this.selectedCells[selectedCellsLength - 2]) {
+
+            const collection = document.getElementsByClassName( EDITPATHTEMPCLASS + (selectedCellsLength - 1) );
+
+            while(collection[0])
+                collection[0].parentNode.removeChild(collection[0]);
+            
+            this.selectedCells.splice(selectedCellsLength - 1, 1);
+
+        } else {
+
+            const newCellElem = document.getElementById(CELLIDPREFIX + cellKey).firstChild;
+            const prevCellElem = document.getElementById(CELLIDPREFIX + prevCellKey).firstChild;
+
+            // add center image to the cell
+            if (!this.selectedCells.includes(cellKey))
+                newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_center_6_a.png" style="z-index: 26;"></img>\n`;
+            
+            // add connection images to this and previous cell
+            switch (ajacentCellsMap[prevCellKey]) {
+                case 'up':
+                    newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_up_10_a.png" style="z-index: 30;"></img>\n`;
+                    prevCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_down_8_a.png" style="z-index: 28;"></img>\n`;
+                    break;
+                    
+                case 'down':
+                    newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_down_8_a.png" style="z-index: 28;"></img>\n`;
+                    prevCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_up_10_a.png" style="z-index: 30;"></img>\n`;
+                    break;
+
+                case 'left':
+                    newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_left_7_a.png" style="z-index: 27;"></img>\n`;
+                    prevCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_right_9_a.png" style="z-index: 29;"></img>\n`;
+                    break;
+
+                case 'right':
+                    newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_right_9_a.png" style="z-index: 29;"></img>\n`;
+                    prevCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_left_7_a.png" style="z-index: 27;"></img>\n`;
+                    break;
+                
+                default:
+                    break;
+            }
+
+            // add cellKey to array
+            this.selectedCells.push(cellKey);
+
+        }
+
+    }    
+
+    finallizeEditNode() {
+        
+        const selectedCellsLength = this.selectedCells.length;
+
+        switch (selectedCellsLength) {
+            case 0:
+                return;
+            
+            case 1:
+                const cellKey = this.selectedCells[0];
+
+                this.cellMap[cellKey] = this.cellMap[cellKey] ?? {};
+
+                if (this.abilities[this.selectedAbilityID] != null) {
+
+                    this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
+                    this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 1, down : 1, left : 1, right : 1});
+                    this.selectedAbilityID = -1;
+                    this.renderAbilities();
+                    
+                } else {
+
+                    if (this.cellMap[cellKey]['travelNode'] == null)
+                        this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 1, down : 1, left : 1, right : 1});
+                    else
+                        this.cellMap[cellKey] = null;
+                        
+                }
+                break;
+
+            case 2:
+                const cellKey1 = this.selectedCells[0];
+                const cellKey2 = this.selectedCells[1];
+
+                this.connectCells(cellKey1, cellKey2, true);
+                break;
+
+            default:
+                for(let cellKey = 0; cellKey < selectedCellsLength - 1; cellKey++) {
+
+                    const cellKey1 = this.selectedCells[cellKey];
+                    const cellKey2 = this.selectedCells[cellKey + 1];
+
+                    this.connectCells(cellKey1, cellKey2, false);
+
+                }
+                break;
+        }
+
+        const collection = document.getElementsByClassName( EDITPATHTEMPCLASS );
+
+        while(collection[0])
+            collection[0].parentNode.removeChild(collection[0]);
+
+        this.selectedCells = [];
+        this.renderTree();
+
+    }
+
+    renderTree(tableBodyID = "treeTableBody") {
+
+        const table = document.getElementById(tableBodyID);
+        if (table == null)
+            return;
+
+        table.innerHTML = '';
+
+        this.setCurrentPage();
+
+        const CELLSPERPAGE = this.properties.rowsPerPage * COLUMNS;
+
+        for (let page = this.currentPage; page < this.currentPage + this.properties.pagesDisplayed; page++) {
+            
+            const pageRow = document.createElement('tr');
+            table.appendChild(pageRow);
+
+            const pageCol = document.createElement('td');
+            pageCol.colSpan = COLUMNS;
+            pageRow.appendChild(pageCol);
+
+            const pageDiv = document.createElement('div');
+            pageDiv.classList.add("page-display");
+            pageDiv.innerHTML = `PAGE ${page}`;
+            pageCol.appendChild(pageDiv);
+
+            for (let row = 1; row <= this.properties.rowsPerPage; row++) {
+
+                const newRow = document.createElement('tr');
+                table.appendChild(newRow);
+    
+                for (let col = 1; col <= COLUMNS; col++) {
+
+                    const cellKey = (page - 1) * (CELLSPERPAGE) + (row - 1) * COLUMNS + col;
+                    
+                    const newCol = document.createElement('td');
+                    newCol.id = CELLIDPREFIX + cellKey;
+                    newRow.appendChild(newCol);
+
+                    const cell = this.cellMap[cellKey];
+
+                    let div = null;
+
+                    if (cell != null) {
+
+                        div = generateIconDiv(
+                            this.abilities[ cell['abilityID'] ] ? this.abilities[ cell['abilityID'] ].type : null,
+                            cell['travelNode'],
+                            this.properties.classs,
+                            false,
+                            true
+                        );
+
+                        if (this.abilities[ cell['abilityID'] ] != null) {
+
+                            div.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(cell['abilityID']); });
+                            div.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
+    
+                        }
+
+                    } else {
+                        div = document.createElement('div');
+                        div.classList.add("centered-element-container");
+                    }
+
+                    div.style.userSelect = 'none';
+                    div.addEventListener('mousedown', (e) => { this.initializeEditNode(cellKey) });
+                    div.addEventListener('mouseenter', (e) => { this.continueEditNode(cellKey) });
+                    newCol.appendChild(div);
+                    
+                }
+            }
+        }
+    }
+    // End tree editing
 }
