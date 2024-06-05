@@ -517,7 +517,7 @@ class BaseTree
         window.addEventListener("mouseup", (e) => {this.finallizeEditNode()});
     }
 
-    // Serialization and history
+    // #region Serialization and history
     toJSON() {
         var result = {};
         for (var x in this) {
@@ -635,6 +635,7 @@ class BaseTree
     updateEverything() {
         this.renderArchetypes();
         this.renderAbilities();
+        this.renderTree();
     }
 
     loadTree(jsonContainerID = "json-container") {
@@ -672,6 +673,16 @@ class BaseTree
 
         });
 
+        const cellMap = obj.cellMap;        
+        this.cellMap = {};            
+        Object.keys(cellMap).forEach( id => {
+
+            this.cellMap[id] = {};
+            this.cellMap[id]['travelNode'] = new TravelNode(cellMap[id]['travelNode']);
+            this.cellMap[id]['abilityID'] = cellMap[id]['abilityID'];
+
+        });
+
         document.getElementById("json-container").value = json;
         this.updateEverything();
     }
@@ -686,9 +697,9 @@ class BaseTree
         link.click();
         URL.revokeObjectURL(link.href);
     }
-    // End serialization and history
+    // #endregion
 
-    // Archetypes
+    // #region Archetypes
     editArchetype(name = "", nameFormID = "archetypeNameInput") {   
 
         const nameInputElement = document.getElementById(nameFormID);
@@ -797,9 +808,9 @@ class BaseTree
         
         this.renderAbilities();
     }
-    // End archetypes
+    // #endregion
 
-    // Abilities
+    // #region Abilities
     renderAbilityTypeSelector(selected = "skill", containerId = "abilityTypeInput") {
 
         const container = document.getElementById(containerId);
@@ -1025,26 +1036,23 @@ class BaseTree
         this.renderAbilities();
     }
 
-    deleteAbility(id = -1) {
+    deleteAbility(abilityID = -1) {
 
-        if (id == null || id < 0)
+        if (abilityID == null || abilityID < 0)
             return;
 
-        if (this.abilities[id] != null) {
-            this.removeAbilityAsRequirement(id);
-            const name = this.abilities[id].name;
-            delete this.abilities[id];
+        if (this.abilities[abilityID] != null) {
+
+            for (let elem of Object.keys(this.abilities)) {
+                if (this.abilities[elem].requires == abilityID)
+                    this.abilities[elem].requires = -1;
+            }
+
+            this.removeAbilityFromTree(abilityID);
+            const name = this.abilities[abilityID].name;
+            delete this.abilities[abilityID];
             this.saveState(`Deleted ability: ${minecraftToHTML(name)}`);
             this.renderAbilities();
-        }
-
-    }
-
-    removeAbilityAsRequirement(abilityId = -1) {
-
-        for (let id of Object.keys(this.abilities)) {
-            if (this.abilities[id].requires == abilityId)
-                this.abilities[id].requires = -1;
         }
 
     }
@@ -1139,9 +1147,9 @@ class BaseTree
         this.renderAbilities();
 
     }
-    // End abilities
+    // #endregion
 
-    // Tree editing
+    // #region Tree editing
     incrementPage(increment = 0) {
 
         this.setCurrentPage(this.currentPage + increment);
@@ -1158,8 +1166,9 @@ class BaseTree
 
     }
 
-    getAjacentCells(cellKey, bUseCellsAsKeys = false) {
+    getAdjacentCells(cellKey, bUseCellsAsKeys = false) {
 
+        cellKey = Number(cellKey);
         let result = {};
 
         const totalCells = this.properties.pages * this.properties.rowsPerPage * COLUMNS;
@@ -1174,7 +1183,6 @@ class BaseTree
                 result['up'] = upKey;
 
         }
-            
 
         //down
         const downKey = cellKey + COLUMNS;
@@ -1186,7 +1194,7 @@ class BaseTree
                 result['down'] = downKey;
 
         }
-
+        
         //position in row = (cellKey % cells per page) % cells per row
         let cellPositionInRow = cellKey % (this.properties.rowsPerPage * COLUMNS) % COLUMNS;
         cellPositionInRow = cellPositionInRow == 0 ? COLUMNS : cellPositionInRow;
@@ -1207,7 +1215,7 @@ class BaseTree
                 result['left'] = cellKey - 1 + COLUMNS;
 
         }
-
+        
         //right
         if (cellPositionInRow < COLUMNS) {
 
@@ -1224,8 +1232,37 @@ class BaseTree
                 result['right'] = cellKey + 1 - COLUMNS;
 
         }
-
+        
         return result;
+
+    }
+
+    getConnectedCells(cellKey, bAllocatedOnly = false, bTravesableUp = true) {
+
+        const cell = this.cellMap[cellKey];
+        const threshold = bAllocatedOnly ? 2 : 1;
+
+        if (cell == null || cell['travelNode'] == null)
+            return {};
+
+        const adjacent = this.getAdjacentCells(cellKey, true);
+        
+        for (let key of Object.keys(adjacent)) {
+
+            const otherCell = this.cellMap[key];
+            const direction = adjacent[key];
+            const reverseDirection = reverseDirectionDictionary[direction];
+            
+            if   ( otherCell == null
+                || otherCell['travelNode'] == null
+                || cell['travelNode'][direction] < threshold
+                || otherCell['travelNode'][reverseDirection] < threshold)
+
+                delete adjacent[key];
+
+        }
+
+        return adjacent;
 
     }
 
@@ -1274,10 +1311,10 @@ class BaseTree
             this.cellMap[cellKey2]['travelNode'][reverseDirection] = 0;
 
             if (!this.cellMap[cellKey1]['travelNode'].hasConnections() && this.cellMap[cellKey1]['abilityID'] == null)
-                this.cellMap[cellKey1] = null;
+                delete this.cellMap[cellKey1];
 
             if (!this.cellMap[cellKey2]['travelNode'].hasConnections() && this.cellMap[cellKey2]['abilityID'] == null)
-                this.cellMap[cellKey2] = null;
+                delete this.cellMap[cellKey2];
 
         } else {
 
@@ -1313,11 +1350,11 @@ class BaseTree
 
         }
         
-        const ajacentCellsMap = this.getAjacentCells(cellKey, true);
+        const adjacentCellsMap = this.getAdjacentCells(cellKey, true);
         const prevCellKey = this.selectedCells[selectedCellsLength - 1];
         
-        // if cell is not ajacent to the last one - ignore it
-        if ( ajacentCellsMap[prevCellKey] == null )
+        // if cell is not adjacent to the last one - ignore it
+        if ( adjacentCellsMap[prevCellKey] == null )
             return;
         
         // if backtracked - remove last element and visuals
@@ -1340,7 +1377,7 @@ class BaseTree
                 newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_center_6_a.png" style="z-index: 26;"></img>\n`;
             
             // add connection images to this and previous cell
-            switch (ajacentCellsMap[prevCellKey]) {
+            switch (adjacentCellsMap[prevCellKey]) {
                 case 'up':
                     newCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_up_10_a.png" style="z-index: 30;"></img>\n`;
                     prevCellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + selectedCellsLength}" src="abilities/generic/travel_down_8_a.png" style="z-index: 28;"></img>\n`;
@@ -1376,6 +1413,8 @@ class BaseTree
         
         const selectedCellsLength = this.selectedCells.length;
 
+        let editSummary = '';
+
         switch (selectedCellsLength) {
             case 0:
                 return;
@@ -1387,18 +1426,31 @@ class BaseTree
 
                 if (this.abilities[this.selectedAbilityID] != null) {
 
+                    if (this.cellMap[cellKey]['abilityID'] == this.selectedAbilityID)
+                        break;
+
+                    this.removeAbilityFromTree(this.selectedAbilityID);
                     this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
                     this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 1, down : 1, left : 1, right : 1});
+                    editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
                     this.selectedAbilityID = -1;
                     this.renderAbilities();
                     
                 } else {
 
-                    if (this.cellMap[cellKey]['travelNode'] == null)
-                        this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 1, down : 1, left : 1, right : 1});
-                    else
-                        this.cellMap[cellKey] = null;
-                        
+                    if (this.cellMap[cellKey]['travelNode'] == null) {
+                
+                        this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 0, down : 0, left : 0, right : 0});
+
+                        editSummary = `Added empty tree node on page ${Math.ceil(cellKey / (this.properties.rowsPerPage * COLUMNS))}`;
+
+                    } else {
+
+                        editSummary = `Removed 1 tree node on page ${Math.ceil(cellKey / (this.properties.rowsPerPage * COLUMNS))}`;
+
+                        this.removeCellFromTree(cellKey);
+
+                    }
                 }
                 break;
 
@@ -1407,6 +1459,7 @@ class BaseTree
                 const cellKey2 = this.selectedCells[1];
 
                 this.connectCells(cellKey1, cellKey2, true);
+                editSummary = 'Changed 1 tree node connection';
                 break;
 
             default:
@@ -1418,6 +1471,8 @@ class BaseTree
                     this.connectCells(cellKey1, cellKey2, false);
 
                 }
+
+                editSummary = `Changed ${selectedCellsLength - 1} tree node connections`;
                 break;
         }
 
@@ -1427,8 +1482,38 @@ class BaseTree
             collection[0].parentNode.removeChild(collection[0]);
 
         this.selectedCells = [];
+        this.saveState(editSummary);
         this.renderTree();
 
+    }
+
+    removeCellFromTree(cellKey) {
+
+        const connected = this.getConnectedCells(cellKey, false, true);
+        
+        for (let key of Object.keys(connected)) {
+
+            if (this.cellMap[key]['travelNode'] == null)
+                continue;
+
+            this.cellMap[key]['travelNode'][ reverseDirectionDictionary[ connected[key] ] ] = 0;
+
+            if (!this.cellMap[key]['travelNode'].hasConnections())
+                delete this.cellMap[key];
+
+        }
+
+        delete this.cellMap[cellKey];
+
+    }
+
+    removeAbilityFromTree(abilityID) {
+
+        for (let cellKey of Object.keys(this.cellMap)) {
+
+            if (this.cellMap[cellKey] != null && this.cellMap[cellKey]['abilityID'] == abilityID)
+                this.removeCellFromTree(cellKey);
+        }
     }
 
     renderTree(tableBodyID = "treeTableBody") {
@@ -1505,5 +1590,5 @@ class BaseTree
             }
         }
     }
-    // End tree editing
+    // #endregion
 }

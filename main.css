@@ -37,20 +37,9 @@ section {
   position: relative;
 }
 
-#treeNodeEdit {
-  table-layout: fixed;
-  position: relative;
-  top:50%;
-  left:50%;
-  transform:translate(-50%, -50%);
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  overflow: visible;
-}
-
 #cursorTooltip {
   position: fixed;
-  z-index: 10;
+  z-index: 40;
   max-width: 500px;
 }
 
