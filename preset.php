@@ -1,23 +1,25 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    //echo file_get_contents("presets/archer.json");
-    // Sanitize and validate name
-    print($_POST);
-    
-    $class = sanitize($_POST['class']);
-    
+    $data = json_decode(file_get_contents('php://input'), true);
     $response = "{}";
 
-    if (preg_match("/^[a-zA-Z]*$/", $class) && file_exists("presets/" + $class + ".json")) {
-
-        $response = file_get_contents("presets/" + $class + ".json");
+    if (isset($data['class'])) {
+        
+        // Sanitize and validate name
+        $class = sanitize($data['class']);
+    
+        if (preg_match("/^[a-zA-Z]*$/", $class) && file_exists("presets/" . $class . ".json")) {
+    
+            $response = file_get_contents("presets/" . $class . ".json");
+    
+        }
 
     }
 
     header('Content-type: application/json');
-    //echo $response;
-
+    echo $response;
+    
 }
 
 function sanitize($data) {

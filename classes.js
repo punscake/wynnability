@@ -641,12 +641,45 @@ class BaseTree
         self.classList.add('btn-secondary');
         self.disabled = true;
 
-        fetch('preset.php', {mode: 'same-origin', method: 'POST', body: {'class' : classSelect.value}}).then( (response) => {
-            this.loadFromJSON(response);
-        });
+        const controller = new AbortController();
+        const signal = controller.signal;
 
-        self.classList.remove('btn-secondary');
-        self.disabled = false;
+        const timeoutId = setTimeout(() => {
+            controller.abort();
+            console.log('Fetch request timed out');
+          }, 5000);
+
+        fetch('preset.php', {
+
+            signal,
+            mode: 'same-origin',
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json;charset=utf-8',
+            },
+            body: JSON.stringify({class : classSelect.value})
+
+        }).then( (response) => {
+
+            if (!response.ok) {
+                throw new Error(`HTTP error: ${response.status}`);
+              }
+
+            return response.text();
+
+        }).then( (text) => {
+
+            this.loadFromJSON(text);
+            this.saveState(`Loaded default ${classSelect.value} tree`);
+
+        }).finally(() => {
+
+            self.classList.remove('btn-secondary');
+            self.disabled = false;
+            clearTimeout(timeoutId);
+
+        });
 
     }
 
@@ -1179,6 +1212,14 @@ class BaseTree
 
     }
 
+    cellPositionInRow(cellKey) {
+
+        //position in row = (cellKey % cells per page) % cells per row
+        let cellPositionInRow = cellKey % (this.properties.rowsPerPage * COLUMNS) % COLUMNS;
+        return cellPositionInRow == 0 ? COLUMNS : cellPositionInRow;
+
+    }
+
     getAdjacentCells(cellKey, bUseCellsAsKeys = false) {
 
         cellKey = Number(cellKey);
@@ -1208,9 +1249,7 @@ class BaseTree
 
         }
         
-        //position in row = (cellKey % cells per page) % cells per row
-        let cellPositionInRow = cellKey % (this.properties.rowsPerPage * COLUMNS) % COLUMNS;
-        cellPositionInRow = cellPositionInRow == 0 ? COLUMNS : cellPositionInRow;
+        const cellPositionInRow = this.cellPositionInRow(cellKey);
         
         //left
         if (cellPositionInRow > 1) {
@@ -1347,6 +1386,37 @@ class BaseTree
         const cellElem = document.getElementById(CELLIDPREFIX + cellKey).firstChild;
         cellElem.innerHTML += `<img class="ability-icon ${EDITPATHTEMPCLASS} ${EDITPATHTEMPCLASS + this.selectedCells.length - 1}" src="abilities/generic/travel_center_6_a.png" style="z-index: 26;" draggable="false"></img>\n`;
     
+    }
+
+    continueEditWithloopedNode(direction = 1) {
+
+        if (this.selectedCells.length == 0 || !this.properties.loopTree)
+            return;
+
+        if (selectedCellsLength > MAXSELECTEDCELLS) {
+
+            this.finallizeEditNodes();
+            return;
+
+        }
+
+        const lastCellKey = this.selectedCells[this.selectedCells.length - 1];
+        const cellPositionInRow = this.cellPositionInRow(cellKey);
+
+        switch (direction) {
+            case -1:
+                if (cellPositionInRow == 1)
+                    this.continueEditNode(lastCellKey + COLUMNS - 1);
+                break;
+
+            case 1: 
+                if (cellPositionInRow == COLUMNS)
+                    this.continueEditNode(lastCellKey - COLUMNS + 1);
+                break;
+
+            default:
+                break;
+        }
     }
 
     continueEditNode(cellKey) {
