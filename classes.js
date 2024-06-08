@@ -165,11 +165,11 @@ function convertToMinecraftTooltip(text, outputFieldID) {
 }
 
 const classDictionary = {
-    'Archer' : 'abilities/class/archer',
-    'Warrior' : 'abilities/class/warrior',
-    'Assassin' : 'abilities/class/assassin',
-    'Mage' : 'abilities/class/mage',
-    'Shaman' : 'abilities/class/shaman',
+    'archer' : 'abilities/class/archer',
+    'warrior' : 'abilities/class/warrior',
+    'assassin' : 'abilities/class/assassin',
+    'mage' : 'abilities/class/mage',
+    'shaman' : 'abilities/class/shaman',
 }
 
 const abilityIconDictionary = {
