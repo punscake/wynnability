@@ -1119,7 +1119,7 @@ class BaseTree
             const name = this.abilities[abilityID].name;
             delete this.abilities[abilityID];
             this.saveState(`Deleted ability: ${minecraftToHTML(name)}`);
-            this.renderAbilities();
+            this.updateEverything();
         }
 
     }
