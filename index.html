@@ -19,7 +19,7 @@
           
           <button onclick="tree.downloadJSON()" class="btn btn-primary me-2" title="Saves current configuration in a shareable file">Download</button>
 
-          <button onclick="tree.loadTree()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
+          <button onclick="tree.loadTreeFromField()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
           
 
           <form>
@@ -48,7 +48,7 @@
 
               <div class="pt-2" style="width:85%">
 
-                <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect">
+                <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect" oninput="tree.readProperties()">
   
                   <option selected value="Archer">Archer</option>
                   <option value="Warrior">Warrior</option>
@@ -58,7 +58,7 @@
   
                 </select>
   
-                <button class="w-100 btn btn-primary mt-2">Load default tree</button>
+                <button type="button" class="w-100 btn btn-primary mt-2" onclick="tree.loadTreeFromPreset(this)">Load default tree</button>
 
               </div>
 
@@ -69,14 +69,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="maxAbilityPoints" class="form-label">Ability Points</label></div>
-                <div><input type="number" min="1" value="45" class="form-control integer" style="width: 80px" id="maxAbilityPoints"></div>
+                <div><input type="number" min="1" value="45" class="form-control integer" style="width: 80px" id="maxAbilityPoints" oninput="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="treePages" class="form-label">Tree Pages</label></div>
-                <div><input type="number" min="1" max="50" value="7" class="form-control integer" style="width: 80px" id="treePages"></div>
+                <div><input type="number" min="1" max="50" value="7" class="form-control integer" style="width: 80px" id="treePages" oninput="tree.readProperties()"></div>
                 
               </div>
 
@@ -87,14 +87,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="rowsPerPage" class="form-label">Rows Per Page</label></div>
-                <div><input type="number" min="3" max="11" value="6" class="form-control integer" style="width: 70px" id="rowsPerPage"></div>
+                <div><input type="number" min="3" max="11" value="6" class="form-control integer" style="width: 70px" id="rowsPerPage" oninput="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="pagesDisplayed" class="form-label">Pages displayed</label></div>
-                <div><input type="number" min="1" max="8" value="2" class="form-control integer" style="width: 70px" id="pagesDisplayed"></div>
+                <div><input type="number" min="1" max="8" value="2" class="form-control integer" style="width: 70px" id="pagesDisplayed" oninput="tree.readProperties()"></div>
                 
               </div>
 
@@ -105,14 +105,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between form-check form-switch" style="width:85%" title="Whether left and right borders can connect">
 
                 <label class="form-check-label text-light" for="loopTreeSwitch">Loop tree</label>
-                <input class="form-check-input me-4" type="checkbox" role="switch" id="loopTreeSwitch">
+                <input class="form-check-input me-4" type="checkbox" role="switch" id="loopTreeSwitch" oninput="tree.readProperties()">
                 
               </div>
 
               <div class="d-flex flex-row mt-3 ps-3 align-items-center justify-content-between form-check form-switch" style="width:85%" title="Allows allocating nodes directly above">
 
                 <label class="form-check-label text-light" for="travelUpSwitch">Travel Up</label>
-                <input class="form-check-input me-4" type="checkbox" role="switch" id="travelUpSwitch">
+                <input class="form-check-input me-4" type="checkbox" role="switch" id="travelUpSwitch" oninput="tree.readProperties()">
                 
               </div>
 
@@ -142,13 +142,21 @@
             
           </div>
 
-          <div class="w-100 h-auto" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto; min-height: 350px; padding: 0px calc(100% / 370 * 26) 0px calc(100% / 370 * 26);">
+          <div class="w-100 h-auto d-flex flex-row" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto; min-height: 350px;">
             
+            <div style="width: calc(100% / 370 * 29);" onmouseenter="this.continueEditWithloopedNode(-1)">
+
+            </div>
+
             <table class="w-100 m-0" style="table-layout: fixed">
 
               <tbody id="treeTableBody"></tbody>
               
             </table>
+
+            <div style="width: calc(100% / 370 * 29);" onmouseenter="this.continueEditWithloopedNode(1)">
+
+            </div>
 
           </div>
 
@@ -183,7 +191,7 @@
 
           </div>
 
-          <div class="border border-black rounded-2 border-2 mt-2" style="background-color: #2C2D2F;">
+          <div class="border border-black rounded-2 border-2 mt-2 mb-2" style="background-color: #2C2D2F;">
             
             <div class="d-flex justify-content-between align-items-center ps-3 pe-2 mt-1">
               <div class="text-light">
@@ -196,7 +204,7 @@
 
             </div>
 
-            <div class="m-2 overflow-auto" style="max-height: 600px;" id="abilityContainer"></div>
+            <div class="m-2 overflow-auto" style="max-height: 100%;" id="abilityContainer"></div>
             
           </div>
 

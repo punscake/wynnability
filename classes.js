@@ -1,13 +1,3 @@
-//Helper function for finding the key to a map value
-function getByValue(map, searchValue)
-{
-    for (let [key, value] of map.entries())
-    {
-        if (value === searchValue)
-        return key;
-    }
-}
-
 function copyFromField(fieldID) {
 
     const field = document.getElementById(fieldID);
@@ -24,6 +14,7 @@ function copyFromField(fieldID) {
     
 }
 
+const RESPONSETIMEOUT = 5000;
 const EDITPATHTEMPCLASS = 'cell-edit-temp-element';
 const MAXSELECTEDCELLS = 40;
 const CELLIDPREFIX = 'cell-';
@@ -513,7 +504,6 @@ class BaseTree
 
     constructor() {
         this.readProperties();
-        this.renderTree();
         window.addEventListener("mouseup", (e) => {this.finallizeEditNode()});
     }
 
@@ -540,6 +530,9 @@ class BaseTree
             pagesDisplayed : document.getElementById(pagesDisplayedId).value,
             bTravesableUp : document.getElementById(bTravesableUp).value
         });
+
+        this.updateEverything();
+        this.saveState('Updated properties');
     }
 
     saveState(change = '', jsonContainerID = "json-container") {
@@ -638,7 +631,27 @@ class BaseTree
         this.renderTree();
     }
 
-    loadTree(jsonContainerID = "json-container") {
+    loadTreeFromPreset(self, classSelectID = 'classSelect') {
+
+        const classSelect = document.getElementById(classSelectID);
+        if (classSelect == null) {
+            return;
+        }
+
+        self.classList.add('btn-secondary');
+        self.disabled = true;
+
+        fetch('preset.php', {mode: 'same-origin', method: 'POST', body: {'class' : classSelect.value}}).then( (response) => {
+            this.loadFromJSON(response);
+        });
+
+        self.classList.remove('btn-secondary');
+        self.disabled = false;
+
+    }
+
+    loadTreeFromField(jsonContainerID = "json-container") {
+
         const jsonContainer = document.getElementById(jsonContainerID);
         if (jsonContainer == null) {
             return;
@@ -646,8 +659,7 @@ class BaseTree
 
         this.loadFromJSON(jsonContainer.value);
 
-        this.updateEverything();
-        this.saveState('Loaded tree from JSON')
+        this.saveState('Loaded tree from JSON');
     }
 
     loadFromJSON(json) {
@@ -1034,6 +1046,7 @@ class BaseTree
         }
 
         this.renderAbilities();
+        this.renderTree();
     }
 
     deleteAbility(abilityID = -1) {
