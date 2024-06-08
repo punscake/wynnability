@@ -38,6 +38,24 @@ const codeDictionaryColor = {
     'e' : '#FFFF55',
     'f' : '#FFFFFF',
 };
+const codeDictionaryColor = {
+    '0' : '#000000',
+    '1' : '#0000AA',
+    '2' : '#00AA00',
+    '3' : '#00AAAA',
+    '4' : '#AA0000',
+    '5' : '#AA00AA',
+    '6' : '#FFAA00',
+    '7' : '#AAAAAA',
+    '8' : '#555555',
+    '9' : '#5555FF',
+    'a' : '#55FF55',
+    'b' : '#55FFFF',
+    'c' : '#FF5555',
+    'd' : '#FF55FF',
+    'e' : '#FFFF55',
+    'f' : '#FFFFFF',
+};
 const codeDictionaryDecoration = {
     'm' : 'line-through',
     'n' : 'underline',
@@ -462,9 +480,9 @@ class BaseTree
 
     /**
      * Abilities
-     * @var Ability[]
+     * @var { id : Ability }
      */
-    abilities = [];
+    abilities = {};
 
     /**
      * Selected ability id, waiting to be placed on the tree
@@ -862,9 +880,9 @@ class BaseTree
 
     updateArchetype(oldarchetype, newarchetype = "") {
 
-        for (let ability of this.abilities) {
-            if (ability.archetype == oldarchetype)
-                ability.archetype = newarchetype;
+        for (let abilityID of Object.key(this.abilities)) {
+            if (this.abilities[abilityID]['archetype'] == oldarchetype)
+                this.abilities[abilityID]['archetype'] = newarchetype;
         }
         
         this.renderAbilities();
