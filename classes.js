@@ -462,9 +462,9 @@ class BaseTree
 
     /**
      * Abilities
-     * @var {id : Ability}
+     * @var Ability[]
      */
-    abilities = {};
+    abilities = [];
 
     /**
      * Selected ability id, waiting to be placed on the tree
