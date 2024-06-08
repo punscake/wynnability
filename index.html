@@ -144,7 +144,7 @@
 
           <div class="w-100 h-auto d-flex flex-row" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto; min-height: 350px;">
             
-            <div style="width: calc(100% / 370 * 29);" onmouseenter="this.continueEditWithloopedNode(-1)">
+            <div style="width: calc(100% / 370 * 29);" onmouseenter="tree.continueEditWithloopedNode(-1)">
 
             </div>
 
@@ -154,7 +154,7 @@
               
             </table>
 
-            <div style="width: calc(100% / 370 * 29);" onmouseenter="this.continueEditWithloopedNode(1)">
+            <div style="width: calc(100% / 370 * 29);" onmouseenter="tree.continueEditWithloopedNode(1)">
 
             </div>
 
@@ -172,7 +172,7 @@
 
         </div>
 
-        <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5 ms-md-4 p-0" style="max-width: 500px;">
+        <div class="d-flex flex-column col-xs-12 col-sm-12 col-md-5 col-lg-5 ms-md-4 p-0" style="max-width: 500px;">
 
           <div class="border border-black rounded-2 border-2" style="background-color: #2C2D2F;">
             
@@ -191,24 +191,29 @@
 
           </div>
 
-          <div class="border border-black rounded-2 border-2 mt-2 mb-2" style="background-color: #2C2D2F;">
+          <div class="flex-grow-1 position-relative mt-2 mb-2">
+
+            <div class="position-absolute border border-black rounded-2 border-2" style="background-color: #2C2D2F; left: 0; top: 0; width: 100%; height: 100%">
             
-            <div class="d-flex justify-content-between align-items-center ps-3 pe-2 mt-1">
-              <div class="text-light">
-                ABILITIES
+              <div class="d-flex justify-content-between align-items-center ps-3 pe-2 mt-1">
+                <div class="text-light">
+                  ABILITIES
+                </div>
+  
+                <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#abilityModal" onclick="tree.editAbility()">
+                  +
+                </button>
+  
               </div>
-
-              <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#abilityModal" onclick="tree.editAbility()">
-                +
-              </button>
-
+  
+              <div class="m-2 overflow-auto" style="height: calc(100% - 51px)" id="abilityContainer"></div>
+              
             </div>
 
-            <div class="m-2 overflow-auto" style="max-height: 100%;" id="abilityContainer"></div>
-            
           </div>
 
         </div>
+
       </div>
 
     </section>

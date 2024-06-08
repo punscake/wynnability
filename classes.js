@@ -520,17 +520,33 @@ class BaseTree
 
     readProperties(classSelectId = "classSelect", maxAbilityPointsId = "maxAbilityPoints", loopTreeId = "loopTreeSwitch", pagesId = "treePages",
         rowsPerPageId = "rowsPerPage", pagesDisplayedId = "pagesDisplayed", bTravesableUp = "travelUpSwitch") {
+
+        if (this.properties != null && this.properties.loopTree != document.getElementById(loopTreeId).checked) {
+
+            const totalCells = this.properties.pages * this.properties.rowsPerPage * COLUMNS;
+
+            for (let key = 1; key <= totalCells; key += COLUMNS) {
+
+                if (this.cellMap[key] == null || this.cellMap[key]['travelNode'] == null)
+                    continue;
+                
+                this.cellMap[key]['travelNode']['left'] = 0;
+                this.cellMap[key + COLUMNS - 1]['travelNode']['right'] = 0;
+                
+            }
+
+        }
         
         this.properties = new Properties({
             classs : document.getElementById(classSelectId).value,
             maxAbilityPoints : document.getElementById(maxAbilityPointsId).value,
-            loopTree : document.getElementById(loopTreeId).value,
+            loopTree : document.getElementById(loopTreeId).checked,
             pages : document.getElementById(pagesId).value,
             rowsPerPage : document.getElementById(rowsPerPageId).value,
             pagesDisplayed : document.getElementById(pagesDisplayedId).value,
-            bTravesableUp : document.getElementById(bTravesableUp).value
+            bTravesableUp : document.getElementById(bTravesableUp).checked
         });
-
+        
         this.updateEverything();
         this.saveState('Updated properties');
     }
@@ -1038,6 +1054,11 @@ class BaseTree
 
         if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archetypePointsRequiredInputElement || !prerequisiteInputElement)
             return;
+
+        if (nameInputElement.value == '') {
+            nameInputElement.value = 'UNNAMED'
+            this.renderEditorAbilityTooltip();
+        }
         
         const abilityID = nameInputElement.abilityId;
         
@@ -1326,6 +1347,17 @@ class BaseTree
 
         const dif = cellKey2 - cellKey1;
 
+        if (this.properties.loopTree) {
+
+            const position1 = this.cellPositionInRow(cellKey1);
+            const position2 = this.cellPositionInRow(cellKey2);
+
+            if ( dif == (COLUMNS - 1) && position1 == 1 && position2 == COLUMNS )
+                return 'left';
+            if (dif == (1 - COLUMNS) && position2 == 1 && position1 == COLUMNS )
+                return 'right';
+        }
+
         if (dif == COLUMNS)
             return 'down';
         if (dif == -COLUMNS)
@@ -1390,7 +1422,9 @@ class BaseTree
 
     continueEditWithloopedNode(direction = 1) {
 
-        if (this.selectedCells.length == 0 || !this.properties.loopTree)
+        const selectedCellsLength = this.selectedCells.length;
+        
+        if (selectedCellsLength == 0 || !(this.properties.loopTree))
             return;
 
         if (selectedCellsLength > MAXSELECTEDCELLS) {
@@ -1400,8 +1434,8 @@ class BaseTree
 
         }
 
-        const lastCellKey = this.selectedCells[this.selectedCells.length - 1];
-        const cellPositionInRow = this.cellPositionInRow(cellKey);
+        const lastCellKey = this.selectedCells[selectedCellsLength - 1];
+        const cellPositionInRow = this.cellPositionInRow(lastCellKey);
 
         switch (direction) {
             case -1:
