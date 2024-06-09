@@ -20,23 +20,44 @@ const MAXSELECTEDCELLS = 40;
 const CELLIDPREFIX = 'cell-';
 const COLUMNS = 9;
 
-const codeDictionaryColor = {
-    '0' : '#000000',
-    '1' : '#0000AA',
-    '2' : '#00AA00',
-    '3' : '#00AAAA',
-    '4' : '#AA0000',
-    '5' : '#AA00AA',
-    '6' : '#FFAA00',
-    '7' : '#AAAAAA',
-    '8' : '#555555',
-    '9' : '#5555FF',
-    'a' : '#55FF55',
-    'b' : '#55FFFF',
-    'c' : '#FF5555',
-    'd' : '#FF55FF',
-    'e' : '#FFFF55',
-    'f' : '#FFFFFF',
+const codeDictionaryGenericSymbols = {
+    'range' : '§a➼',
+    'damage' : '§c⚔',
+    'mana' : '§b✺',
+    'AoE' : '§3☀',
+    'heal' : '§d❤',
+    'shield' : '§e🛡',
+    'time' : '§d⌛',
+    'x' : '§c✖',
+    'slowness' : '§c⬤',
+
+    'neuteral' : '§6✣',
+    'earth' : '§2✤',
+    'thunder' : '§e✦',
+    'water' : '§b✽',
+    'fire' : '§c✹',
+    'air' : '§f❋',
+};
+const codeDictionaryClassSymbols = {
+    'focus' : '§e➽',
+
+    'winded' : '§b≈',
+    'timelocked' : '§3⌚',
+
+    'resistance' : '§a❁',
+    'corrupted' : '§4☠',
+    'armorbreak' : '§c✃',
+    'sacred' : '§6✧',
+    'invincibility' : '§b☗',
+
+    'marked' : '§c✜',
+    'clone' : '§5⁂',
+
+    'bloodpool' : '§4⚕',
+    'puppet' : '§6⚘',
+    'tethered' : '§c۞',
+    'whipped' : '§6⇶',
+    'awakened' : '§f♚',
 };
 const codeDictionaryColor = {
     '0' : '#000000',
@@ -569,6 +590,19 @@ class BaseTree
         this.saveState('Updated properties');
     }
 
+    writeProperties(classSelectId = "classSelect", maxAbilityPointsId = "maxAbilityPoints", loopTreeId = "loopTreeSwitch", pagesId = "treePages",
+        rowsPerPageId = "rowsPerPage", pagesDisplayedId = "pagesDisplayed", bTravesableUp = "travelUpSwitch") {
+
+        document.getElementById(classSelectId).value = this.properties.classs;
+        document.getElementById(maxAbilityPointsId).value = this.properties.maxAbilityPoints;
+        document.getElementById(loopTreeId).checked = this.properties.loopTree;
+        document.getElementById(pagesId).value = this.properties.pages;
+        document.getElementById(rowsPerPageId).value = this.properties.rowsPerPage;
+        document.getElementById(pagesDisplayedId).value = this.properties.pagesDisplayed;
+        document.getElementById(bTravesableUp).checked = this.properties.bTravesableUp;
+
+    }
+
     saveState(change = '', jsonContainerID = "json-container") {
         
         const state = JSON.stringify(this, null, 0);
@@ -733,6 +767,7 @@ class BaseTree
         const obj = JSON.parse(json);
 
         this.properties = new Properties(obj.properties);
+        this.writeProperties();
         
         const archetypes = obj.archetypes;
         if (Array.isArray(archetypes)) {

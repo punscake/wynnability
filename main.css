@@ -49,6 +49,19 @@ section {
   padding: 0;
 }
 
+.medium-btn {
+  position: relative;
+}
+
+.medium-btn * {
+  position: absolute;
+  left: -2.8px;
+  top: -2px;
+  height: 30px;
+  width: 30px;
+  font-size: 16px;
+}
+
 .modal {
   --bs-modal-header-border-color: black;
   --bs-modal-footer-border-color: black;

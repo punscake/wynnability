@@ -329,7 +329,11 @@
             <h1 class="modal-title fs-5 text-light ms-1" id="abilityModalLabel">Ability</h1>
             <div>
 
-              <div class="colorContainer" style="text-align: end;"></div>
+              <div class="genericUnicodeContainer" style="text-align: end;"></div>
+
+              <div class="classUnicodeContainer" style="text-align: end;"></div>
+
+              <div class="colorContainer mt-1" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
                 <button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>
@@ -441,12 +445,63 @@
           for (container of colorContainers) {
             const clone = button.cloneNode(false);
             container.appendChild(clone);
-            //clone.onmousedown = (event) => {event.preventDefault()};
             clone.addEventListener("click", () => {insertStringBeforeSelected(minecraftDelimiter + key)});
           }
 
           button.remove();
 
+        }
+
+        //Populates generic unicode options from codeDictionaryGenericSymbols map
+        const genericUnicodeContainers = document.getElementsByClassName("genericUnicodeContainer");
+
+        for (let key in codeDictionaryGenericSymbols) {
+
+          const button = document.createElement("button");
+          button.style = "height: 21px; width: 21px; margin-right: 4px; background-color: #110111";
+          button.title = key;
+          button.classList.add('medium-btn');
+
+          const div = document.createElement("div");
+          button.appendChild(div);
+          div.innerHTML = minecraftToHTML(codeDictionaryGenericSymbols[key]);
+          button.tabIndex = "-1";
+          button.type = "button";
+
+          for (container of genericUnicodeContainers) {
+            const clone = button.cloneNode(true);
+            container.appendChild(clone);
+            clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryGenericSymbols[key])});
+          }
+          
+          button.remove();
+          
+        }
+
+        //Populates class unicode options from codeDictionaryClassSymbols map
+        const classUnicodeContainers = document.getElementsByClassName("classUnicodeContainer");
+
+        for (let key in codeDictionaryClassSymbols) {
+
+          const button = document.createElement("button");
+          button.style = "height: 21px; width: 21px; margin-right: 4px; background-color: #110111";
+          button.title = key;
+          button.classList.add('medium-btn');
+
+          const div = document.createElement("div");
+          button.appendChild(div);
+          div.innerHTML = minecraftToHTML(codeDictionaryClassSymbols[key]);
+          button.tabIndex = "-1";
+          button.type = "button";
+
+          for (container of classUnicodeContainers) {
+            const clone = button.cloneNode(true);
+            container.appendChild(clone);
+            clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryClassSymbols[key])});
+          }
+          
+          button.remove();
+          
         }
 
         //Makes labels display remaining character count when something is typed
