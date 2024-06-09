@@ -72,6 +72,18 @@ function enforceMinMax(inputElementID, min, max) {
    }
 }
 
+function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay = 5000, id = 'smallToast') {
+
+    const container = document.getElementById(id);
+    if(container == null)
+        return;
+
+    container.querySelector('.toast-body').innerHTML = innerHTML;
+
+    const toast = bootstrap.Toast.getOrCreateInstance( container, {'autohide': autohide, 'delay': autohide ? hideDelay : null} );
+    toast.show();
+}
+
 const RESPONSETIMEOUT = 5000;
 const EDITPATHTEMPCLASS = 'cell-edit-temp-element';
 const MAXSELECTEDCELLS = 40;
@@ -749,10 +761,9 @@ class BaseTree
         if (stateIndex < 0 || stateIndex + 1 > this.history.length)
             return;
 
-        this.currentHistoryState = stateIndex;
-
         this.loadFromJSON(this.history[stateIndex].state);
 
+        this.currentHistoryState = stateIndex;
         this.renderStates();
     }
 
@@ -840,6 +851,11 @@ class BaseTree
             this.loadFromJSON(text);
             this.saveState(`Loaded default ${classSelect.value} tree`);
 
+        }).catch( (error) => {
+            
+            if (error != "Couldn't parse")
+                showSmallToast("Load Failed: couldn't reach server");
+            
         }).finally(() => {
 
             self.classList.remove('btn-secondary');
@@ -858,12 +874,39 @@ class BaseTree
         }
 
         this.loadFromJSON(jsonContainer.value);
-
         this.saveState('Loaded tree from JSON');
     }
 
+    loadTreeFromFile(dropEvent) {
+
+        dropEvent.preventDefault();
+        
+        let file;
+
+        if (dropEvent.dataTransfer.items)
+            file = dropEvent.dataTransfer.items[0].getAsFile();
+        else
+            file = dropEvent.dataTransfer.files[0];
+
+        file.text().then( text => {
+
+            this.loadFromJSON(text);
+            this.saveState(`Loaded tree from ${file.name}`);
+
+        });
+        
+    }
+
     loadFromJSON(json) {
-        const obj = JSON.parse(json);
+
+        let obj = {};
+
+        try {
+            obj = JSON.parse(json);
+        } catch (error) {
+            showSmallToast("Load Failed: couldn't parse JSON");
+            throw ("Couldn't parse");
+        }
 
         this.properties = new Properties(obj.properties);
         this.writeProperties();
@@ -898,6 +941,7 @@ class BaseTree
 
         document.getElementById("json-container").value = json;
         this.updateEverything();
+
     }
 
     downloadJSON() {
@@ -1013,6 +1057,9 @@ class BaseTree
     }
 
     updateArchetype(oldarchetype, newarchetype = "") {
+
+        if (typeof newarchetype != 'string')
+            return;
 
         for (let abilityID of Object.key(this.abilities)) {
             if (this.abilities[abilityID]['archetype'] == oldarchetype)
@@ -1213,8 +1260,19 @@ class BaseTree
             nameInputElement.value = 'UNNAMED'
             this.renderEditorAbilityTooltip();
         }
+
+        const newAbility = new Ability({
+            name : nameInputElement.value,
+            description : descriptionInputElement.value,
+            archetype : archetypeInputElement.value,
+            pointsRequired : pointsRequiredInputElement.value,
+            archetypePointsRequired : archetypePointsRequiredInputElement.value,
+            type : typeInputElement.value,
+            requires : prerequisiteInputElement.value
+        });
         
         const abilityID = nameInputElement.abilityId;
+        
         
         if (this.abilities[abilityID] == null) {
 
@@ -1222,16 +1280,6 @@ class BaseTree
             for (let id of Object.keys(this.abilities)) {
                 maxId = Math.max(maxId, Number(id));
             }
-
-            const newAbility = new Ability({
-                name : nameInputElement.value,
-                description : descriptionInputElement.value,
-                archetype : archetypeInputElement.value,
-                pointsRequired : pointsRequiredInputElement.value,
-                archetypePointsRequired : archetypePointsRequiredInputElement.value,
-                type : typeInputElement.value,
-                requires : prerequisiteInputElement.value
-            });
 
             this.abilities[maxId + 1] = newAbility;
             nameInputElement.abilityId = maxId + 1;
@@ -1242,13 +1290,7 @@ class BaseTree
 
             const oldName = this.abilities[abilityID].name;
 
-            this.abilities[abilityID].name = nameInputElement.value;
-            this.abilities[abilityID].description = descriptionInputElement.value;
-            this.abilities[abilityID].archetype = archetypeInputElement.value;
-            this.abilities[abilityID].pointsRequired = pointsRequiredInputElement.value;
-            this.abilities[abilityID].archetypePointsRequired = archetypePointsRequiredInputElement.value;
-            this.abilities[abilityID].type = typeInputElement.value;
-            this.abilities[abilityID].requires = prerequisiteInputElement.value;
+            this.abilities[abilityID] = newAbility;
 
             this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);
         }

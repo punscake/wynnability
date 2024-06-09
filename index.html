@@ -7,7 +7,7 @@
     <link href="bootstrap.min.css" rel="stylesheet">
     <link href="main.css" rel="stylesheet">
   </head>
-  <body>
+  <body id="dropzone" ondrop="tree.loadTreeFromFile(event)">
 
     <section class="mt-2 pb-2">
 
@@ -409,12 +409,33 @@
 
     </div>
 
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+
+      <div class="toast align-items-center" id="smallToast" role="alert" aria-live="assertive" aria-atomic="true">
+
+        <div class="d-flex">
+
+          <div class="toast-body"></div>
+
+          <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+
+        </div>
+        
+      </div>
+
+    </div>
+
     <div class="minecraftTooltip overflow-hidden" id="cursorTooltip" hidden></div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script src="classes.js"></script>
     <script>
       let tree = new BaseTree();
+
+      const dropzone = document.getElementById('dropzone');
+      ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach( (str) => {    
+        dropzone.addEventListener(str, (e) => { e.preventDefault() });
+      });
       
       const archetypeModal = document.getElementById('archetypeModal');
       const archetypeNameInput = document.getElementById('archetypeNameInput');
