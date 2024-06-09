@@ -970,9 +970,10 @@ class BaseTree
                 ${minecraftToHTML(nameInputElement.value)}<br><br>
                 ${minecraftToHTML(descriptionInputElement.value)}<br><br>
                 ${minecraftToHTML(archetypeInputElement.value + '&nbsp&nbspArchetype')}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>
-                <span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Points:&nbsp&nbsp</span>${archetypePointsRequiredInputElement.value}<br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>                
             `;
+            if (archetypePointsRequiredInputElement.value > 0)
+                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Points:&nbsp&nbsp</span>${archetypePointsRequiredInputElement.value}<br>`;
         }
         
         if (this.abilities[id] != null)
@@ -1000,9 +1001,10 @@ class BaseTree
                 ${minecraftToHTML(ability.name)}<br><br>
                 ${minecraftToHTML(ability.description)}<br><br>
                 ${minecraftToHTML(ability.archetype + '&nbsp&nbspArchetype')}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>
-                <span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Points:&nbsp&nbsp</span>${ability.archetypePointsRequired}<br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>                
             `;
+            if (ability.archetypePointsRequired > 0)
+                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Points:&nbsp&nbsp</span>${ability.archetypePointsRequired}<br>`;
         }
         
         let requiredAbility = this.abilities[ability.requires]
@@ -1167,6 +1169,9 @@ class BaseTree
                 if (this.abilities[elem].requires == abilityID)
                     this.abilities[elem].requires = -1;
             }
+
+            if (this.selectedAbilityID == abilityID)
+                this.selectedAbilityID = -1;
 
             this.removeAbilityFromTree(abilityID);
             const name = this.abilities[abilityID].name;
@@ -1601,14 +1606,22 @@ class BaseTree
 
                     this.removeAbilityFromTree(this.selectedAbilityID);
                     this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
-                    this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 1, down : 1, left : 1, right : 1});
                     editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
                     this.selectedAbilityID = -1;
                     this.renderAbilities();
+
+                    if (this.cellMap[cellKey]['travelNode'] == null)
+                        this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 0, down : 0, left : 0, right : 0});
                     
                 } else {
 
-                    if (this.cellMap[cellKey]['travelNode'] == null) {
+                    if (this.cellMap[cellKey]['abilityID'] != null) {
+
+                        const abilityID = this.cellMap[cellKey]['abilityID'];
+                        this.removeAbilityFromTree(abilityID);
+                        editSummary = `Removed ${minecraftToHTML(this.abilities[abilityID].name)} from tree`;
+
+                    } else if (this.cellMap[cellKey]['travelNode'] == null) {
                 
                         this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 0, down : 0, left : 0, right : 0});
 
@@ -1681,8 +1694,23 @@ class BaseTree
 
         for (let cellKey of Object.keys(this.cellMap)) {
 
-            if (this.cellMap[cellKey] != null && this.cellMap[cellKey]['abilityID'] == abilityID)
-                this.removeCellFromTree(cellKey);
+            if (this.cellMap[cellKey] != null && this.cellMap[cellKey]['abilityID'] == abilityID) {
+                
+                if (this.cellMap[cellKey]['travelNode'] == null) {
+
+                    this.removeCellFromTree(cellKey);
+                    continue;
+
+                }
+
+                const connected = this.getConnectedCells(cellKey, false, true);
+                
+                if (connected.length == 0)
+                    this.removeCellFromTree(cellKey);
+                else
+                    this.cellMap[cellKey]['abilityID'] = null;
+
+            }
         }
     }
 

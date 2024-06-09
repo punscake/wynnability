@@ -51,14 +51,15 @@ section {
 
 .medium-btn {
   position: relative;
+  padding: 0;
 }
 
 .medium-btn * {
   position: absolute;
-  left: -2.8px;
+  left: -1.5px;
   top: -2px;
-  height: 30px;
-  width: 30px;
+  height: 25px;
+  width: 25px;
   font-size: 16px;
 }
 

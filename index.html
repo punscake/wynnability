@@ -491,6 +491,7 @@
           const div = document.createElement("div");
           button.appendChild(div);
           div.innerHTML = minecraftToHTML(codeDictionaryClassSymbols[key]);
+
           button.tabIndex = "-1";
           button.type = "button";
 
@@ -531,10 +532,10 @@
           if (!cursorTooltip || cursorTooltip.hidden == true)
             return;
 
-          let leftOffset = (e.pageX + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : e.pageX + 5;
+          let leftOffset = (e.clientX + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : e.clientX + 5;
           leftOffset = Math.max(leftOffset, 12);
           
-          cursorTooltip.style = `top: ${e.pageY + 5}px; left: ${leftOffset}px`;
+          cursorTooltip.style = `top: ${e.clientY + 5}px; left: ${leftOffset}px`;
         });
 
       });
