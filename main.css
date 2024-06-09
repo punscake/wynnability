@@ -78,6 +78,7 @@ section {
   text-shadow: 1px 2px 0 color-mix(in srgb, currentColor 24%, black);
   min-height: 30px;
   border-radius: 4px;
+  word-spacing: 2px;
 }
 
 .selected-ability {
