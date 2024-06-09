@@ -963,21 +963,21 @@ class BaseTree
             container.innerHTML = `
                 ${minecraftToHTML(nameInputElement.value)}<br><br>
                 ${minecraftToHTML(descriptionInputElement.value)}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp</span>${pointsRequiredInputElement.value}<br>
             `;
         } else {
             container.innerHTML = `
                 ${minecraftToHTML(nameInputElement.value)}<br><br>
                 ${minecraftToHTML(descriptionInputElement.value)}<br><br>
-                ${minecraftToHTML(archetypeInputElement.value + '&nbsp&nbspArchetype')}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${pointsRequiredInputElement.value}<br>                
+                ${minecraftToHTML(archetypeInputElement.value + '&nbspArchetype')}<br><br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp</span>${pointsRequiredInputElement.value}<br>                
             `;
             if (archetypePointsRequiredInputElement.value > 0)
-                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Points:&nbsp&nbsp</span>${archetypePointsRequiredInputElement.value}<br>`;
+                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Archetype:&nbsp</span>${archetypePointsRequiredInputElement.value}<br>`;
         }
         
         if (this.abilities[id] != null)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(this.abilities[id].name, true)}`;
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp</span>${minecraftToHTML(this.abilities[id].name, true)}`;
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -994,22 +994,22 @@ class BaseTree
             container.innerHTML = `
                 ${minecraftToHTML(ability.name)}<br><br>
                 ${minecraftToHTML(ability.description)}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp</span>${ability.pointsRequired}<br>
             `;
         } else {
             container.innerHTML = `
                 ${minecraftToHTML(ability.name)}<br><br>
                 ${minecraftToHTML(ability.description)}<br><br>
-                ${minecraftToHTML(ability.archetype + '&nbsp&nbspArchetype')}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp&nbsp</span>${ability.pointsRequired}<br>                
+                ${minecraftToHTML(ability.archetype + '&nbspArchetype')}<br><br>
+                <span style="color:#A8A8A8">Ability Points:&nbsp</span>${ability.pointsRequired}<br>                
             `;
             if (ability.archetypePointsRequired > 0)
-                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Points:&nbsp&nbsp</span>${ability.archetypePointsRequired}<br>`;
+                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Archetype:&nbsp</span>${ability.archetypePointsRequired}<br>`;
         }
         
         let requiredAbility = this.abilities[ability.requires]
         if (requiredAbility)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp&nbsp</span>${minecraftToHTML(requiredAbility.name, true)}`;
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp</span>${minecraftToHTML(requiredAbility.name, true)}`;
     }
 
     hideHoverAbilityTooltip(containerId = "cursorTooltip") {
