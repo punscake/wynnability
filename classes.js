@@ -566,11 +566,11 @@ class Properties {
 
         this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? 45 : clamp(Number(maxAbilityPoints), MAXABILITYPOINTSLOWER, MAXABILITYPOINTSUPPER);
 
-        this.pages = isNaN(Number(pages)) ? 7 : clamp(Number(maxAbilityPoints), PAGESLOWER, PAGESUPPER);
+        this.pages = isNaN(Number(pages)) ? 7 : clamp(Number(pages), PAGESLOWER, PAGESUPPER);
 
         this.rowsPerPage = isNaN(Number(rowsPerPage)) ? 6 : clamp(Number(rowsPerPage), ROWSPERPAGELOWER, ROWSPERPAGEUPPER);
 
-        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? 2 : clamp(Number(pagesDisplayed), PAGESDISPLAYEDLOWER, PAGESDISPLAYEDUPPER);
+        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? 2 : clamp(Number(pagesDisplayed), PAGESDISPLAYEDLOWER, Math.min(PAGESDISPLAYEDUPPER, this.pages));
 
         this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
         this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
@@ -807,6 +807,7 @@ class BaseTree
         this.renderArchetypes();
         this.renderAbilities();
         this.renderTree();
+        this.writeProperties();
     }
 
     loadTreeFromPreset(self, classSelectID = 'classSelect') {
@@ -909,7 +910,6 @@ class BaseTree
         }
 
         this.properties = new Properties(obj.properties);
-        this.writeProperties();
         
         const archetypes = obj.archetypes;
         if (Array.isArray(archetypes)) {
