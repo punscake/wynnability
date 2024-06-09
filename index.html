@@ -69,14 +69,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="maxAbilityPoints" class="form-label">Ability Points</label></div>
-                <div><input type="number" min="1" value="45" class="form-control integer" style="width: 80px" id="maxAbilityPoints" oninput="tree.readProperties()"></div>
+                <div><input type="number" value="45" class="form-control integer" style="width: 80px" id="maxAbilityPoints" onchange="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="treePages" class="form-label">Tree Pages</label></div>
-                <div><input type="number" min="1" max="50" value="7" class="form-control integer" style="width: 80px" id="treePages" oninput="tree.readProperties()"></div>
+                <div><input type="number" value="7" class="form-control integer" style="width: 80px" id="treePages" onchange="tree.readProperties()"></div>
                 
               </div>
 
@@ -87,14 +87,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="rowsPerPage" class="form-label">Rows Per Page</label></div>
-                <div><input type="number" min="3" max="11" value="6" class="form-control integer" style="width: 70px" id="rowsPerPage" oninput="tree.readProperties()"></div>
+                <div><input type="number" value="6" class="form-control integer" style="width: 70px" id="rowsPerPage" onchange="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="pagesDisplayed" class="form-label">Pages displayed</label></div>
-                <div><input type="number" min="1" max="8" value="2" class="form-control integer" style="width: 70px" id="pagesDisplayed" oninput="tree.readProperties()"></div>
+                <div><input type="number" value="2" class="form-control integer" style="width: 70px" id="pagesDisplayed" onchange="tree.readProperties()"></div>
                 
               </div>
 
@@ -240,7 +240,7 @@
 
           <div class="text-light"><label for="maxSaveStates" class="form-label">Record last</label></div>
 
-        <div><input type="number" min="1" max="100" value="10" class="form-control integer" style="width: 80px" id="maxSaveStates"></div>
+        <div><input type="number" value="10" class="form-control integer" style="width: 80px" id="maxSaveStates"></div>
 
         <div class="mt-1">changes</div>
   
@@ -369,14 +369,14 @@
             <div class="d-flex align-items-center justify-content-between w-100 mt-2 ps-1">
 
               <div class="me-5 text-light"><label for="pointsRequiredInput" class="form-label">Points Required</label></div>
-              <div><input type="number" min="0" max="8" value="1" class="form-control focusable integer" style="width: 80px" id="pointsRequiredInput" oninput="tree.renderEditorAbilityTooltip()"></div>
+              <div><input type="number" min="0" max="8" value="1" class="form-control focusable integer" style="width: 80px" id="pointsRequiredInput" onchange="tree.renderEditorAbilityTooltip()"></div>
               
             </div>
 
             <div class="d-flex align-items-center justify-content-between w-100 mt-2 ps-1">
 
               <div class="me-5 text-light"><label for="archetypePointsRequiredInput" class="form-label">Archetype Points Required</label></div>
-              <div><input type="number" min="0" max="8" value="0" class="form-control focusable integer" style="width: 80px" id="archetypePointsRequiredInput" oninput="tree.renderEditorAbilityTooltip()"></div>
+              <div><input type="number" min="0" max="8" value="0" class="form-control focusable integer" style="width: 80px" id="archetypePointsRequiredInput" onchange="tree.renderEditorAbilityTooltip()"></div>
               
             </div>
 
@@ -415,7 +415,7 @@
     <script src="classes.js"></script>
     <script>
       let tree = new BaseTree();
-
+      
       const archetypeModal = document.getElementById('archetypeModal');
       const archetypeNameInput = document.getElementById('archetypeNameInput');
 
@@ -429,6 +429,8 @@
       abilityModal.addEventListener('shown.bs.modal', () => {
         abilityNameInput.focus();
       })
+
+      enforceMinMax('maxSaveStates', 1, 100);
 
       document.addEventListener("DOMContentLoaded", (event) => {
 
@@ -523,7 +525,7 @@
         const automatedRoundInputs = document.getElementsByClassName("integer");
         
         for (let input of automatedRoundInputs) {
-          input.addEventListener( "change", (e) => {input.value = Math.round(input.value);});
+          input.addEventListener( "change", (e) => {input.value = Math.round(input.value)}, true);
         }
 
         //Attaches a div to a cursor, used to display content
