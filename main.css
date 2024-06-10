@@ -40,7 +40,6 @@ section {
 #cursorTooltip {
   position: fixed;
   z-index: 40;
-  max-width: 500px;
 }
 
 .small-btn {

@@ -1061,7 +1061,7 @@ class BaseTree
         if (typeof newarchetype != 'string')
             return;
 
-        for (let abilityID of Object.key(this.abilities)) {
+        for (let abilityID of Object.keys(this.abilities)) {
             if (this.abilities[abilityID]['archetype'] == oldarchetype)
                 this.abilities[abilityID]['archetype'] = newarchetype;
         }
@@ -1271,7 +1271,7 @@ class BaseTree
             requires : prerequisiteInputElement.value
         });
         
-        const abilityID = nameInputElement.abilityId;
+        let abilityID = nameInputElement.abilityId;
         
         
         if (this.abilities[abilityID] == null) {
@@ -1281,8 +1281,10 @@ class BaseTree
                 maxId = Math.max(maxId, Number(id));
             }
 
-            this.abilities[maxId + 1] = newAbility;
-            nameInputElement.abilityId = maxId + 1;
+            abilityID = maxId + 1;
+
+            this.abilities[abilityID] = newAbility;
+            nameInputElement.abilityId = abilityID;
 
             this.saveState(`Added ability: ${minecraftToHTML(nameInputElement.value)}`);
 
@@ -1292,9 +1294,10 @@ class BaseTree
 
             this.abilities[abilityID] = newAbility;
 
-            this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);
+            this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);            
         }
 
+        this.selectAbility(abilityID);
         this.renderAbilities();
         this.renderTree();
     }
@@ -1404,13 +1407,29 @@ class BaseTree
             
             container.appendChild(div);
 
-        }
+        }   
     }
 
     selectAbility(abilityID = -1) {
 
         this.selectedAbilityID = abilityID;
         this.renderAbilities();
+        this.focusSelectedAbility();
+
+    }
+
+    focusSelectedAbility(containerID = "abilityContainer") {
+
+        const container = document.getElementById(containerID);
+        if (container == null)
+            return;
+
+        const selected = container.querySelector('.selected-ability');
+        if (selected == null)
+            return;
+
+        //container.scrollTo({top: selected.offsetTop, behavior: "instant"})
+        //selected.scrollIntoView({block: "center", inline: "center", behavior: "instant"});
 
     }
     // #endregion
