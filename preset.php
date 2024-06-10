@@ -1,13 +1,13 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
+if ($_SERVER["REQUEST_METHOD"] === "GET") {
 
-    $data = json_decode(file_get_contents('php://input'), true);
+    $class = $_GET['class'];
     $response = "{}";
 
-    if (isset($data['class'])) {
+    if (isset($class)) {
         
         // Sanitize and validate name
-        $class = sanitize($data['class']);
+        $class = sanitize($class);
     
         if (preg_match("/^[a-zA-Z]*$/", $class) && file_exists("presets/" . $class . ".json")) {
     
