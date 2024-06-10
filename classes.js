@@ -868,14 +868,13 @@ class BaseTree
             console.log('Fetch request timed out');
           }, 5000);
 
-        fetch('preset.php?class=' + classSelect.value, {
+        fetch(`presets/${classSelect.value}.json`, {
 
             signal,
             mode: 'same-origin',
             method: 'GET',
             headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json;charset=utf-8',
+                'Accept': 'application/json'
             },
 
         }).then( (response) => {
