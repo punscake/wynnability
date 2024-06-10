@@ -344,6 +344,8 @@
 
               <div class="classUnicodeContainer" style="text-align: end;"></div>
 
+              <div class="commonAbilityUnicodeContainer" style="text-align: end;"></div>
+
               <div class="colorContainer mt-1" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
@@ -493,7 +495,6 @@
         for (let key in codeDictionaryGenericSymbols) {
 
           const button = document.createElement("button");
-          button.style = "height: 21px; width: 21px; margin-right: 4px; background-color: #110111";
           button.title = key;
           button.classList.add('medium-btn');
 
@@ -519,7 +520,6 @@
         for (let key in codeDictionaryClassSymbols) {
 
           const button = document.createElement("button");
-          button.style = "height: 21px; width: 21px; margin-right: 4px; background-color: #110111";
           button.title = key;
           button.classList.add('medium-btn');
 
@@ -534,6 +534,34 @@
             const clone = button.cloneNode(true);
             container.appendChild(clone);
             clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryClassSymbols[key])});
+          }
+          
+          button.remove();
+          
+        }
+
+        //Populates common ability options from codeDictionaryCommonAbilityAttributes map
+        const commonAbilityUnicodeContainers = document.getElementsByClassName("commonAbilityUnicodeContainer");
+
+        for (let key in codeDictionaryCommonAbilityAttributes) {
+
+          const button = document.createElement("button");
+          button.style = "background-color: #7d0080; width: 25px; margin-left: 6.5px;";
+          button.title = key;
+          button.classList.add('medium-btn');
+
+          const div = document.createElement("div");
+          div.style = "left: -0.5px";
+          button.appendChild(div);
+          div.innerHTML = minecraftToHTML(codeDictionaryCommonAbilityAttributes[key][0]);
+
+          button.tabIndex = "-1";
+          button.type = "button";
+
+          for (container of commonAbilityUnicodeContainers) {
+            const clone = button.cloneNode(true);
+            container.appendChild(clone);
+            clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryCommonAbilityAttributes[key][1])});
           }
           
           button.remove();
@@ -562,7 +590,7 @@
         }
 
         //Attaches a div to a cursor, used to display content
-        document.addEventListener('mousemove', (e) => {
+        document.addEventListener( 'mousemove', (e) => {
           const cursorTooltip = document.getElementById('cursorTooltip');
           if (!cursorTooltip || cursorTooltip.hidden == true)
             return;

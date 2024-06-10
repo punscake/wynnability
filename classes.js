@@ -91,22 +91,23 @@ const CELLIDPREFIX = 'cell-';
 const COLUMNS = 9;
 
 const codeDictionaryGenericSymbols = {
-    'range' : '§a➼',
-    'damage' : '§c⚔',
     'mana' : '§b✺',
-    'AoE' : '§3☀',
-    'heal' : '§d❤',
-    'shield' : '§e🛡',
-    'time' : '§d⌛',
-    'x' : '§c✖',
-    'slowness' : '§c⬤',
 
+    'damage' : '§c⚔',
     'neuteral' : '§6✣',
     'earth' : '§2✤',
     'thunder' : '§e✦',
     'water' : '§b✽',
     'fire' : '§c✹',
     'air' : '§f❋',
+
+    'effect' : '§e🛡',
+    'duration' : '§d⌛',
+    'AoE' : '§3☀',
+    'range' : '§a➼',
+    'heal' : '§d❤',
+    'x' : '§c✖',
+    'slowness' : '§c⬤',
 };
 const codeDictionaryClassSymbols = {
     'focus' : '§e➽',
@@ -128,6 +129,24 @@ const codeDictionaryClassSymbols = {
     'tethered' : '§c۞',
     'whipped' : '§6⇶',
     'awakened' : '§f♚',
+};
+const codeDictionaryCommonAbilityAttributes = {
+    
+    'manacost' : ['§b✺', '\n§b✺ §7Mana Cost: §f*'],
+
+    'damage' : ['§c⚔', '\n§c⚔ §7Total Damage: §f*% §8(of your DPS)'],
+    'neuteral' : ['§6✣', '\n   §8(§6✣ §8Damage: *%)'],
+    'earth' : ['§2✤', '\n   §8(§2✤ §8Earth: *%)'],
+    'thunder' : ['§e✦', '\n   §8(§e✦ §8Thunder: *%)'],
+    'water' : ['§b✽', '\n   §8(§b✽ §8Water: *%)'],
+    'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: *%)'],
+    'air' : ['§f❋', '\n   §8(§f❋ §8Air: *%)'],
+    
+    'effect' : ['§e🛡', '\n§e🛡 §7Effect:'],
+    'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f*s'],
+    'AoE' : ['§3☀', '\n§3☀ §7Area  of Effect: §f* Blocks§7'],
+    'range' : ['§a➼', '\n§a➼ §7Range: §f* Blocks'],
+
 };
 const codeDictionaryColor = {
     '0' : '#000000',
@@ -250,7 +269,7 @@ function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter =
 function insertStringBeforeSelected(insertString) {
 
     const activeElement = document.activeElement;
-    if ( !activeElement || !activeElement.type == 'textarea' || !activeElement.type == 'text' ) {
+    if ( !activeElement || !(activeElement.type == 'textarea' || activeElement.type == 'text') ) {
         return;
     }
 
