@@ -165,7 +165,7 @@ function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter =
 {
     text = sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp');
 
-    result = '<span>';
+    result = bStripFormattingInstead ? '' : '<span>';
     let color = '';
 
     for (let i = 0; i < text.length;) {
@@ -223,6 +223,9 @@ function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter =
             }
         } while (text[i] == delimiter)
 
+        if (bStripFormattingInstead)
+            continue;
+
         span = '<span style="';
 
         if (decoration.length > 0)
@@ -236,11 +239,10 @@ function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter =
 
         span += '">';
 
-        if (!bStripFormattingInstead)
-            result += span;
+        result += span;
     }
 
-    result += '</span>';
+    result += bStripFormattingInstead ? '' : '</span>';
 
     return result;
 }
@@ -353,6 +355,12 @@ class Ability
     name = '';
 
     /**
+     * Name without minecraft formatting codes
+     * @var string
+     */
+    _plainname = '';
+
+    /**
      * Description
      * @var string
      */
@@ -391,6 +399,7 @@ class Ability
     constructor({name = '', description = '', archetype = '', pointsRequired = 0, archetypePointsRequired = 0, type = 'skill', requires = -1}) {
 
         this.name = String(name) ? String(name) : '';
+        this._plainname = minecraftToHTML(this.name, true);
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
 
@@ -401,6 +410,10 @@ class Ability
         this.type = Object.keys(abilityIconDictionary).includes(String(type)) ? String(type) : Object.keys(abilityIconDictionary)[0];
 
         this.requires = isNaN(Number(requires)) ? -1 : Number(requires);
+    }
+
+    getPlainName() {
+        return this._plainname;
     }
 }
 
@@ -681,7 +694,15 @@ class BaseTree
                     continue;
                 
                 this.cellMap[key]['travelNode']['left'] = 0;
-                this.cellMap[key + COLUMNS - 1]['travelNode']['right'] = 0;
+                
+            }
+
+            for (let key = COLUMNS; key <= totalCells; key += COLUMNS) {
+
+                if (this.cellMap[key] == null || this.cellMap[key]['travelNode'] == null)
+                    continue;
+                
+                this.cellMap[key]['travelNode']['right'] = 0;
                 
             }
 
@@ -1182,20 +1203,22 @@ class BaseTree
         
         if (!nameInputElement || !descriptionInputElement || !archetypeInputElement || !pointsRequiredInputElement || !archetypePointsRequiredInputElement || !typeInputElement || !prerequisiteInputElement)
             return;
-        
+
+        let sortedAbilityIDs = this.sortAbilities();
+
         if (abilityID < 0) {
 
-            archetypeInputElement.innerHTML = `<option selected value="">Archetype (none)</option>`;
+            archetypeInputElement.innerHTML = `<option class="prerequisite-type-none" selected value="">Archetype (none)</option>`;
             for (let archetype of this.archetypes) {
 
                 archetypeInputElement.innerHTML += `<option value="${archetype}">${minecraftToHTML(archetype)}</option>`;
 
             }
 
-            prerequisiteInputElement.innerHTML = `<option selected value="-1">Prerequisite (none)</option>`;
-            for (let id of Object.keys(this.abilities)) {
+            prerequisiteInputElement.innerHTML = `<option class="prerequisite-type-none" selected value="-1">Prerequisite (none)</option>`;
+            for (let id of sortedAbilityIDs) {
 
-                prerequisiteInputElement.innerHTML += `<option value="${id}">${minecraftToHTML(this.abilities[id].name)}</option>`;
+                prerequisiteInputElement.innerHTML += `<option class="prerequisite-type-${this.abilities[id].type}" value="${id}">${minecraftToHTML(this.abilities[id].name)}</option>`;
 
             }
 
@@ -1212,20 +1235,20 @@ class BaseTree
             if (this.abilities[abilityID] == null)
                 return;
 
-            archetypeInputElement.innerHTML = `<option value="">(none)</option>`;
+            archetypeInputElement.innerHTML = `<option class="prerequisite-type-none" value="">Archetype (none)</option>`;
             for (let archetype of this.archetypes) {
 
                 archetypeInputElement.innerHTML += `<option${archetype == this.abilities[abilityID].archetype ? " selected" : ""} value="${archetype}">${minecraftToHTML(archetype)}</option>`;
             
             }
 
-            prerequisiteInputElement.innerHTML = `<option value="-1">(none)</option>`;
-            for (let id of Object.keys(this.abilities)) {
+            prerequisiteInputElement.innerHTML = `<option class="prerequisite-type-none" value="-1">Prerequisite (none)</option>`;
+            for (let id of sortedAbilityIDs) {
 
                 if (id == abilityID)
                     continue;
 
-                prerequisiteInputElement.innerHTML += `<option value="${id}"${id == this.abilities[abilityID].requires ? " selected" : ""}>${minecraftToHTML(this.abilities[id].name)}</option>`;
+                prerequisiteInputElement.innerHTML += `<option class="prerequisite-type-${this.abilities[id].type}" value="${id}"${id == this.abilities[abilityID].requires ? " selected" : ""}>${minecraftToHTML(this.abilities[id].name)}</option>`;
 
             }
 
@@ -1297,7 +1320,6 @@ class BaseTree
             this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);            
         }
 
-        this.selectAbility(abilityID);
         this.renderAbilities();
         this.renderTree();
     }
@@ -1325,8 +1347,34 @@ class BaseTree
         }
 
     }
+
+    sortAbilities() {
+
+        let priorityMap = {};
+        Object.keys(abilityIconDictionary).forEach( (elem, i) => {
+            priorityMap[elem] = i;
+        });
+        
+        let sortedAbilityIDs = Object.keys(this.abilities).sort((a, b) => {
+            
+            if (this.abilities[a].type == null)
+                return 1;
+            if (this.abilities[b].type == null)
+                return -1;
+            
+            const priorityDif = priorityMap[this.abilities[a].type] - priorityMap[this.abilities[b].type];
+
+            if (priorityDif != 0)
+                return priorityDif;
+            
+            return this.abilities[a].getPlainName().localeCompare(this.abilities[b].getPlainName()) || 1;
+        })
+
+        return sortedAbilityIDs;
+
+    }
     
-    renderAbilities(containerID = "abilityContainer") {
+    renderAbilities(containerID = "abilityContainer", searchFieldID = "abilitySearch", notOnTreeFilterID = "notOnTreeFilter") {
         
         const container = document.getElementById(containerID);
         if (container == null)
@@ -1334,22 +1382,31 @@ class BaseTree
         
         container.innerHTML = "";
 
-        let priorityMap = {};
-        Object.keys(abilityIconDictionary).forEach( (elem, i) => {
-            priorityMap[elem] = i;
-        });
+        let sortedAbilityIDs = this.sortAbilities();
 
-        let sortedAbilityIDs = Object.keys(this.abilities).sort((a, b) => {
-            
-            if (this.abilities[a].type == null)
-                return 1;
-            if (this.abilities[b].type == null)
-                return -1;
+        const searchContainer = document.getElementById(searchFieldID);
+        if (searchFieldID != null && searchContainer.value != null && String(searchContainer.value) != null && String(searchContainer.value) != '') {
 
-            return priorityMap[this.abilities[a].type] - priorityMap[this.abilities[b].type];
-        })
+            const filterSubstring = String(searchContainer.value);
+
+            sortedAbilityIDs = sortedAbilityIDs.filter( (id) => {
+                return this.abilities[id].getPlainName().includes(filterSubstring);
+            });
+        }
+
+        const notOnTreeFilter = document.getElementById(notOnTreeFilterID);
+        let bFilterNotOnTree = notOnTreeFilter != null && !notOnTreeFilter.checked;
+
+        let abilitiesOnTree = {};
+        for(let cellKey of Object.keys(this.cellMap)) {
+            if (this.cellMap[cellKey]['abilityID'] != null)
+                abilitiesOnTree[ this.cellMap[cellKey]['abilityID'] ] = true;
+        }
 
         for (let id of sortedAbilityIDs) {
+
+            if (bFilterNotOnTree && abilitiesOnTree[id])
+                continue;
 
             const div = document.createElement("div");
 
@@ -1375,7 +1432,7 @@ class BaseTree
             const imgholder = document.createElement("div");
             imgholder.style = "width: 56px; text-align: center;";
             div.appendChild(imgholder);
-            imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, true, false));
+            imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, abilitiesOnTree[id], false));
 
             imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(id); });
             imgholder.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
@@ -1414,7 +1471,6 @@ class BaseTree
 
         this.selectedAbilityID = abilityID;
         this.renderAbilities();
-        this.focusSelectedAbility();
 
     }
 
@@ -1428,7 +1484,7 @@ class BaseTree
         if (selected == null)
             return;
 
-        //container.scrollTo({top: selected.offsetTop, behavior: "instant"})
+        container.scrollTo({top: selected.offsetTop - 10, behavior: "instant"})
         //selected.scrollIntoView({block: "center", inline: "center", behavior: "instant"});
 
     }
@@ -1872,6 +1928,8 @@ class BaseTree
 
             }
         }
+
+        this.renderAbilities();
     }
 
     renderTree(tableBodyID = "treeTableBody") {

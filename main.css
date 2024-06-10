@@ -123,6 +123,36 @@ section {
   color: #5FD3DC;
 }
 
+.prerequisite-type-skill {
+  background-color: #a5faac;
+  color: black;
+}
+
+.prerequisite-type-red {
+  background-color: #fc9d9d;
+  color: black;
+}
+
+.prerequisite-type-purple {
+  background-color: #faa5e7;
+  color: black;
+}
+
+.prerequisite-type-yellow {
+  background-color: #f6f88e;
+  color: black;
+}
+
+.prerequisite-type-white {
+  background-color: white;
+  color: black;
+}
+
+.prerequisite-type-none {
+  background-color: black;
+  color: white;
+}
+
 @font-face {
   font-family: 'minecraft';
   src: url('fonts/Minecraft.ttf');
