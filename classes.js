@@ -355,15 +355,15 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", bAllo
     return result;
 }
 
-const POINTSREQUIREDLOWER = 1;
-const POINTSREQUIREDUPPER = 5;
-const POINTSREQUIREDINPUTID = 'pointsRequiredInput';
-enforceMinMax(POINTSREQUIREDINPUTID, POINTSREQUIREDLOWER, POINTSREQUIREDUPPER);
+const POINTSREQUIRED_LOWER = 1;
+const POINTSREQUIRED_UPPER = 5;
+const POINTSREQUIRED_INPUTID = 'pointsRequiredInput';
+enforceMinMax(POINTSREQUIRED_INPUTID, POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
-const ARCHETYPEPOINTSREQUIREDLOWER = 0;
-const ARCHETYPEPOINTSREQUIREDUPPER = 100;
-const ARCHETYPEPOINTSREQUIREDINPUTID = 'archetypePointsRequiredInput';
-enforceMinMax(ARCHETYPEPOINTSREQUIREDINPUTID, ARCHETYPEPOINTSREQUIREDLOWER, ARCHETYPEPOINTSREQUIREDUPPER);
+const ARCHETYPEPOINTSREQUIRED_LOWER = 0;
+const ARCHETYPEPOINTSREQUIRED_UPPER = 100;
+const ARCHETYPEPOINTSREQUIRED_INPUTID = 'archetypePointsRequiredInput';
+enforceMinMax(ARCHETYPEPOINTSREQUIRED_INPUTID, ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
 
 class Ability
 {   
@@ -422,9 +422,9 @@ class Ability
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
 
-        this.pointsRequired = isNaN(Number(pointsRequired)) ? 1 : clamp(Number(pointsRequired), POINTSREQUIREDLOWER, POINTSREQUIREDUPPER);
+        this.pointsRequired = isNaN(Number(pointsRequired)) ? 1 : clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
-        this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? 0 : clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIREDLOWER, ARCHETYPEPOINTSREQUIREDUPPER);
+        this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? 0 : clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
         
         this.type = Object.keys(abilityIconDictionary).includes(String(type)) ? String(type) : Object.keys(abilityIconDictionary)[0];
 
@@ -529,25 +529,25 @@ class TravelNode {
     }
 }
 
-const MAXABILITYPOINTSLOWER = 1;
-const MAXABILITYPOINTSUPPER = 100;
-const MAXABILITYPOINTSINPUTID = 'maxAbilityPoints';
-enforceMinMax(MAXABILITYPOINTSINPUTID, MAXABILITYPOINTSLOWER, MAXABILITYPOINTSUPPER);
+const MAXABILITYPOINTS_LOWER = 1;
+const MAXABILITYPOINTS_UPPER = 100;
+const MAXABILITYPOINTS_INPUTID = 'maxAbilityPoints';
+enforceMinMax(MAXABILITYPOINTS_INPUTID, MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
-const PAGESLOWER = 1;
-const PAGESUPPER = 30;
-const PAGESINPUTID = 'treePages';
-enforceMinMax(PAGESINPUTID, PAGESLOWER, PAGESUPPER);
+const PAGES_LOWER = 1;
+const PAGES_UPPER = 30;
+const PAGES_INPUTID = 'treePages';
+enforceMinMax(PAGES_INPUTID, PAGES_LOWER, PAGES_UPPER);
 
-const ROWSPERPAGELOWER = 3;
-const ROWSPERPAGEUPPER = 11;
-const ROWSPERPAGEINPUTID = 'rowsPerPage';
-enforceMinMax(ROWSPERPAGEINPUTID, ROWSPERPAGELOWER, ROWSPERPAGEUPPER);
+const ROWSPERPAGE_LOWER = 3;
+const ROWSPERPAGE_UPPER = 11;
+const ROWSPERPAGE_INPUTID = 'rowsPerPage';
+enforceMinMax(ROWSPERPAGE_INPUTID, ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
-const PAGESDISPLAYEDLOWER = 1;
-const PAGESDISPLAYEDUPPER = 8;
-const PAGESDISPLAYEDINPUTID = 'pagesDisplayed';
-enforceMinMax(PAGESDISPLAYEDINPUTID, PAGESDISPLAYEDLOWER, PAGESDISPLAYEDUPPER);
+const PAGESDISPLAYED_LOWER = 1;
+const PAGESDISPLAYED_UPPER = 8;
+const PAGESDISPLAYED_INPUTID = 'pagesDisplayed';
+enforceMinMax(PAGESDISPLAYED_INPUTID, PAGESDISPLAYED_LOWER, PAGESDISPLAYED_UPPER);
 
 class Properties {
     /**
@@ -596,13 +596,13 @@ class Properties {
         
         this.classs = Object.keys(classDictionary).includes(String(classs)) ? String(classs) : Object.keys(classDictionary)[0];
 
-        this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? 45 : clamp(Number(maxAbilityPoints), MAXABILITYPOINTSLOWER, MAXABILITYPOINTSUPPER);
+        this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? 45 : clamp(Number(maxAbilityPoints), MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
-        this.pages = isNaN(Number(pages)) ? 7 : clamp(Number(pages), PAGESLOWER, PAGESUPPER);
+        this.pages = isNaN(Number(pages)) ? 7 : clamp(Number(pages), PAGES_LOWER, PAGES_UPPER);
 
-        this.rowsPerPage = isNaN(Number(rowsPerPage)) ? 6 : clamp(Number(rowsPerPage), ROWSPERPAGELOWER, ROWSPERPAGEUPPER);
+        this.rowsPerPage = isNaN(Number(rowsPerPage)) ? 6 : clamp(Number(rowsPerPage), ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
-        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? 2 : clamp(Number(pagesDisplayed), PAGESDISPLAYEDLOWER, Math.min(PAGESDISPLAYEDUPPER, this.pages));
+        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? 2 : clamp(Number(pagesDisplayed), PAGESDISPLAYED_LOWER, Math.min(PAGESDISPLAYED_UPPER, this.pages));
 
         this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
         this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
@@ -700,8 +700,8 @@ class BaseTree
         return result;
     }
 
-    readProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTSINPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGESINPUTID,
-        rowsPerPageId = ROWSPERPAGEINPUTID, pagesDisplayedId = PAGESDISPLAYEDINPUTID, bTravesableUp = "travelUpSwitch") {
+    readProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID,
+        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch") {
 
         if (this.properties != null && this.properties.loopTree != document.getElementById(loopTreeId).checked) {
 
@@ -741,8 +741,8 @@ class BaseTree
         this.saveState('Updated properties');
     }
 
-    writeProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTSINPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGESINPUTID,
-        rowsPerPageId = ROWSPERPAGEINPUTID, pagesDisplayedId = PAGESDISPLAYEDINPUTID, bTravesableUp = "travelUpSwitch") {
+    writeProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID,
+        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch") {
 
         document.getElementById(classSelectId).value = this.properties.classs;
         document.getElementById(maxAbilityPointsId).value = this.properties.maxAbilityPoints;
@@ -896,6 +896,8 @@ class BaseTree
             
             if (error != "Couldn't parse")
                 showSmallToast("Load Failed: couldn't reach server");
+
+            console.log(error);
             
         }).finally(() => {
 
@@ -1130,7 +1132,7 @@ class BaseTree
     }
 
     renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
-        pointsRequiredFormID = POINTSREQUIREDINPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIREDINPUTID, containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput") {
+        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput") {
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
@@ -1209,8 +1211,8 @@ class BaseTree
     }
 
     editAbility(abilityID = -1,
-        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIREDINPUTID,
-        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIREDINPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {   
+        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
+        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {   
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
@@ -1284,8 +1286,8 @@ class BaseTree
         descriptionInputElement.dispatchEvent(new Event('input'));
     }
 
-    saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIREDINPUTID,
-    archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIREDINPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {
+    saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
+    archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
