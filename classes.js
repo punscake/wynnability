@@ -892,12 +892,12 @@ class BaseTree
             this.loadFromJSON(text);
             this.saveState(`Loaded default ${classSelect.value} tree`);
 
-        }).catch( (error) => {
+        }).catch( (e) => {
             
-            if (error != "Couldn't parse")
+            if (e != "Couldn't parse")
                 showSmallToast("Load Failed: couldn't reach server");
 
-            console.log(error);
+            console.log(e.stack);
             
         }).finally(() => {
 
