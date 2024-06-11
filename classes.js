@@ -106,7 +106,7 @@ const codeDictionaryGenericSymbols = {
     'AoE' : '§3☀',
     'range' : '§a➼',
     'heal' : '§d❤',
-    'x' : '§c✖',
+    'blindness' : '§c⬣',
     'slowness' : '§c⬤',
 };
 const codeDictionaryClassSymbols = {
@@ -132,22 +132,23 @@ const codeDictionaryClassSymbols = {
 };
 const codeDictionaryCommonAbilityAttributes = {
     
-    'manacost' : ['§b✺', '\n§b✺ §7Mana Cost: §f*'],
+    'manacost' : ['§b✺', '\n§b✺ §7Mana Cost: §f_'],
 
-    'damage' : ['§c⚔', '\n§c⚔ §7Total Damage: §f*% §8(of your DPS)'],
-    'neuteral' : ['§6✣', '\n   §8(§6✣ §8Damage: *%)'],
-    'earth' : ['§2✤', '\n   §8(§2✤ §8Earth: *%)'],
-    'thunder' : ['§e✦', '\n   §8(§e✦ §8Thunder: *%)'],
-    'water' : ['§b✽', '\n   §8(§b✽ §8Water: *%)'],
-    'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: *%)'],
-    'air' : ['§f❋', '\n   §8(§f❋ §8Air: *%)'],
+    'damage' : ['§c⚔', '\n§c⚔ §7Total Damage: §f_% §8(of your DPS)'],
+    'neuteral' : ['§6✣', '\n   §8(§6✣ §8Damage: _%)'],
+    'earth' : ['§2✤', '\n   §8(§2✤ §8Earth: _%)'],
+    'thunder' : ['§e✦', '\n   §8(§e✦ §8Thunder: _%)'],
+    'water' : ['§b✽', '\n   §8(§b✽ §8Water: _%)'],
+    'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: _%)'],
+    'air' : ['§f❋', '\n   §8(§f❋ §8Air: _%)'],
     
     'effect' : ['§e🛡', '\n§e🛡 §7Effect:'],
-    'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f*s'],
-    'AoE' : ['§3☀', '\n§3☀ §7Area  of Effect: §f* Blocks§7'],
-    'range' : ['§a➼', '\n§a➼ §7Range: §f* Blocks'],
+    'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
+    'AoE' : ['§3☀', '\n§3☀ §7Area  of Effect: §f_ Blocks §7(Circle-Shaped)'],
+    'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
 
 };
+
 const codeDictionaryColor = {
     '0' : '#000000',
     '1' : '#0000AA',
