@@ -166,7 +166,6 @@ const codeDictionaryColor = {
     'd' : '#FF55FF',
     'e' : '#FFFF55',
     'f' : '#FFFFFF',
-    'r' : null,
 };
 const codeDictionaryDecoration = {
     'm' : 'line-through',
@@ -182,180 +181,89 @@ function sanitizeHTML(text) {
     return text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function splitByColorFormats(string) {
-
-    let result =
-        [
-            {
-                color : null,
-                content : ''
-            }
-        ];
-
-    if (string.length == 0)
-        return result;
-
-    let i = 0;
-    for (i; i < string.length; i++) {
-
-        let char = string[i];
-
-        if (char != minecraftDelimiter) {
-
-            result[result.length - 1]['content'] += char;
-            continue;
-
-        }
-
-        i++;
-        const code = string[i];
-        
-        if (code in codeDictionaryColor)
-
-            result.push( {color : code, content : ''} );
-
-        else
-            result[result.length - 1]['content'] += minecraftDelimiter + code;
-        
-    }
-    if (i < string.length)
-        result[result.length - 1]['content'] += string[string.length - 1];
-
-    return result;
-
-}
-
-function splitByOtherFormats(string = '') {
-
-    let result =
-        [
-            {
-                decoration : null,
-                style : null,
-                content : ''
-            }
-        ];
-
-    if (string.length == 0)
-        return result;
-    
-    let i = 0;
-    for (i; i < string.length - 1; i++) {
-
-        let char = string[i];
-
-        if (char != minecraftDelimiter) {
-
-            result[result.length - 1]['content'] += char;
-            continue;
-
-        }
-
-        i++;
-        const code = string[i];
-        
-        if (code in codeDictionaryStyle)
-
-            result.push( {style : code, content : ''} );
-
-        else if (code in codeDictionaryDecoration)
-
-            result.push( {decoration : code, content : ''} );
-
-        else
-            result[result.length - 1]['content'] += minecraftDelimiter + code;
-    }
-    if (i < string.length)
-        result[result.length - 1]['content'] += string[string.length - 1];
-
-    return result;
-
-}
-
-function minecraftToHTML(text = "", bStripFormattingInstead = false) {
-
+function minecraftToHTML(text = "", bStripFormattingInstead = false, delimiter = minecraftDelimiter)
+{
     text = sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp');
 
-    result = '';
+    result = bStripFormattingInstead ? '' : '<span>';
+    let color = '';
 
-    const colorSplitArr = splitByColorFormats(text);
-    
-    colorSplitArr.forEach( colorSplit => {
+    for (let i = 0; i < text.length;) {
 
-        let pendingContent = '';
+        let c = text[i];
 
-        let spansToClose = 0;
-        let pendingTextDecorations = {};
-        let pendingTextStyles = {};
-        
-        const formatSplitArr = splitByOtherFormats(colorSplit['content']);
-        
-        formatSplitArr.forEach( formatSplit => {
-            
-            const decoration = formatSplit['decoration'];
-            const style = formatSplit['style'];
-            const content = formatSplit['content'];
+        if (c != delimiter) {
+            result += c;
+            i++;
+            continue;
+        }
+        //else  
+        result += bStripFormattingInstead ? '' : '</span>';
+        let decoration = '';
+        let style = '';
 
-            if (decoration != null && codeDictionaryDecoration[decoration] != null)
-                pendingTextDecorations[ decoration ] = true;
+        do {
+            i++;
+            charactersLeft = text.length - i;
+            if (charactersLeft < 1) {
+                break;
+            }
+            c = text[i];
 
-            if (style != null && codeDictionaryStyle[style] != null)
-                pendingTextStyles[ style ] = true;
-
-            if (content == null || content == '')
-                return;
-            
-
-            pendingContent += '<span';
-            spansToClose++;
-            const decorations = Object.keys(pendingTextDecorations);
-            const styles = Object.keys(pendingTextStyles);
-            pendingTextDecorations = {};
-            pendingTextStyles = {};
-            const bUseDecorations = decorations.length > 0;
-            const bUseStyles = styles.length > 0;
-
-            if (bUseDecorations || bUseStyles)
-                pendingContent += ' style="';
-
-            if (bUseDecorations) {
-                pendingContent += 'text-decoration:';
-
-                for (let decoration of decorations)
-                    pendingContent += codeDictionaryDecoration[decoration];
-
-                pendingContent += ';';
+            if (c in codeDictionaryColor) {
+                color = codeDictionaryColor[c];
+                i++;
+                continue;
             }
 
-            if (bUseStyles)
-                for (let style of styles)
-                    pendingContent += codeDictionaryStyle[style];
-            
-            if (bUseDecorations || bUseStyles)
-                pendingContent += '"';
+            if (c in codeDictionaryDecoration) {
+                decoration += " " + codeDictionaryDecoration[c];
+                i++;
+                continue;
+            }
 
-            pendingContent += `>${content}`;
+            if (c in codeDictionaryStyle) {
+                style += " " + codeDictionaryStyle[c];
+                i++;
+                continue;
+            }
 
-        });
+            if (c == 'r') {
+                color = '';
+                style = '';
+                decoration = '';
+                i++;
+                continue;
+            }
 
-        
-        if (pendingContent.length == 0)
-            return;
+            if (charactersLeft >= 7 && c == '#') {
+                color = text.substring(i, i + 7);
+                i += 7;
+                continue;
+            }
+        } while (text[i] == delimiter)
 
-        const color = colorSplit['color'];
+        if (bStripFormattingInstead)
+            continue;
 
-        if (color != null && codeDictionaryColor[color] != null)
-            result += `<span style="color:${ codeDictionaryColor[color] }">`;
-        else
-            result += '<span>';
+        span = '<span style="';
 
-        result += pendingContent;
+        if (decoration.length > 0)
+            span += `text-decoration:${decoration};`;
 
-        for (spansToClose; spansToClose >= 0; spansToClose--)
-            result += '</span>';
+        if (color.length > 0)
+            span += `color:${color};`;
 
-    });
-    
+        if (style.length > 0)
+            span += style;
+
+        span += '">';
+
+        result += span;
+    }
+
+    result += bStripFormattingInstead ? '' : '</span>';
+
     return result;
 }
 

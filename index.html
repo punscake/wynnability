@@ -284,12 +284,12 @@
               <div class="colorContainer" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>
+                <!--<button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>-->
                 <button type="button" class="btn btn-secondary me-2 fw-bold small-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
                 <button type="button" class="btn btn-secondary me-2 fst-italic small-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
                 <button type="button" class="btn btn-secondary me-2 text-decoration-underline small-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through small-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
-                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">
+                <button type="button" class="btn btn-secondary me-3 text-decoration-line-through small-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
+                <!--<input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">-->
               </div>
 
             </div>
@@ -349,12 +349,11 @@
               <div class="colorContainer mt-1" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>
+                <!--<button type="button" class="btn btn-secondary me-2 small-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>-->
                 <button type="button" class="btn btn-secondary me-2 fw-bold small-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
                 <button type="button" class="btn btn-secondary me-2 fst-italic small-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
                 <button type="button" class="btn btn-secondary me-2 text-decoration-underline small-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through small-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
-                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">
+                <button type="button" class="btn btn-secondary me-3 text-decoration-line-through small-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
               </div>
 
             </div>
@@ -473,6 +472,9 @@
         const colorContainers = document.getElementsByClassName("colorContainer");
 
         for (let key in codeDictionaryColor) {
+
+          if (codeDictionaryColor[key] == null)
+            continue;
 
           const button = document.createElement("button");
           button.style = "height: 16px; width: 16px; margin-right: 4px; background-color:" + codeDictionaryColor[key];
