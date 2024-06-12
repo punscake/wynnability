@@ -272,9 +272,13 @@ function splitByOtherFormats(string = '') {
 
 }
 
-function minecraftToHTML(text = "", bStripFormattingInstead = false) {
+function anyToHTML(text = "") {
+    return sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp');
+}
 
-    text = sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp');
+function minecraftToHTML(text = "") {
+
+    text = anyToHTML(text);
 
     result = '';
 
@@ -354,6 +358,25 @@ function minecraftToHTML(text = "", bStripFormattingInstead = false) {
         for (spansToClose; spansToClose >= 0; spansToClose--)
             result += '</span>';
 
+    });
+    
+    return result;
+}
+
+function stripMinecraftFormatting(text = "") {
+
+    result = '';
+
+    const colorSplitArr = splitByColorFormats(text);
+    
+    colorSplitArr.forEach( colorSplit => {
+        
+        const formatSplitArr = splitByOtherFormats(colorSplit['content']);
+        
+        formatSplitArr.forEach( formatSplit => {
+
+            result += formatSplit['content'];
+        });
     });
     
     return result;
@@ -511,7 +534,7 @@ class Ability
     constructor({name = '', description = '', archetype = '', pointsRequired = 0, archetypePointsRequired = 0, type = 'skill', requires = -1}) {
 
         this.name = String(name) ? String(name) : '';
-        this._plainname = minecraftToHTML(this.name, true);
+        this._plainname = stripMinecraftFormatting(this.name);
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
 
@@ -1252,11 +1275,11 @@ class BaseTree
                 <span style="color:#A8A8A8">Ability Points:&nbsp</span>${pointsRequiredInputElement.value}<br>                
             `;
             if (archetypePointsRequiredInputElement.value > 0)
-                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(archetypeInputElement.value, true)} Archetype:&nbsp</span>${archetypePointsRequiredInputElement.value}<br>`;
+                container.innerHTML += `<span style="color:#A8A8A8">Min ${anyToHTML(stripMinecraftFormatting(archetypeInputElement.value))} Archetype:&nbsp</span>${archetypePointsRequiredInputElement.value}<br>`;
         }
         
         if (this.abilities[id] != null)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp</span>${minecraftToHTML(this.abilities[id].name, true)}`;
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp</span>${anyToHTML(stripMinecraftFormatting(this.abilities[id].name))}`;
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -1283,12 +1306,12 @@ class BaseTree
                 <span style="color:#A8A8A8">Ability Points:&nbsp</span>${ability.pointsRequired}<br>                
             `;
             if (ability.archetypePointsRequired > 0)
-                container.innerHTML += `<span style="color:#A8A8A8">Min ${minecraftToHTML(ability.archetype, true)} Archetype:&nbsp</span>${ability.archetypePointsRequired}<br>`;
+                container.innerHTML += `<span style="color:#A8A8A8">Min ${anyToHTML(stripMinecraftFormatting(ability.archetype))} Archetype:&nbsp</span>${ability.archetypePointsRequired}<br>`;
         }
         
         let requiredAbility = this.abilities[ability.requires]
         if (requiredAbility)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp</span>${minecraftToHTML(requiredAbility.name, true)}`;
+            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp</span>${anyToHTML(stripMinecraftFormatting(requiredAbility.name))}`;
     }
 
     hideHoverAbilityTooltip(containerId = "cursorTooltip") {
