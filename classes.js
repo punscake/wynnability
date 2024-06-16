@@ -84,12 +84,6 @@ function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay =
     toast.show();
 }
 
-const RESPONSETIMEOUT = 5000;
-const EDITPATHTEMPCLASS = 'cell-edit-temp-element';
-const MAXSELECTEDCELLS = 40;
-const CELLIDPREFIX = 'cell-';
-const COLUMNS = 9;
-
 const codeDictionaryGenericSymbols = {
     'mana' : '§b✺',
 
@@ -196,7 +190,7 @@ function splitByColorFormats(string) {
         return result;
 
     let i = 0;
-    for (i; i < string.length; i++) {
+    for (i; i < string.length - 1; i++) {
 
         let char = string[i];
 
@@ -211,14 +205,10 @@ function splitByColorFormats(string) {
         const code = string[i];
         
         if (code in codeDictionaryColor)
-
             result.push( {color : code, content : ''} );
-
-        else
-            result[result.length - 1]['content'] += minecraftDelimiter + code;
         
     }
-    if (i < string.length)
+    if (i < string.length && string[string.length - 1] != minecraftDelimiter)
         result[result.length - 1]['content'] += string[string.length - 1];
 
     return result;
@@ -255,17 +245,13 @@ function splitByOtherFormats(string = '') {
         const code = string[i];
         
         if (code in codeDictionaryStyle)
-
             result.push( {style : code, content : ''} );
 
         else if (code in codeDictionaryDecoration)
-
             result.push( {decoration : code, content : ''} );
 
-        else
-            result[result.length - 1]['content'] += minecraftDelimiter + code;
     }
-    if (i < string.length)
+    if (i < string.length && string[string.length - 1] != minecraftDelimiter)
         result[result.length - 1]['content'] += string[string.length - 1];
 
     return result;
@@ -744,6 +730,12 @@ class StateLog {
     }
 }
 
+const RESPONSETIMEOUT = 5000;
+const EDITPATHTEMPCLASS = 'cell-edit-temp-element';
+const MAXSELECTEDCELLS = 40;
+const CELLIDPREFIX = 'cell-';
+const COLUMNS = 9;
+
 class BaseTree
 {
     /**
@@ -1142,7 +1134,7 @@ class BaseTree
         if (oldname == "") {
             
             this.archetypes.push(newname);
-            this.saveState('Added archetype');
+            this.saveState(`Added archetype: ${minecraftToHTML(newname)}`);
             
         } else {
 
@@ -1522,10 +1514,10 @@ class BaseTree
         const searchContainer = document.getElementById(searchFieldID);
         if (searchFieldID != null && searchContainer.value != null && String(searchContainer.value) != null && String(searchContainer.value) != '') {
 
-            const filterSubstring = String(searchContainer.value);
+            const filterSubstring = String(searchContainer.value).toLowerCase();
 
             sortedAbilityIDs = sortedAbilityIDs.filter( (id) => {
-                return this.abilities[id].getPlainName().includes(filterSubstring);
+                return this.abilities[id].getPlainName().toLowerCase().includes(filterSubstring);
             });
         }
 

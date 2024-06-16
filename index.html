@@ -548,12 +548,10 @@
         for (let key in codeDictionaryCommonAbilityAttributes) {
 
           const button = document.createElement("button");
-          button.style = "background-color: #7d0080; width: 25px; margin-left: 6.5px;";
           button.title = key;
-          button.classList.add('medium-btn');
+          button.classList.add('large-btn');
 
           const div = document.createElement("div");
-          div.style = "left: -0.5px";
           button.appendChild(div);
           div.innerHTML = minecraftToHTML(codeDictionaryCommonAbilityAttributes[key][0]);
 
