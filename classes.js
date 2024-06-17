@@ -206,7 +206,8 @@ function splitByColorFormats(string) {
         
         if (code in codeDictionaryColor)
             result.push( {color : code, content : ''} );
-        
+        else
+            result[result.length - 1]['content'] += minecraftDelimiter + code;
     }
     if (i < string.length && string[string.length - 1] != minecraftDelimiter)
         result[result.length - 1]['content'] += string[string.length - 1];
@@ -232,15 +233,15 @@ function splitByOtherFormats(string = '') {
     let i = 0;
     for (i; i < string.length - 1; i++) {
 
-        let char = string[i];
-
+        const char = string[i];
+        
         if (char != minecraftDelimiter) {
 
             result[result.length - 1]['content'] += char;
             continue;
 
         }
-
+        
         i++;
         const code = string[i];
         
@@ -249,11 +250,10 @@ function splitByOtherFormats(string = '') {
 
         else if (code in codeDictionaryDecoration)
             result.push( {decoration : code, content : ''} );
-
     }
     if (i < string.length && string[string.length - 1] != minecraftDelimiter)
         result[result.length - 1]['content'] += string[string.length - 1];
-
+    
     return result;
 
 }
@@ -312,7 +312,7 @@ function minecraftToHTML(text = "") {
                 pendingContent += 'text-decoration:';
 
                 for (let decoration of decorations)
-                    pendingContent += codeDictionaryDecoration[decoration];
+                    pendingContent += ' ' + codeDictionaryDecoration[decoration];
 
                 pendingContent += ';';
             }
