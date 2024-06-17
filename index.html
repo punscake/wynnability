@@ -11,30 +11,27 @@
 
     <section class="mt-2 pb-2">
 
-      <div class="d-flex justify-content-between align-items-center ps-2 pe-2">
+      <form>
 
-        <div class="d-flex align-items-center">
+        <div class="d-flex justify-content-start align-items-center ps-2 pe-2">
 
-          <button onclick="copyFromField('json-container')" class="btn btn-primary me-2" title="Copies a shareable JSON">Copy</button>
+          <button type="button" onclick="copyFromField('json-container')" class="btn btn-primary me-2" title="Copies a shareable JSON">Copy</button>
           
-          <button onclick="tree.downloadJSON()" class="btn btn-primary me-2" title="Saves current configuration in a shareable file">Download</button>
+          <button type="button" onclick="tree.downloadJSON()" class="btn btn-primary me-2" title="Saves current configuration in a shareable file">Download</button>
 
-          <button onclick="tree.loadTreeFromField()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
+          <button type="button" onclick="tree.loadTreeFromField()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
           
-
-          <form>
+          
             <!-- Prevent implicit submission of the form -->
             <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
-            <input type="textbox" id="json-container" class="me-2 overflow-hidden" onfocus="this.select()">
+            <input type="textbox" id="json-container" class="me-2 overflow-hidden" style="min-width: 40px" onfocus="this.select()">
 
-          </form>
+          <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="collapse" data-bs-target="#extraSettings" aria-expanded="false" aria-controls="extraSettings">Class Settings</button>
 
         </div>
 
-        <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#extraSettings" aria-expanded="false" aria-controls="extraSettings">Class Settings</button>
-
-      </div>
+      </form>
   
       <div class="collapse" id="extraSettings">
 
@@ -130,7 +127,7 @@
 
       <div class="row justify-content-center ms-2 me-2">
 
-        <div class="col-xs-12 col-sm-12 col-md-6 p-0" style="max-width: 500px;" onwheel="event.preventDefault(); tree.incrementPage( event.deltaY > 0 ? 1 : -1 )">
+        <div class="col-xs-12 col-sm-12 col-md-6 p-0" style="max-width: 500px;">
 
           <div class="w-100 text-center">
             <img src="background/page_up.png" width="auto" height="40" onclick="tree.incrementPage(-1)">
@@ -148,7 +145,7 @@
 
             </div>
 
-            <table class="w-100 m-0" style="table-layout: fixed">
+            <table class="w-100 m-0" style="table-layout: fixed" onwheel="event.preventDefault(); tree.incrementPage( event.deltaY > 0 ? 1 : -1 )">
 
               <tbody id="treeTableBody"></tbody>
               
@@ -198,7 +195,7 @@
             
               <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-1">
                 
-                <input type="textbox" style="background-color: #1b1b1b; color: white;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
+                <input type="textbox" style="background-color: #1b1b1b; color: white; min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
 
                 <div class="me-auto ms-2">
 
@@ -207,7 +204,7 @@
 
                 </div>
 
-                <div class="text-light me-2">
+                <div class="text-light ms-2 me-2">
                   ABILITIES
                 </div>
 
@@ -444,6 +441,25 @@
     <script>
 
       let tree = new BaseTree();
+
+      // #region Cookies
+      const LAST_SESSION_STORAGE_NAME = 'lastClosedSession';
+
+      window.addEventListener('beforeunload', (e) => {
+        localStorage.setItem(LAST_SESSION_STORAGE_NAME, JSON.stringify(tree, null, 0));
+      });
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+
+        const json = localStorage.getItem(LAST_SESSION_STORAGE_NAME);
+        if (json != null) {
+          localStorage.removeItem(LAST_SESSION_STORAGE_NAME);
+          tree.loadFromJSON(json);
+          tree.saveState('Loaded last closed session');
+        }
+
+      });
+      // #endregion
 
       const dropzone = document.getElementById('dropzone');
       ['drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop'].forEach( (str) => {    
