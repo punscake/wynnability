@@ -15,17 +15,16 @@
 
         <div class="d-flex justify-content-start align-items-center ps-2 pe-2">
 
+          <!-- Prevent implicit submission of the form -->
+          <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+
           <button type="button" onclick="copyFromField('json-container')" class="btn btn-primary me-2" title="Copies a shareable JSON">Copy</button>
           
           <button type="button" onclick="tree.downloadJSON()" class="btn btn-primary me-2" title="Saves current configuration in a shareable file">Download</button>
 
           <button type="button" onclick="tree.loadTreeFromField()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
-          
-          
-            <!-- Prevent implicit submission of the form -->
-            <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
-            <input type="textbox" id="json-container" class="me-2 overflow-hidden" style="min-width: 40px" onfocus="this.select()">
+          <input type="textbox" id="json-container" class="me-2 overflow-hidden" style="min-width: 40px" onfocus="this.select()">
 
           <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="collapse" data-bs-target="#extraSettings" aria-expanded="false" aria-controls="extraSettings">Class Settings</button>
 
@@ -45,7 +44,7 @@
 
               <div class="pt-2" style="width:85%">
 
-                <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect" oninput="tree.readProperties()">
+                <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect" oninput="tree.readProperties()" title="Affects ability icons and default tree">
   
                   <option selected value="archer">Archer</option>
                   <option value="warrior">Warrior</option>
@@ -55,7 +54,13 @@
   
                 </select>
   
-                <button type="button" class="w-100 btn btn-primary mt-2" onclick="tree.loadTreeFromPreset(this)">Load default tree</button>
+                <div class="d-flex flex-row">
+
+                  <button type="button" class="btn btn-primary mt-2 me-1" style="min-width: 150px; width: 67%" onclick="tree.loadTreeFromPreset(this)">Load default tree</button>
+                  
+                  <button type="button" class="btn btn-primary mt-2 flex-grow-1" style="overflow: hidden" onclick="tree.loadEmptyTree()" title="Completely clears tree and settings">Reset</button>
+
+                </div>
 
               </div>
 
@@ -66,14 +71,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="maxAbilityPoints" class="form-label">Ability Points</label></div>
-                <div><input type="number" value="45" class="form-control integer" style="width: 80px" id="maxAbilityPoints" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer" style="width: 80px" id="maxAbilityPoints" onchange="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="treePages" class="form-label">Tree Pages</label></div>
-                <div><input type="number" value="7" class="form-control integer" style="width: 80px" id="treePages" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer" style="width: 80px" id="treePages" onchange="tree.readProperties()"></div>
                 
               </div>
 
@@ -84,14 +89,14 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="rowsPerPage" class="form-label">Rows Per Page</label></div>
-                <div><input type="number" value="6" class="form-control integer" style="width: 70px" id="rowsPerPage" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer" style="width: 70px" id="rowsPerPage" onchange="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="pagesDisplayed" class="form-label">Pages displayed</label></div>
-                <div><input type="number" value="2" class="form-control integer" style="width: 70px" id="pagesDisplayed" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer" style="width: 70px" id="pagesDisplayed" onchange="tree.readProperties()"></div>
                 
               </div>
 

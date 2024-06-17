@@ -517,16 +517,16 @@ class Ability
      */
     requires = -1;
 
-    constructor({name = '', description = '', archetype = '', pointsRequired = 0, archetypePointsRequired = 0, type = 'skill', requires = -1}) {
+    constructor({name = '', description = '', archetype = '', pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
 
         this.name = String(name) ? String(name) : '';
         this._plainname = stripMinecraftFormatting(this.name);
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
 
-        this.pointsRequired = isNaN(Number(pointsRequired)) ? 1 : clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
+        this.pointsRequired = isNaN(Number(pointsRequired)) ? POINTSREQUIRED_LOWER : clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
-        this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? 0 : clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
+        this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? ARCHETYPEPOINTSREQUIRED_LOWER : clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
         
         this.type = Object.keys(abilityIconDictionary).includes(String(type)) ? String(type) : Object.keys(abilityIconDictionary)[0];
 
@@ -632,21 +632,25 @@ class TravelNode {
 }
 
 const MAXABILITYPOINTS_LOWER = 1;
+const MAXABILITYPOINTS_DEFAULT = 45;
 const MAXABILITYPOINTS_UPPER = 100;
 const MAXABILITYPOINTS_INPUTID = 'maxAbilityPoints';
 enforceMinMax(MAXABILITYPOINTS_INPUTID, MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
 const PAGES_LOWER = 1;
+const PAGES_DEFAULT = 7;
 const PAGES_UPPER = 30;
 const PAGES_INPUTID = 'treePages';
 enforceMinMax(PAGES_INPUTID, PAGES_LOWER, PAGES_UPPER);
 
 const ROWSPERPAGE_LOWER = 3;
+const ROWSPERPAGE_DEFAULT = 6;
 const ROWSPERPAGE_UPPER = 11;
 const ROWSPERPAGE_INPUTID = 'rowsPerPage';
 enforceMinMax(ROWSPERPAGE_INPUTID, ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
 const PAGESDISPLAYED_LOWER = 1;
+const PAGESDISPLAYED_DEFAULT = 2;
 const PAGESDISPLAYED_UPPER = 8;
 const PAGESDISPLAYED_INPUTID = 'pagesDisplayed';
 enforceMinMax(PAGESDISPLAYED_INPUTID, PAGESDISPLAYED_LOWER, PAGESDISPLAYED_UPPER);
@@ -694,17 +698,17 @@ class Properties {
      */
     bTravesableUp = false;
 
-    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = 1, loopTree = false, pages = 1, rowsPerPage = 6, pagesDisplayed = 1, bTravesableUp = false}) {
+    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false} = {}) {
         
         this.classs = Object.keys(classDictionary).includes(String(classs)) ? String(classs) : Object.keys(classDictionary)[0];
 
-        this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? 45 : clamp(Number(maxAbilityPoints), MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
+        this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? MAXABILITYPOINTS_DEFAULT : clamp(Number(maxAbilityPoints), MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
-        this.pages = isNaN(Number(pages)) ? 7 : clamp(Number(pages), PAGES_LOWER, PAGES_UPPER);
+        this.pages = isNaN(Number(pages)) ? PAGES_DEFAULT : clamp(Number(pages), PAGES_LOWER, PAGES_UPPER);
 
-        this.rowsPerPage = isNaN(Number(rowsPerPage)) ? 6 : clamp(Number(rowsPerPage), ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
+        this.rowsPerPage = isNaN(Number(rowsPerPage)) ? ROWSPERPAGE_DEFAULT : clamp(Number(rowsPerPage), ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
-        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? 2 : clamp(Number(pagesDisplayed), PAGESDISPLAYED_LOWER, Math.min(PAGESDISPLAYED_UPPER, this.pages));
+        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? PAGESDISPLAYED_DEFAULT : clamp(Number(pagesDisplayed), PAGESDISPLAYED_LOWER, Math.min(PAGESDISPLAYED_UPPER, this.pages));
 
         this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
         this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
@@ -724,7 +728,7 @@ class StateLog {
      */
     state;
 
-    constructor({changeDescription, state}) {
+    constructor({changeDescription, state} = {}) {
         this.change = String(changeDescription) ? String(changeDescription) : '';
         this.state = String(state) ? String(state) : '';
     }
@@ -793,7 +797,9 @@ class BaseTree
     selectedCells = [];
 
     constructor() {
-        this.readProperties();
+        this.properties = new Properties();
+        this.updateEverything();
+        this.saveState('Reset tree and settings');
         window.addEventListener("mouseup", (e) => {this.finallizeEditNode()});
     }
 
@@ -1046,6 +1052,13 @@ class BaseTree
         
     }
 
+    loadEmptyTree() {
+
+        this.loadFromJSON('{}');
+        this.saveState('Reset tree and settings');
+
+    }
+
     loadFromJSON(json) {
 
         let obj = {};
@@ -1058,34 +1071,39 @@ class BaseTree
         }
 
         this.properties = new Properties(obj.properties);
-        
+
+        this.archetypes = [];
         const archetypes = obj.archetypes;
         if (Array.isArray(archetypes)) {
-
-            this.archetypes = [];
 
             archetypes.forEach(element => {
                 this.archetypes.push(element);
             });
         }
 
-        const abilities = obj.abilities;        
-        this.abilities = {};            
-        Object.keys(abilities).forEach( id => {
+        this.abilities = {};
+        const abilities = obj.abilities;
+        if (typeof abilities === 'object' && !Array.isArray(abilities) && abilities !== null) {
+            
+            Object.keys(abilities).forEach( id => {
+    
+                this.abilities[id] = new Ability(abilities[id]);
+    
+            });
+        }
 
-            this.abilities[id] = new Ability(abilities[id]);
+        this.cellMap = {};
+        const cellMap = obj.cellMap;
+        if (typeof cellMap === 'object' && !Array.isArray(cellMap) && cellMap !== null) {
+        
+            Object.keys(cellMap).forEach( id => {
 
-        });
+                this.cellMap[id] = {};
+                this.cellMap[id]['travelNode'] = new TravelNode(cellMap[id]['travelNode']);
+                this.cellMap[id]['abilityID'] = cellMap[id]['abilityID'];
 
-        const cellMap = obj.cellMap;        
-        this.cellMap = {};            
-        Object.keys(cellMap).forEach( id => {
-
-            this.cellMap[id] = {};
-            this.cellMap[id]['travelNode'] = new TravelNode(cellMap[id]['travelNode']);
-            this.cellMap[id]['abilityID'] = cellMap[id]['abilityID'];
-
-        });
+            });
+        }
 
         document.getElementById("json-container").value = json;
         this.updateEverything();
