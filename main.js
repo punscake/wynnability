@@ -1759,7 +1759,7 @@ class BaseTree
 
         //up
         const upKey = cellKey - COLUMNS;
-        if (upKey > 0) {
+        if (upKey >= 1) {
 
             if (bUseCellsAsKeys)
                 result[upKey] = 'up';
@@ -1770,7 +1770,7 @@ class BaseTree
 
         //down
         const downKey = cellKey + COLUMNS;
-        if (downKey < totalCells) {
+        if (downKey <= totalCells) {
 
             if (bUseCellsAsKeys)
                 result[downKey] = 'down';
@@ -1814,7 +1814,7 @@ class BaseTree
                 result['right'] = cellKey + 1 - COLUMNS;
 
         }
-        
+        console.log(result)
         return result;
 
     }

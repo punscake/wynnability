@@ -144,7 +144,7 @@
             
           </div>
 
-          <div class="w-100 h-auto d-flex flex-row" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto; min-height: 350px;">
+          <div class="w-100 h-auto d-flex flex-row" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto;">
             
             <div style="width: calc(100% / 370 * 29);" onmouseenter="tree.continueEditWithloopedNode(-1)">
 
@@ -328,7 +328,7 @@
 
     </div>
 
-    <div class="modal fade" id="abilityModal" tabindex="-1" aria-labelledby="Ability Edit" aria-hidden="true">
+    <div class="modal fade" id="abilityModal" tabindex="-1" aria-labelledby="Ability Edit" aria-hidden="true" data-bs-backdrop="static">
       <div class="modal-dialog modal-dialog-centered" onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
 
         <div class="modal-content">
@@ -448,7 +448,7 @@
 
     </div>
 
-    <div class="minecraftTooltip overflow-hidden" id="cursorTooltip" hidden></div>
+    <div class="minecraftTooltip overflow-hidden pe-none" id="cursorTooltip" hidden></div>
 
     <script src="bootstrap.bundle.min.js"></script>
     <script src="main.js"></script>
