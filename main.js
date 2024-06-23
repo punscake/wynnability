@@ -1296,7 +1296,7 @@ class BaseTree
         if (abilityBlockCountDisplay != null)
             abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
         if (blockedAbilities.length > 0) {
-            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block:<br></span>`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
             for (let id of blockedAbilities)
                 container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
             container.innerHTML += '<br>';
@@ -1304,7 +1304,7 @@ class BaseTree
         
         if (archetypeInputElement.value == "") {
             container.innerHTML += `
-                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>
+                <span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>
             `;
         } else {
             container.innerHTML += `
@@ -1312,11 +1312,11 @@ class BaseTree
                 <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>                
             `;
             if (archetypePointsRequiredInputElement.value > 0)
-                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min ${anyToHTML(stripMinecraftFormatting(archetypeInputElement.value))} Archetype:&nbsp;</span>${archetypePointsRequiredInputElement.value}<br>`;
+                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min&nbsp;${anyToHTML(stripMinecraftFormatting(archetypeInputElement.value))}&nbsp;Archetype:&nbsp;</span>${archetypePointsRequiredInputElement.value}<br>`;
         }
         
         if (this.abilities[id] != null)
-            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[id].name))}`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[id].name))}`;
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -1335,7 +1335,7 @@ class BaseTree
 
         let blockedAbilities = ability.unlockingWillBlock;
         if (blockedAbilities.length > 0) {
-            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block:<br></span>`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
             for (let id of blockedAbilities)
                 container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
             container.innerHTML += '<br>';
@@ -1343,20 +1343,20 @@ class BaseTree
         
         if (ability.archetype == "") {
             container.innerHTML += `
-                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${ability.pointsRequired}<br>
+                <span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>
             `;
         } else {
             container.innerHTML += `
                 ${minecraftToHTML(ability.archetype + ' Archetype')}<br><br>
-                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${ability.pointsRequired}<br>                
+                <span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>                
             `;
             if (ability.archetypePointsRequired > 0)
-                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min ${anyToHTML(stripMinecraftFormatting(ability.archetype))} Archetype:&nbsp;</span>${ability.archetypePointsRequired}<br>`;
+                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min&nbsp;${anyToHTML(stripMinecraftFormatting(ability.archetype))}&nbsp;Archetype:&nbsp;</span>${ability.archetypePointsRequired}<br>`;
         }
         
         let requiredAbility = this.abilities[ability.requires]
         if (requiredAbility)
-            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(requiredAbility.name))}`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(requiredAbility.name))}`;
     }
 
     hideHoverAbilityTooltip(containerId = "cursorTooltip") {
