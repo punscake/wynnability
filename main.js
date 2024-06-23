@@ -1296,7 +1296,7 @@ class BaseTree
         if (abilityBlockCountDisplay != null)
             abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
         if (blockedAbilities.length > 0) {
-            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block<br></span>`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block:<br></span>`;
             for (let id of blockedAbilities)
                 container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
             container.innerHTML += '<br>';
@@ -1335,7 +1335,7 @@ class BaseTree
 
         let blockedAbilities = ability.unlockingWillBlock;
         if (blockedAbilities.length > 0) {
-            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block<br></span>`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block:<br></span>`;
             for (let id of blockedAbilities)
                 container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
             container.innerHTML += '<br>';
