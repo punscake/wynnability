@@ -1295,7 +1295,7 @@ class BaseTree
             container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block<br></span>`;
             for (let id of blockedAbilities)
                 container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
-            container.innerHTML += '<br><br>';
+            container.innerHTML += '<br>';
         }
         
         if (archetypeInputElement.value == "") {

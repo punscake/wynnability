@@ -383,11 +383,8 @@
               <button class="form-select" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="text-align: start;" type="button">
                 Unlocking will block
               </button>
+              <ul class="dropdown-menu w-100" id="abilityBlockInput" style="max-height: 363px; overflow-y: auto; overflow-x: hidden;"></ul>
 
-              <ul class="dropdown-menu w-100" id="abilityBlockInput" style="max-height: 363px; overflow-y: auto; overflow-x: hidden;">
-                <li class="dropdown-item ability-type-skill" onclick="this.classList.toggle('active'); tree.renderEditorAbilityTooltip()">Menu item</li>
-              </ul>
-              
             </div>
 
             <select class="form-select mt-2 focusable" id="abilityArchetypeInput" aria-label="Archetype" oninput="tree.renderEditorAbilityTooltip()"></select>
