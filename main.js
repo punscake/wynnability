@@ -1273,8 +1273,8 @@ class BaseTree
 
     }
 
-    renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
-        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput") {
+    renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
+        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput", abilityBlockCountDisplayID="abilityBlockCountDisplay") {
         
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
@@ -1283,6 +1283,8 @@ class BaseTree
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
         const container = document.getElementById(containerId);
+        
+        const abilityBlockCountDisplay = document.getElementById(abilityBlockCountDisplayID);
 
         const id = prerequisiteInputElement.value;
 
@@ -1291,6 +1293,8 @@ class BaseTree
                 ${minecraftToHTML(descriptionInputElement.value)}<br><br>`;
 
         let blockedAbilities = this.getBlockedAbilities();
+        if (abilityBlockCountDisplay != null)
+            abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
         if (blockedAbilities.length > 0) {
             container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block<br></span>`;
             for (let id of blockedAbilities)
