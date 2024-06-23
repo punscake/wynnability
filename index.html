@@ -378,6 +378,18 @@
 
             </div>
 
+            <div class="btn-group dropup w-100 mt-2">
+
+              <button class="form-select" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="text-align: start;" type="button">
+                Unlocking will block
+              </button>
+
+              <ul class="dropdown-menu w-100" id="abilityBlockInput" style="max-height: 363px; overflow-y: auto; overflow-x: hidden;">
+                <li class="dropdown-item ability-type-skill" onclick="this.classList.toggle('active'); tree.renderEditorAbilityTooltip()">Menu item</li>
+              </ul>
+              
+            </div>
+
             <select class="form-select mt-2 focusable" id="abilityArchetypeInput" aria-label="Archetype" oninput="tree.renderEditorAbilityTooltip()"></select>
 
             <div class="d-flex align-items-center justify-content-between w-100 mt-2 ps-1">
@@ -441,8 +453,8 @@
 
     <div class="minecraftTooltip overflow-hidden" id="cursorTooltip" hidden></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    <script src="classes.js"></script>
+    <script src="bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
     <script>
 
       let tree = new BaseTree();
@@ -618,9 +630,12 @@
 
           let leftOffset = (e.clientX + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : e.clientX + 5;
           leftOffset = Math.max(leftOffset, 12);
+
+          let upOffset = e.clientY > (window.innerHeight / 2) ? e.clientY - cursorTooltip.offsetHeight - 2 : e.clientY + 2;
           
-          cursorTooltip.style = `top: ${e.clientY + 5}px; left: ${leftOffset}px`;
+          cursorTooltip.style = `top: ${upOffset}px; left: ${leftOffset}px`;
         });
+        document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
 
       });
 

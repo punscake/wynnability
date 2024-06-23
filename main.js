@@ -20,6 +20,17 @@ function clamp(number, min, max) {
 
 }
 
+function shortenText(text, maxChars, replaceEndWith = "...") {
+
+    if (text.length <= maxChars || maxChars < 1 || text.length < 2)
+        return text;
+
+    if (replaceEndWith.length >= text.length)
+        replaceEndWith = replaceEndWith.substring(0, text.length);
+
+    return text.substring(0, maxChars - replaceEndWith.length) + replaceEndWith;
+}
+
 function enforceMinMax(inputElementID, min, max) {
 
     const inputElement = document.getElementById(inputElementID);
@@ -259,12 +270,12 @@ function splitByOtherFormats(string = '') {
 }
 
 function anyToHTML(text = "") {
-    return sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp;');
+    return sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp;').replace(/-/g, '-&#8288;');
 }
 
 function minecraftToHTML(text = "") {
 
-    text = anyToHTML(text).replace(/-/g, '-&#8288;');
+    text = anyToHTML(text);
 
     result = '';
 
@@ -488,6 +499,12 @@ class Ability
     description = '';
 
     /**
+     * Blocks these abilities from being allocated
+     * @var int[]
+     */
+    unlockingWillBlock = [];
+
+    /**
      * Archetype
      * @var string
      */
@@ -517,12 +534,19 @@ class Ability
      */
     requires = -1;
 
-    constructor({name = '', description = '', archetype = '', pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
+    constructor({name = '', description = '', unlockingWillBlock = [], archetype = '', pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
 
         this.name = String(name) ? String(name) : '';
         this._plainname = stripMinecraftFormatting(this.name);
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
+
+        this.unlockingWillBlock = [];
+        if (Array.isArray(unlockingWillBlock))
+            unlockingWillBlock.forEach(element => {
+                if (!isNaN(Number(element)))
+                    this.unlockingWillBlock.push(Number(element));
+            });
 
         this.pointsRequired = isNaN(Number(pointsRequired)) ? POINTSREQUIRED_LOWER : clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
@@ -1126,8 +1150,6 @@ class BaseTree
     editArchetype(name = "", nameFormID = "archetypeNameInput") {   
 
         const nameInputElement = document.getElementById(nameFormID);
-        if (nameInputElement == null)
-            return;
 
         if (name == "") {
             nameInputElement.value = "";
@@ -1143,7 +1165,7 @@ class BaseTree
 
     saveArchetype(nameFormID = "archetypeNameInput") {
         const nameInputElement = document.getElementById(nameFormID);
-        if (!nameInputElement || nameInputElement.value == "" || this.archetypes.includes(nameInputElement.value) )
+        if (nameInputElement.value == "" || this.archetypes.includes(nameInputElement.value) )
             return;
         
         const oldname = nameInputElement.oldname ?? "";
@@ -1182,8 +1204,6 @@ class BaseTree
 
     renderArchetypes(containerID = "archetypeContainer") {
         const container = document.getElementById(containerID);
-        if (container == null)
-            return;
         
         container.innerHTML = "";
         
@@ -1240,8 +1260,6 @@ class BaseTree
     renderAbilityTypeSelector(selected = "skill", containerId = "abilityTypeInput") {
 
         const container = document.getElementById(containerId);
-        if (!container)
-            return;
 
         container.innerHTML = "";
         container.value = selected;
@@ -1257,7 +1275,7 @@ class BaseTree
 
     renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
         pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput") {
-
+        
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
@@ -1266,30 +1284,35 @@ class BaseTree
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
         const container = document.getElementById(containerId);
 
-        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archetypePointsRequiredInputElement || !prerequisiteInputElement || !container)
-            return;
-
         const id = prerequisiteInputElement.value;
+
+        container.innerHTML = `
+                ${minecraftToHTML(nameInputElement.value)}<br><br>
+                ${minecraftToHTML(descriptionInputElement.value)}<br><br>`;
+
+        let blockedAbilities = this.getBlockedAbilities();
+        if (blockedAbilities.length > 0) {
+            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block<br></span>`;
+            for (let id of blockedAbilities)
+                container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
+            container.innerHTML += '<br><br>';
+        }
         
         if (archetypeInputElement.value == "") {
-            container.innerHTML = `
-                ${minecraftToHTML(nameInputElement.value)}<br><br>
-                ${minecraftToHTML(descriptionInputElement.value)}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>
+            container.innerHTML += `
+                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>
             `;
         } else {
-            container.innerHTML = `
-                ${minecraftToHTML(nameInputElement.value)}<br><br>
-                ${minecraftToHTML(descriptionInputElement.value)}<br><br>
+            container.innerHTML += `
                 ${minecraftToHTML(archetypeInputElement.value + ' Archetype')}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>                
+                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>                
             `;
             if (archetypePointsRequiredInputElement.value > 0)
-                container.innerHTML += `<span style="color:#A8A8A8">Min ${anyToHTML(stripMinecraftFormatting(archetypeInputElement.value))} Archetype:&nbsp;</span>${archetypePointsRequiredInputElement.value}<br>`;
+                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min ${anyToHTML(stripMinecraftFormatting(archetypeInputElement.value))} Archetype:&nbsp;</span>${archetypePointsRequiredInputElement.value}<br>`;
         }
         
         if (this.abilities[id] != null)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[id].name))}`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[id].name))}`;
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -1297,80 +1320,95 @@ class BaseTree
         const container = document.getElementById(containerId);
         const ability = this.abilities[abilityId];
 
-        if (!container || !ability || this.selectedCells.length > 0)
+        if (this.selectedCells.length > 0)
             return;
 
         container.hidden = false;
+
+        container.innerHTML = `
+                ${minecraftToHTML(ability.name)}<br><br>
+                ${minecraftToHTML(ability.description)}<br><br>`;
+
+        let blockedAbilities = ability.unlockingWillBlock;
+        if (blockedAbilities.length > 0) {
+            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking will block<br></span>`;
+            for (let id of blockedAbilities)
+                container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
+            container.innerHTML += '<br>';
+        }
         
         if (ability.archetype == "") {
-            container.innerHTML = `
-                ${minecraftToHTML(ability.name)}<br><br>
-                ${minecraftToHTML(ability.description)}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp;</span>${ability.pointsRequired}<br>
+            container.innerHTML += `
+                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${ability.pointsRequired}<br>
             `;
         } else {
-            container.innerHTML = `
-                ${minecraftToHTML(ability.name)}<br><br>
-                ${minecraftToHTML(ability.description)}<br><br>
+            container.innerHTML += `
                 ${minecraftToHTML(ability.archetype + ' Archetype')}<br><br>
-                <span style="color:#A8A8A8">Ability Points:&nbsp;</span>${ability.pointsRequired}<br>                
+                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${ability.pointsRequired}<br>                
             `;
             if (ability.archetypePointsRequired > 0)
-                container.innerHTML += `<span style="color:#A8A8A8">Min ${anyToHTML(stripMinecraftFormatting(ability.archetype))} Archetype:&nbsp;</span>${ability.archetypePointsRequired}<br>`;
+                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min ${anyToHTML(stripMinecraftFormatting(ability.archetype))} Archetype:&nbsp;</span>${ability.archetypePointsRequired}<br>`;
         }
         
         let requiredAbility = this.abilities[ability.requires]
         if (requiredAbility)
-            container.innerHTML += `<span style="color:#A8A8A8">Required Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(requiredAbility.name))}`;
+            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(requiredAbility.name))}`;
     }
 
     hideHoverAbilityTooltip(containerId = "cursorTooltip") {
         const container = document.getElementById(containerId);
-
-        if (!container)
-            return;
 
         container.hidden = true;
         container.innerHTML = "";
     }
 
     editAbility(abilityID = -1,
-        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
-        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {   
+        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", abilityBlockFormID = "abilityBlockInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
+        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, prerequisiteFormID = "abilityPrerequiseteInput") {   
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
+        const abilityBlockInputElement = document.getElementById(abilityBlockFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
-        const typeInputElement = document.getElementById(typeFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
-        
-        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement || !pointsRequiredInputElement || !archetypePointsRequiredInputElement || !typeInputElement || !prerequisiteInputElement)
-            return;
 
         let sortedAbilityIDs = this.sortAbilities();
 
         if (abilityID < 0) {
 
-            archetypeInputElement.innerHTML = `<option class="prerequisite-type-none" selected value="">Archetype (none)</option>`;
+            archetypeInputElement.innerHTML = `<option class="ability-type-none" selected value="">Archetype (none)</option>`;
             for (let archetype of this.archetypes) {
 
                 const option = document.createElement('option');
                 option.value = archetype;
-                option.innerHTML = minecraftToHTML(archetype);
+                option.innerHTML = anyToHTML(shortenText(stripMinecraftFormatting(archetype), 50));
                 archetypeInputElement.appendChild(option);
 
             }
 
-            prerequisiteInputElement.innerHTML = `<option class="prerequisite-type-none" selected value="-1">Prerequisite (none)</option>`;
+            prerequisiteInputElement.innerHTML = `<option class="ability-type-none" selected value="-1">Prerequisite (none)</option>`;
+            abilityBlockInputElement.innerHTML = '';
             for (let id of sortedAbilityIDs) {
+
+                const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
 
                 const option = document.createElement('option');
                 option.value = id;
-                option.innerHTML = minecraftToHTML(this.abilities[id].name);
-                option.classList.add("prerequisite-type-" + this.abilities[id].type);
+                option.innerHTML = abilityName;
+                option.classList.add("ability-type-" + this.abilities[id].type);
                 prerequisiteInputElement.appendChild(option);
+
+                const li = document.createElement('li');
+                li.innerHTML = abilityName;
+                li.value = id;
+                li.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
+                li.addEventListener('click', (event) => {
+                    event.target.classList.toggle('active');
+                    this.renderEditorAbilityTooltip();
+                });
+                abilityBlockInputElement.appendChild(li);
 
             }
 
@@ -1387,19 +1425,24 @@ class BaseTree
             if (this.abilities[abilityID] == null)
                 return;
 
-            archetypeInputElement.innerHTML = `<option class="prerequisite-type-none" value="">Archetype (none)</option>`;
+            archetypeInputElement.innerHTML = `<option class="ability-type-none" value="">Archetype (none)</option>`;
             for (let archetype of this.archetypes) {
 
                 const option = document.createElement('option');
                 option.value = archetype;
-                option.innerHTML = minecraftToHTML(archetype);
+                option.innerHTML = anyToHTML(shortenText(stripMinecraftFormatting(archetype), 50));
                 if (archetype == this.abilities[abilityID].archetype)
                     option.selected = true;
                 archetypeInputElement.appendChild(option);
             
             }
 
-            prerequisiteInputElement.innerHTML = `<option class="prerequisite-type-none" value="-1">Prerequisite (none)</option>`;
+            let blockedAbilitiesMap = {};
+            for (let blockedID of this.abilities[abilityID].unlockingWillBlock)
+                blockedAbilitiesMap[blockedID] = true;
+
+            prerequisiteInputElement.innerHTML = `<option class="ability-type-none" value="-1">Prerequisite (none)</option>`;
+            abilityBlockInputElement.innerHTML = '';
             for (let id of sortedAbilityIDs) {
 
                 if (id == abilityID)
@@ -1407,11 +1450,25 @@ class BaseTree
 
                 const option = document.createElement('option');
                 option.value = id;
-                option.innerHTML = minecraftToHTML(this.abilities[id].name);
-                option.classList.add("prerequisite-type-" + this.abilities[id].type);
+                option.innerHTML = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
+                option.classList.add("ability-type-" + this.abilities[id].type);
                 if (id == this.abilities[abilityID].requires)
                     option.selected = true;
                 prerequisiteInputElement.appendChild(option);
+
+                const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
+
+                const li = document.createElement('li');
+                li.innerHTML = abilityName;
+                li.value = id;
+                li.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
+                if (blockedAbilitiesMap[id])
+                    li.classList.add("active");
+                li.addEventListener('click', (event) => {
+                    event.target.classList.toggle('active');
+                    this.renderEditorAbilityTooltip();
+                });
+                abilityBlockInputElement.appendChild(li);
 
             }
 
@@ -1428,6 +1485,19 @@ class BaseTree
         descriptionInputElement.dispatchEvent(new Event('input'));
     }
 
+    getBlockedAbilities(abilityBlockFormID = "abilityBlockInput") {
+
+        const abilityBlockInputElement = document.getElementById(abilityBlockFormID);
+
+        let blockedAbilities = [];
+
+        for (let li of abilityBlockInputElement.children) {
+            if (li.classList.contains('active'))
+                blockedAbilities.push(li.value);
+        }
+        return blockedAbilities;
+    }
+
     saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
     archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {
 
@@ -1439,9 +1509,6 @@ class BaseTree
         const typeInputElement = document.getElementById(typeFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
 
-        if (!nameInputElement || !descriptionInputElement || !archetypeInputElement ||!pointsRequiredInputElement || !archetypePointsRequiredInputElement || !prerequisiteInputElement)
-            return;
-
         if (nameInputElement.value == '') {
             nameInputElement.value = 'UNNAMED'
             this.renderEditorAbilityTooltip();
@@ -1450,6 +1517,7 @@ class BaseTree
         const newAbility = new Ability({
             name : nameInputElement.value,
             description : descriptionInputElement.value,
+            unlockingWillBlock : this.getBlockedAbilities(),
             archetype : archetypeInputElement.value,
             pointsRequired : pointsRequiredInputElement.value,
             archetypePointsRequired : archetypePointsRequiredInputElement.value,
