@@ -175,6 +175,18 @@ section {
   color: white;
 }
 
+@media screen and (max-width: 530px) {
+  #abilityModalLabel {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  #archetypeModalLabel {
+    display: none;
+  }
+}
+
 @font-face {
   font-family: 'minecraft';
   src: url('fonts/Minecraft.ttf');

@@ -1350,8 +1350,8 @@ class BaseTree
     }
 
     editAbility(abilityID = -1,
-        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", abilityBlockFormID = "abilityBlockInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
-        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, prerequisiteFormID = "abilityPrerequiseteInput") {   
+        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", abilityBlockFormID = "abilityBlockInput", archetypeFormID = "abilityArchetypeInput",
+        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, prerequisiteFormID = "abilityPrerequiseteInput") {   
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
@@ -1435,15 +1435,15 @@ class BaseTree
                 if (id == abilityID)
                     continue;
 
+                const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
+
                 const option = document.createElement('option');
                 option.value = id;
-                option.innerHTML = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
+                option.innerHTML = abilityName;
                 option.classList.add("ability-type-" + this.abilities[id].type);
                 if (id == this.abilities[abilityID].requires)
                     option.selected = true;
                 prerequisiteInputElement.appendChild(option);
-
-                const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
 
                 const li = document.createElement('li');
                 li.innerHTML = abilityName;
