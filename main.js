@@ -147,7 +147,7 @@ const codeDictionaryCommonAbilityAttributes = {
     'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: _%)'],
     'air' : ['§f❋', '\n   §8(§f❋ §8Air: _%)'],
     
-    'effect' : ['§e🛡', '\n§e🛡 §7Effect:'],
+    'effect' : ['§e🛡', '\n§e🛡 §7Effect: §f_'],
     'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
     'AoE' : ['§3☀', '\n§3☀ §7Area  of Effect: §f_ Blocks §7(Circle-Shaped)'],
     'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
@@ -514,13 +514,13 @@ class Ability
      * Ability point requirement
      * @var int
      */
-    pointsRequired = 0;
+    pointsRequired = POINTSREQUIRED_LOWER;
 
     /**
      * Min archetype points required
      * @var int
      */
-    archetypePointsRequired = 0;
+    archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER;
 
     /**
      * Ability type
@@ -1031,7 +1031,7 @@ class BaseTree
         }).catch( (e) => {
             
             if (e != "Couldn't parse")
-                showSmallToast("Load Failed: couldn't reach server");
+                showSmallToast("Load Failed: couldn't reach the server");
 
             console.log(e.stack);
             
@@ -1286,37 +1286,19 @@ class BaseTree
         
         const abilityBlockCountDisplay = document.getElementById(abilityBlockCountDisplayID);
 
-        const id = prerequisiteInputElement.value;
-
-        container.innerHTML = `
-                ${minecraftToHTML(nameInputElement.value)}<br><br>
-                ${minecraftToHTML(descriptionInputElement.value)}<br><br>`;
-
         let blockedAbilities = this.getBlockedAbilities();
         if (abilityBlockCountDisplay != null)
             abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
-        if (blockedAbilities.length > 0) {
-            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
-            for (let id of blockedAbilities)
-                container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
-            container.innerHTML += '<br>';
-        }
-        
-        if (archetypeInputElement.value == "") {
-            container.innerHTML += `
-                <span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>
-            `;
-        } else {
-            container.innerHTML += `
-                ${minecraftToHTML(archetypeInputElement.value + ' Archetype')}<br><br>
-                <span style="color:${codeDictionaryColor['7']}">Ability Points:&nbsp;</span>${pointsRequiredInputElement.value}<br>                
-            `;
-            if (archetypePointsRequiredInputElement.value > 0)
-                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min&nbsp;${anyToHTML(stripMinecraftFormatting(archetypeInputElement.value))}&nbsp;Archetype:&nbsp;</span>${archetypePointsRequiredInputElement.value}<br>`;
-        }
-        
-        if (this.abilities[id] != null)
-            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[id].name))}`;
+
+        container.innerHTML = this._getAbilityTooltipHTML(new Ability({
+            name : nameInputElement.value,
+            description : descriptionInputElement.value,
+            unlockingWillBlock : blockedAbilities,
+            archetype : archetypeInputElement.value,
+            pointsRequired : pointsRequiredInputElement.value,
+            archetypePointsRequired : archetypePointsRequiredInputElement.value,
+            requires : prerequisiteInputElement.value
+        }));
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -1324,39 +1306,39 @@ class BaseTree
         const container = document.getElementById(containerId);
         const ability = this.abilities[abilityId];
 
-        if (this.selectedCells.length > 0)
+        if (this.selectedCells.length > 0 || ability == null)
             return;
 
         container.hidden = false;
 
-        container.innerHTML = `
+        container.innerHTML = this._getAbilityTooltipHTML(ability);
+    }
+
+    _getAbilityTooltipHTML(ability = new Ability()) {
+
+        result = `
                 ${minecraftToHTML(ability.name)}<br><br>
                 ${minecraftToHTML(ability.description)}<br><br>`;
 
-        let blockedAbilities = ability.unlockingWillBlock;
-        if (blockedAbilities.length > 0) {
-            container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
-            for (let id of blockedAbilities)
-                container.innerHTML += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
-            container.innerHTML += '<br>';
+        if (ability.unlockingWillBlock.length > 0) {
+            result += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
+            for (let id of ability.unlockingWillBlock)
+                result += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
+            result += '<br>';
         }
+
+        if (ability.archetype != "")
+            result += `${minecraftToHTML(ability.archetype + ' Archetype')}<br><br>`;
+
+        result += `<span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>`;
         
-        if (ability.archetype == "") {
-            container.innerHTML += `
-                <span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>
-            `;
-        } else {
-            container.innerHTML += `
-                ${minecraftToHTML(ability.archetype + ' Archetype')}<br><br>
-                <span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>                
-            `;
-            if (ability.archetypePointsRequired > 0)
-                container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Min&nbsp;${anyToHTML(stripMinecraftFormatting(ability.archetype))}&nbsp;Archetype:&nbsp;</span>${ability.archetypePointsRequired}<br>`;
-        }
-        
-        let requiredAbility = this.abilities[ability.requires]
-        if (requiredAbility)
-            container.innerHTML += `<span style="color:${codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(requiredAbility.name))}`;
+        if (this.abilities[ability.requires] != null)
+            result += `<span style="color:${codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[ability.requires].name))}<br>`;
+
+        if (ability.archetype != "" && ability.archetypePointsRequired > 0)
+            result += `<span style="color:${codeDictionaryColor['7']}">Min&nbsp;${anyToHTML(stripMinecraftFormatting(ability.archetype))}&nbsp;Archetype:&nbsp;</span>${ability.archetypePointsRequired}`;
+            
+        return result;
     }
 
     hideHoverAbilityTooltip(containerId = "cursorTooltip") {
@@ -1566,9 +1548,13 @@ class BaseTree
 
         if (this.abilities[abilityID] != null) {
 
-            for (let elem of Object.keys(this.abilities)) {
-                if (this.abilities[elem].requires == abilityID)
-                    this.abilities[elem].requires = -1;
+            for (let id of Object.keys(this.abilities)) {
+                if (this.abilities[id].requires == abilityID)
+                    this.abilities[id].requires = -1;
+
+                const index = this.abilities[id].unlockingWillBlock.indexOf(Number(abilityID));
+                if (index > -1)
+                    this.abilities[id].unlockingWillBlock.splice(index, 1);
             }
 
             if (this.selectedAbilityID == abilityID)
@@ -1580,7 +1566,6 @@ class BaseTree
             this.saveState(`Deleted ability: ${minecraftToHTML(name)}`);
             this.updateEverything();
         }
-
     }
 
     sortAbilities() {
@@ -1814,9 +1799,8 @@ class BaseTree
                 result['right'] = cellKey + 1 - COLUMNS;
 
         }
-        console.log(result)
+        
         return result;
-
     }
 
     getConnectedCells(cellKey, bAllocatedOnly = false, bTravesableUp = true) {
