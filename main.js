@@ -149,7 +149,7 @@ const codeDictionaryCommonAbilityAttributes = {
     
     'effect' : ['§e🛡', '\n§e🛡 §7Effect: §f_'],
     'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
-    'AoE' : ['§3☀', '\n§3☀ §7Area  of Effect: §f_ Blocks §7(Circle-Shaped)'],
+    'AoE' : ['§3☀', '\n§3☀ §7Area of Effect: §f_ Blocks §7(Circle-Shaped)'],
     'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
 
 };
@@ -1009,6 +1009,7 @@ class BaseTree
         fetch(`presets/${classSelect.value}.json`, {
 
             signal,
+            cache: 'no-store',
             mode: 'same-origin',
             method: 'GET',
             headers: {
@@ -1323,7 +1324,7 @@ class BaseTree
         if (ability.unlockingWillBlock.length > 0) {
             result += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
             for (let id of ability.unlockingWillBlock)
-                result += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}<span><br>`;
+                result += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}</span><br>`;
             result += '<br>';
         }
 
