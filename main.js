@@ -1086,6 +1086,7 @@ class BaseTree
             this.renderTreeNames();
             this.renderStartingAbilityList();
             this.renderArchetypeCounts();
+            this.renderAbilityPointsUsed();
         }
 
         let hideElementsOfClass = this.bEditMode ? "shown-on-allocation" : "shown-on-tree-edit";
@@ -2773,6 +2774,8 @@ class BaseTree
         this.compileCurrentTree();
         this.saveState(`Selected '${minecraftToHTML(this.selectedTree)}' tree for allocation`, `${this.selectedTree}`, true);
         this.renderTreeNames();
+        this.renderArchetypeCounts();
+        this.renderAbilityPointsUsed()
         this.renderTree();
     }
 
@@ -2801,6 +2804,11 @@ class BaseTree
             startingAbilityInputElement.appendChild(option);
 
         }
+    }
+
+    renderAbilityPointsUsed(containerID = "abilityPointsUsed") {
+        const container = document.getElementById(containerID);
+        container.innerHTML = `AP: ${this.currentTree['abilityPoints']} / ${this.properties.maxAbilityPoints}`;
     }
 
     renderArchetypeCounts(containerID = "archetypeCountContainer") {
@@ -2893,10 +2901,19 @@ class BaseTree
 
                             switch (allocationStatus) {
                                 case 1:
-                                    div.addEventListener('click', (e) => {this.allocateNode( cell['abilityID'] ); this.renderTree(); this.renderArchetypeCounts()} );
+                                    div.addEventListener('click', (e) => {
+                                        this.allocateNode( cell['abilityID'] );
+                                        this.renderTree();
+                                        this.renderArchetypeCounts();
+                                        this.renderAbilityPointsUsed()}
+                                    );
                                     break;
                                 case 2:
-                                    div.addEventListener('click', (e) => {this.deallocateNode( cell['abilityID'] ); this.renderTree(); this.renderArchetypeCounts()} );
+                                    div.addEventListener('click', (e) => {
+                                        this.deallocateNode( cell['abilityID'] );
+                                        this.renderTree();
+                                        this.renderArchetypeCounts();
+                                        this.renderAbilityPointsUsed()} );
                                     break;
                                 default:
                                     break;
