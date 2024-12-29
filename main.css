@@ -175,6 +175,22 @@ section {
   color: white;
 }
 
+.page-up-arrow:hover {
+  content: url("background/page_up_a.png");
+}
+
+.page-down-arrow:hover {
+  content: url("background/page_down_a.png");
+}
+
+.orb-edit:hover {
+  content: url("background/orb_edit_a.png");
+}
+
+.orb-allocate:hover {
+  content: url("background/orb_allocate_a.png");
+}
+
 @media screen and (max-width: 530px) {
   #abilityModalLabel {
     display: none;
