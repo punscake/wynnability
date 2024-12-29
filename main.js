@@ -2785,6 +2785,7 @@ class BaseTree
     selectStartingAbility(abilityID) {
         this.startingAbilityID = abilityID;
         this.compileCurrentTree();
+        this.saveState(`Made ${minecraftToHTML(this.abilities[abilityID].name)} the starting ability`);
         this.renderTree();
     }
 
