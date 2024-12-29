@@ -969,8 +969,8 @@ class BaseTree
             bTravesableUp : document.getElementById(bTravesableUp).checked
         });
         
+        this.setMode(this.bEditMode);
         this.writeProperties();
-        this.renderEverything();
         this.saveState('Updated properties');
     }
 
@@ -2788,6 +2788,8 @@ class BaseTree
     renderStartingAbilityList(startingAbilityInputID = "startingAbilityInput") {
         
         const startingAbilityInputElement = document.getElementById(startingAbilityInputID);
+
+        startingAbilityInputElement.innerHTML = '';
 
         let sortedAbilityIDs = this.sortAbilities();
         for (let id of sortedAbilityIDs) {
