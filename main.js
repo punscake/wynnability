@@ -1249,6 +1249,9 @@ class BaseTree
         if (typeof obj.startingAbilityID === 'string')
             this.startingAbilityID = obj.startingAbilityID;
 
+        if (typeof obj.selectedTree === 'string')
+            this.selectedTree = obj.selectedTree;
+
         this.abilityTrees = {};
         const abilityTrees = obj.abilityTrees;
         if (typeof abilityTrees === 'object' && !Array.isArray(abilityTrees) && abilityTrees !== null) {
