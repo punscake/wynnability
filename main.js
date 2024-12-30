@@ -110,6 +110,7 @@ const codeDictionaryGenericSymbols = {
     'duration' : '§d⌛',
     'AoE' : '§3☀',
     'range' : '§a➼',
+    'cooldown' : '§3⌚',
     'heal' : '§d❤',
     'blindness' : '§c⬣',
     'slowness' : '§c⬤',
@@ -150,8 +151,9 @@ const codeDictionaryCommonAbilityAttributes = {
     
     'effect' : ['§e🛡', '\n§e🛡 §7Effect: §f_'],
     'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
-    'AoE' : ['§3☀', '\n§3☀ §7Area of Effect: §f_ Blocks §7(Circle-Shaped)'],
     'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
+    'AoE' : ['§3☀', '\n§3☀ §7Area of Effect: §f_ Blocks §7(Circle-Shaped)'],
+    'cooldown' : ['§3⌚', '\n§3⌚ §7Cooldown: §f_s'],
 
 };
 
@@ -1324,7 +1326,7 @@ class BaseTree
             const existingIndex = this.archetypes.indexOf(oldname);
             this.archetypes[existingIndex] = newname;
             this.updateArchetype(oldname, newname);
-            this.saveState(`Edited archetype: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
+            this.saveState(`Renamed archetype: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
 
         }
         
