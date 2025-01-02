@@ -142,12 +142,12 @@ const codeDictionaryCommonAbilityAttributes = {
     'manacost' : ['§b✺', '\n§b✺ §7Mana Cost: §f_'],
 
     'damage' : ['§c⚔', '\n§c⚔ §7Total Damage: §f_% §8(of your DPS)'],
-    'neuteral' : ['§6✣', '\n  §8(§6✣ §8Damage: _%)'],
-    'earth' : ['§2✤', '\n  §8(§2✤ §8Earth: _%)'],
-    'thunder' : ['§e✦', '\n  §8(§e✦ §8Thunder: _%)'],
-    'water' : ['§b✽', '\n  §8(§b✽ §8Water: _%)'],
-    'fire' : ['§c✹', '\n  §8(§c✹ §8Fire: _%)'],
-    'air' : ['§f❋', '\n  §8(§f❋ §8Air: _%)'],
+    'neuteral' : ['§6✣', '\n   §8(§6✣ §8Damage: _%)'],
+    'earth' : ['§2✤', '\n   §8(§2✤ §8Earth: _%)'],
+    'thunder' : ['§e✦', '\n   §8(§e✦ §8Thunder: _%)'],
+    'water' : ['§b✽', '\n   §8(§b✽ §8Water: _%)'],
+    'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: _%)'],
+    'air' : ['§f❋', '\n   §8(§f❋ §8Air: _%)'],
     
     'effect' : ['§e🛡', '\n§e🛡 §7Effect: §f_'],
     'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
