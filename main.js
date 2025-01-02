@@ -126,6 +126,7 @@ const codeDictionaryClassSymbols = {
     'corrupted' : '§4☠',
     'armorbreak' : '§c✃',
     'sacred' : '§6✧',
+    'provoke' : '§4💢',
     'invincibility' : '§b☗',
 
     'marked' : '§c✜',
