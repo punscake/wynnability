@@ -102,11 +102,11 @@ const codeDictionaryGenericSymbols = {
     'neuteral' : '§6✣',
     'earth' : '§2✤',
     'thunder' : '§e✦',
-    'water' : '§b✽',
+    'water' : '§b❉',
     'fire' : '§c✹',
     'air' : '§f❋',
 
-    'effect' : '§e🛡',
+    'effect' : '§e✧',
     'duration' : '§d⌛',
     'AoE' : '§3☀',
     'range' : '§a➼',
@@ -115,12 +115,11 @@ const codeDictionaryGenericSymbols = {
     'blindness' : '§c⬣',
     'slowness' : '§c⬤',
 };
-//➲
 const codeDictionaryClassSymbols = {
     'focus' : '§e➽',
 
     'winded' : '§b≈',
-    'timelocked' : '§3⌚',
+    'dilation' : '§3➲',
 
     'resistance' : '§a❁',
     'corrupted' : '§4☠',
@@ -130,13 +129,13 @@ const codeDictionaryClassSymbols = {
     'invincibility' : '§b☗',
 
     'marked' : '§c✜',
-    'clone' : '§5⁂',
+    'clone' : '§5',
 
-    'bloodpool' : '§4⚕',
     'puppet' : '§6⚘',
-    'tethered' : '§c۞',
     'whipped' : '§6⇶',
     'awakened' : '§f♚',
+    'bloodpool' : '§4⚕',
+    'bleeding' : '§c',
 };
 const codeDictionaryCommonAbilityAttributes = {
     
@@ -146,11 +145,11 @@ const codeDictionaryCommonAbilityAttributes = {
     'neuteral' : ['§6✣', '\n   §8(§6✣ §8Damage: _%)'],
     'earth' : ['§2✤', '\n   §8(§2✤ §8Earth: _%)'],
     'thunder' : ['§e✦', '\n   §8(§e✦ §8Thunder: _%)'],
-    'water' : ['§b✽', '\n   §8(§b✽ §8Water: _%)'],
+    'water' : ['§b❉', '\n   §8(§b❉ §8Water: _%)'],
     'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: _%)'],
     'air' : ['§f❋', '\n   §8(§f❋ §8Air: _%)'],
     
-    'effect' : ['§e🛡', '\n§e🛡 §7Effect: §f_'],
+    'effect' : ['§e✧', '\n§e✧ §7Effect: §f_'],
     'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
     'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
     'AoE' : ['§3☀', '\n§3☀ §7Area of Effect: §f_ Blocks §7(Circle-Shaped)'],
