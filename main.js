@@ -204,26 +204,34 @@ function splitByColorFormats(string) {
         return result;
 
     let i = 0;
-    for (i; i < string.length - 1; i++) {
+    for (i; i < string.length; i++) {
 
         let char = string[i];
 
         if (char != minecraftDelimiter) {
-
             result[result.length - 1]['content'] += char;
             continue;
-
         }
 
+        let code;
         i++;
-        const code = string[i];
+        if (i < string.length)
+            code = string[i];
         
         if (code in codeDictionaryColor)
             result.push( {color : code, content : ''} );
-        else
+
+        else if (code == '#' && string.length - i >= 7) {
+            const endOfColorCode = i + 6;
+            for (i; i < endOfColorCode; i++) {
+                code += string[i + 1];
+            }
+            result.push( {color : code, content : ''} );
+
+        } else
             result[result.length - 1]['content'] += minecraftDelimiter + code;
     }
-    if (i < string.length && string[string.length - 1] != minecraftDelimiter)
+    if (string[string.length - 1] == minecraftDelimiter)
         result[result.length - 1]['content'] += string[string.length - 1];
 
     return result;
@@ -348,8 +356,11 @@ function minecraftToHTML(text = "") {
 
         const color = colorSplit['color'];
 
-        if (color != null && codeDictionaryColor[color] != null)
-            result += `<span style="color:${ codeDictionaryColor[color] }">`;
+        if (color != null)
+            if (codeDictionaryColor[color] != null)
+                result += `<span style="color:${ codeDictionaryColor[color] }">`;
+            else
+                result += `<span style="color:${sanitizeHTML(color)}">`;
         else
             result += '<span>';
 
