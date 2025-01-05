@@ -213,10 +213,11 @@ function splitByColorFormats(string) {
             continue;
         }
 
-        let code;
         i++;
-        if (i < string.length)
-            code = string[i];
+        if (i >= string.length)
+            continue;
+
+        let code = string[i];
         
         if (code in codeDictionaryColor)
             result.push( {color : code, content : ''} );
@@ -231,9 +232,7 @@ function splitByColorFormats(string) {
         } else
             result[result.length - 1]['content'] += minecraftDelimiter + code;
     }
-    if (string[string.length - 1] == minecraftDelimiter)
-        result[result.length - 1]['content'] += string[string.length - 1];
-
+    
     return result;
 
 }
