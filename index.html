@@ -132,22 +132,26 @@
 
       <div class="row justify-content-center ms-2 me-2">
 
-        <div class="col-xs-12 col-sm-12 col-md-6 p-0 row" style="max-width: 500px;">
+        <div class="col-xs-12 col-sm-12 col-md-6 p-0" style="max-width: 500px;">
 
-          <div class="col"></div>
+          <div class="d-flex">
 
-          <div class="text-center col">
+            <div class="col"></div>
 
-            <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementPage(-1)">
-            <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="setMode(false)">
-            <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="setMode(true)">
-            <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementPage(1)">
-            
-          </div>
+            <div class="text-center col">
 
-          <div class="col minecraftTooltip text-center pt-2 overflow-hidden" style="background: none; border: none;">
+              <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementPage(-1)">
+              <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="setMode(false)">
+              <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="setMode(true)">
+              <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementPage(1)">
+              
+            </div>
 
-            <span class="shown-on-allocation" id="abilityPointsUsed"></span>
+            <div class="minecraftTooltip text-center pt-2 overflow-hidden col" style="background: none; border: none;">
+
+              <span class="shown-on-allocation" id="abilityPointsUsed"></span>
+
+            </div>
 
           </div>
 

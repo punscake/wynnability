@@ -2702,18 +2702,18 @@ class BaseTree
             
             this.abilityTrees[newname] = [];
             this.saveState(`Added tree: ${minecraftToHTML(newname)}`);
+            this.selectTree(newname);
             
         } else {
 
             this.abilityTrees[newname] = this.abilityTrees[oldname];
+            if (this.selectedTree == oldname)
+                this.selectedTree = newname;
             delete this.abilityTrees[oldname];
-            this.saveState(`Edited tree name: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
+            this.saveState(`Renamed tree: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
+            this.renderTreeNames();
 
         }
-        
-        this.selectTree(newname);
-        this.renderTreeNames();
-
     }
 
     deleteTree(name) {
