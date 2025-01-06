@@ -2798,6 +2798,8 @@ class BaseTree
         this.startingAbilityID = abilityID;
         this.compileCurrentTree();
         this.saveState(`Made ${minecraftToHTML(this.abilities[abilityID].name)} the starting ability`);
+        this.renderArchetypeCounts();
+        this.renderAbilityPointsUsed()
         this.renderTree();
     }
 
