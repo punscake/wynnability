@@ -7,7 +7,7 @@
     <link href="bootstrap.min.css" rel="stylesheet">
     <link href="main.css" rel="stylesheet">
   </head>
-  <body id="dropzone" ondrop="tree.loadTreeFromFile(event)">
+  <body id="dropzone" class="generic-background" ondrop="tree.loadTreeFromFile(event)">
 
     <section class="mt-2 pb-2">
 
@@ -151,13 +151,13 @@
 
           </div>
 
-          <div class="w-100 h-auto" style="aspect-ratio: 370 / 44; background-image: url(background/tree_top.png); background-repeat: no-repeat; background-size: 100% auto;">
+          <div class="w-100 h-auto" style="aspect-ratio: 406 / 44; background-image: url(background/tree_top.png); background-repeat: no-repeat; background-size: 100% auto;">
             
           </div>
 
           <div class="w-100 h-auto d-flex flex-row" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto;">
             
-            <div style="width: calc(100% / 370 * 29);" onmouseenter="tree.continueEditWithloopedNode(-1)">
+            <div style="width: calc(100% / 406 * 22);" onmouseenter="tree.continueEditWithloopedNode(-1)">
 
             </div>
 
@@ -167,13 +167,13 @@
               
             </table>
 
-            <div style="width: calc(100% / 370 * 29);" onmouseenter="tree.continueEditWithloopedNode(1)">
+            <div style="width: calc(100% / 406 * 24);" onmouseenter="tree.continueEditWithloopedNode(1)">
 
             </div>
 
           </div>
 
-          <div class="w-100 h-auto" style="aspect-ratio: 370 / 44; background-image: url(background/tree_bot.png); background-repeat: no-repeat; background-size: 100% auto;">
+          <div class="w-100 h-auto" style="aspect-ratio: 406 / 44; background-image: url(background/tree_bot.png); background-repeat: no-repeat; background-size: 100% auto;">
             
           </div>
 
@@ -190,7 +190,7 @@
 
         <div class="d-flex flex-column col-xs-12 col-sm-12 col-md-5 col-lg-5 ms-md-4 p-0" style="max-width: 500px;">
 
-          <div class="border border-black rounded-2 border-2 shown-on-tree-edit" style="background-color: #2C2D2F;">
+          <div class="normal-container shown-on-tree-edit">
             
             <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-1">
 
@@ -210,11 +210,11 @@
 
           <div class="flex-grow-1 position-relative mt-2 mb-2 shown-on-tree-edit" style="min-height: 400px;">
 
-            <div class="position-absolute border border-black rounded-2 border-2" style="background-color: #2C2D2F; left: 0; top: 0; width: 100%; height: 100%">
+            <div class="position-absolute normal-container" style="left: 0; top: 0; width: 100%; height: 100%">
             
               <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-1">
                 
-                <input type="textbox" style="background-color: #1b1b1b; color: white; min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
+                <input type="textbox" class="generic-background" style="color: white; min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
 
                 <div class="me-auto ms-2">
 
@@ -239,7 +239,7 @@
 
           </div>
 
-          <div class="border border-black rounded-2 border-2 shown-on-allocation" style="background-color: #2C2D2F;">
+          <div class="shown-on-allocation normal-container">
             
             <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-1">
 
@@ -255,7 +255,7 @@
 
           </div>
 
-          <div class="border border-black rounded-2 border-2 shown-on-allocation mt-2" style="background-color: #2C2D2F;">
+          <div class="shown-on-allocation mt-2 normal-container">
 
             <div class="m-2 overflow-auto" style="max-height: 110px;" id="archetypeCountContainer"></div>
 
@@ -263,7 +263,7 @@
 
           <div class="flex-grow-1 position-relative mt-2 mb-2 shown-on-allocation" style="min-height: 400px;">
 
-            <div class="position-absolute border border-black rounded-2 border-2" style="background-color: #2C2D2F; left: 0; top: 0; width: 100%; height: 100%">
+            <div class="position-absolute normal-container" style="left: 0; top: 0; width: 100%; height: 100%">
             
               <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-1">
 
@@ -321,7 +321,7 @@
         
       </div>
 
-      <div class="ms-3 p-1 text-light overflow-auto" id="historyContainer" style="background-color: #202020; width: 100%; max-height: 352px; max-width: 900px">
+      <div class="ms-3 p-1 text-light overflow-auto generic-background" id="historyContainer" style="width: 100%; max-height: 352px; max-width: 900px">
          
       </div>
 
