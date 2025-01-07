@@ -102,10 +102,17 @@ section {
   font-family: minecraft;
   -webkit-filter: blur(0);
   filter: blur(0);
-  text-shadow: 2px 3px 0 color-mix(in srgb, currentColor 24%, black);
+  text-shadow: 0.125rem 0.125rem 0 color-mix(in srgb, currentColor 24%, black);
   min-height: 30px;
   border-radius: 4px;
-  word-spacing: 2px;
+  word-spacing: 0.1rem;
+  letter-spacing: 0.02rem;
+  text-underline-offset: 0.1875rem;
+  line-height: 1.25rem;
+}
+
+.minecraftTooltip .fw-bold {
+  letter-spacing: 0.15rem;
 }
 
 .selected-ability {
@@ -216,10 +223,20 @@ section {
 
 @font-face {
   font-family: 'minecraft';
-  src:  url('merged.woff');
+  src: url('merged.woff');
   font-weight: normal;
   font-style: normal;
   font-display: block;
+  text-rendering: optimizeLegibility;
+}
+
+@font-face {
+  font-family: 'minecraft';
+  src: url('mergedbold.woff');
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+  text-rendering: optimizeLegibility;
 }
 
 .font-minecraft {

@@ -181,8 +181,8 @@ const codeDictionaryDecoration = {
     'n' : 'underline',
 };
 const codeDictionaryStyle = {
-    'l' : 'font-weight: bold;',
-    'o' : 'font-style: italic;',
+    'l' : 'fw-bold',
+    'o' : 'fst-italic',
 };
 const minecraftDelimiter = '§';
 
@@ -326,24 +326,21 @@ function minecraftToHTML(text = "") {
             const bUseDecorations = decorations.length > 0;
             const bUseStyles = styles.length > 0;
 
-            if (bUseDecorations || bUseStyles)
-                pendingContent += ' style="';
-
             if (bUseDecorations) {
-                pendingContent += 'text-decoration:';
+                pendingContent += ' style="text-decoration:';
 
                 for (let decoration of decorations)
                     pendingContent += ' ' + codeDictionaryDecoration[decoration];
 
-                pendingContent += ';';
+                pendingContent += '; text-decoration-thickness: 2px;"';
             }
 
-            if (bUseStyles)
+            if (bUseStyles) {
+                pendingContent += ' class="';
                 for (let style of styles)
-                    pendingContent += codeDictionaryStyle[style];
-            
-            if (bUseDecorations || bUseStyles)
-                pendingContent += '"';
+                    pendingContent += ' ' + codeDictionaryStyle[style];
+                pendingContent += '"'
+            }
 
             pendingContent += `>${content}`;
 
