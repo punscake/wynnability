@@ -131,6 +131,7 @@ section {
 
 .history-record-selected {
   font-weight: bold;
+  letter-spacing: 0.15rem;
   margin: 6px;
   padding: 3px 6px 3px 6px;
   background-color: #270327;
