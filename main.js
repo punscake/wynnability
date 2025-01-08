@@ -184,6 +184,7 @@ const codeDictionaryStyle = {
     'l' : 'fw-bold',
     'o' : 'fst-italic',
 };
+const minecraftDelimiter = '§';
 const minecraftDelimiters = {'§' : true, '&' : true};
 
 function sanitizeHTML(text) {
