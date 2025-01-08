@@ -184,7 +184,7 @@ const codeDictionaryStyle = {
     'l' : 'fw-bold',
     'o' : 'fst-italic',
 };
-const minecraftDelimiter = '§';
+const minecraftDelimiters = {'§' : true, '&' : true};
 
 function sanitizeHTML(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -208,7 +208,7 @@ function splitByColorFormats(string) {
 
         let char = string[i];
 
-        if (char != minecraftDelimiter) {
+        if (!minecraftDelimiters[char]) {
             result[result.length - 1]['content'] += char;
             continue;
         }
@@ -230,7 +230,7 @@ function splitByColorFormats(string) {
             result.push( {color : code, content : ''} );
 
         } else
-            result[result.length - 1]['content'] += minecraftDelimiter + code;
+            result[result.length - 1]['content'] += char + code;
     }
     
     return result;
@@ -256,7 +256,7 @@ function splitByOtherFormats(string = '') {
 
         const char = string[i];
         
-        if (char != minecraftDelimiter) {
+        if (!minecraftDelimiters[char]) {
 
             result[result.length - 1]['content'] += char;
             continue;
@@ -272,7 +272,7 @@ function splitByOtherFormats(string = '') {
         else if (code in codeDictionaryDecoration)
             result.push( {decoration : code, content : ''} );
     }
-    if (i < string.length && string[string.length - 1] != minecraftDelimiter)
+    if (i < string.length && !minecraftDelimiters[string[string.length - 1]])
         result[result.length - 1]['content'] += string[string.length - 1];
     
     return result;
@@ -284,8 +284,6 @@ function anyToHTML(text = "") {
 }
 
 function minecraftToHTML(text = "") {
-
-    text = anyToHTML(text);
 
     result = '';
 
@@ -342,7 +340,7 @@ function minecraftToHTML(text = "") {
                 pendingContent += '"'
             }
 
-            pendingContent += `>${content}`;
+            pendingContent += `>${anyToHTML(content)}`;
 
         });
 
