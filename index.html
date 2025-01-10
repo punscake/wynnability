@@ -44,7 +44,7 @@
 
               <div class="pt-2" style="width:85%">
 
-                <select class="form-select form-select-sm" aria-label="Small select example" id="classSelect" oninput="tree.readProperties()" title="Affects ability icons and default tree">
+                <select class="form-select form-select-sm mt-1" aria-label="Small select example" id="classSelect" oninput="tree.readProperties()" title="Affects ability icons and default tree">
   
                   <option selected value="archer">Archer</option>
                   <option value="warrior">Warrior</option>
@@ -62,6 +62,14 @@
 
                 </div>
 
+                <div class="d-flex flex-row">
+
+                  <button type="button" class="btn btn-primary mt-2 me-1 col" style="overflow: hidden" onclick="tree.removeAllAbilityNodes()">Clear abilities</button>
+                  
+                  <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.removeAllTravelNodes()" title="Completely clears tree and settings">Clear paths</button>
+
+                </div>
+
               </div>
 
             </div>
@@ -71,14 +79,21 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between" style="width:85%">
 
                 <div class="me-5 text-light"><label for="maxAbilityPoints" class="form-label">Ability Points</label></div>
-                <div><input type="number" class="form-control integer" style="width: 80px" id="maxAbilityPoints" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="maxAbilityPoints" onchange="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
 
-                <div class="me-5 text-light"><label for="treePages" class="form-label">Tree Pages</label></div>
-                <div><input type="number" class="form-control integer" style="width: 80px" id="treePages" onchange="tree.readProperties()"></div>
+                <div class="me-5 text-light"><label for="treePages" class="form-label">Vertical Pages</label></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="treePages" onchange="tree.readProperties()"></div>
+                
+              </div>
+
+              <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
+
+                <div class="me-5 text-light"><label for="trePages" class="form-label">Horizontal Pages</label></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="trePages" onchange="tree.readProperties()"></div>
                 
               </div>
 
@@ -89,14 +104,21 @@
               <div class="d-flex flex-row ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="rowsPerPage" class="form-label">Rows Per Page</label></div>
-                <div><input type="number" class="form-control integer" style="width: 70px" id="rowsPerPage" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="rowsPerPage" onchange="tree.readProperties()"></div>
                 
               </div>
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="pagesDisplayed" class="form-label">Pages displayed</label></div>
-                <div><input type="number" class="form-control integer" style="width: 70px" id="pagesDisplayed" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="pagesDisplayed" onchange="tree.readProperties()"></div>
+                
+              </div>
+
+              <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
+
+                <div class="me-5 text-light"><label for="startingPage" class="form-label">Starting Page</label></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="startingPage" onchange="tree.readProperties()"></div>
                 
               </div>
 
@@ -115,6 +137,13 @@
 
                 <label class="form-check-label text-light" for="travelUpSwitch">Travel Up</label>
                 <input class="form-check-input me-4" type="checkbox" role="switch" id="travelUpSwitch" oninput="tree.readProperties()">
+                
+              </div>
+
+              <div class="d-flex flex-row mt-3 ps-3 align-items-center justify-content-between form-check form-switch" style="width:85%" title="Allows allocating nodes directly above">
+
+                <label class="form-check-label text-light" for="altIconSwitch">Extra Ability Icons</label>
+                <input class="form-check-input me-4" type="checkbox" role="switch" id="altIconSwitch" oninput="tree.readProperties()">
                 
               </div>
 
@@ -348,12 +377,12 @@
               <div class="colorContainer" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>-->
-                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
-                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">
+                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(preferredDelimiter + 'r')">Reset style</button>-->
+                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(preferredDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(preferredDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(preferredDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(preferredDelimiter + 'm')">S</button>
+                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(preferredDelimiter + value)">
               </div>
 
             </div>
@@ -412,12 +441,12 @@
               <div class="colorContainer mt-1" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>-->
-                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
-                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">
+                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(preferredDelimiter + 'r')">Reset style</button>-->
+                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(preferredDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(preferredDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(preferredDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(preferredDelimiter + 'm')">S</button>
+                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(preferredDelimiter + value)">
               </div>
 
             </div>
@@ -511,12 +540,12 @@
               <div class="colorContainer" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(minecraftDelimiter + 'r')">Reset style</button>-->
-                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(minecraftDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(minecraftDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(minecraftDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-3 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(minecraftDelimiter + 'm')">S</button>
-                <!--<input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(minecraftDelimiter + value)">-->
+                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(preferredDelimiter + 'r')">Reset style</button>-->
+                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(preferredDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(preferredDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(preferredDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-3 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(preferredDelimiter + 'm')">S</button>
+                <!--<input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(preferredDelimiter + value)">-->
               </div>
 
             </div>
@@ -661,7 +690,7 @@
           for (container of colorContainers) {
             const clone = button.cloneNode(false);
             container.appendChild(clone);
-            clone.addEventListener("click", () => {insertStringBeforeSelected(minecraftDelimiter + key)});
+            clone.addEventListener("click", () => {insertStringBeforeSelected(preferredDelimiter + key)});
           }
 
           button.remove();

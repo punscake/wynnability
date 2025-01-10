@@ -184,8 +184,8 @@ const codeDictionaryStyle = {
     'l' : 'fw-bold',
     'o' : 'fst-italic',
 };
-const minecraftDelimiter = '§';
 const minecraftDelimiters = {'§' : true, '&' : true};
+const preferredDelimiter = '§';
 
 function sanitizeHTML(text) {
     return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -432,6 +432,15 @@ const abilityIconDictionary = {
     'yellow' : 'abilities/generic/yellow',
     'white' : 'abilities/generic/white',
 }
+const altAbilityIconDictionary = {
+    'skill' : 'abilities/class/',
+    'magenta' : 'abilities/generic/magenta',
+    'red' : 'abilities/generic/red',
+    'blue' : 'abilities/generic/blue',
+    'purple' : 'abilities/generic/purple',
+    'yellow' : 'abilities/generic/yellow',
+    'white' : 'abilities/generic/white',
+}
 
 const travelIconDictionary = {
     'up' : 'abilities/generic/travel_up_1',
@@ -447,7 +456,7 @@ const reverseDirectionDictionary = {
     'left' : 'right',
 }
 
-function generateIconDiv(type, travelnode = new TravelNode(), classs = "", allocationStatus = 0, bScaleAbilityIcon = false) {
+function generateIconDiv(type, travelnode = new TravelNode(), classs = "", allocationStatus = 0, bScaleAbilityIcon = false, useAlternativeAbilityIcons = false) {
 
     let result = document.createElement('div');
     result.classList.add('centered-element-container');
@@ -456,32 +465,36 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
         result.innerHTML = travelnode.generateIconHTML();
 
     let url = null;
+
+    let iconDictionary = abilityIconDictionary;
+    if (useAlternativeAbilityIcons)
+        iconDictionary = altAbilityIconDictionary;
   
     if (type == 'skill')
         switch (allocationStatus) {
             case 0:
-                url = abilityIconDictionary[type] + classs + '/skill_dark.png';
+                url = iconDictionary[type] + classs + '/skill_dark.png';
                 break;
             case 1:
-                url = abilityIconDictionary[type] + classs + '/skill.png';
+                url = iconDictionary[type] + classs + '/skill.png';
                 break;
             case 2:
-                url = abilityIconDictionary[type] + classs + '/skill_a.png';
+                url = iconDictionary[type] + classs + '/skill_a.png';
                 break;
             default:
                 break;
         }
 
-    else if (type in abilityIconDictionary)
+    else if (type in iconDictionary)
         switch (allocationStatus) {
             case 0:
-                url = abilityIconDictionary[type] + '_dark.png';
+                url = iconDictionary[type] + '_dark.png';
                 break;
             case 1:
-                url = abilityIconDictionary[type] + '.png';
+                url = iconDictionary[type] + '.png';
                 break;
             case 2:
-                url = abilityIconDictionary[type] + '_a.png';
+                url = iconDictionary[type] + '_a.png';
                 break;
             default:
                 break;
@@ -587,7 +600,9 @@ class Ability
 
         this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? ARCHETYPEPOINTSREQUIRED_LOWER : clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
         
-        this.type = Object.keys(abilityIconDictionary).includes(String(type)) ? String(type) : Object.keys(abilityIconDictionary)[0];
+        this.type = Object.keys(abilityIconDictionary).includes(String(type))
+            || Object.keys(altAbilityIconDictionary).includes(String(type))
+            ? String(type) : Object.keys(abilityIconDictionary)[0];
 
         this.requires = isNaN(Number(requires)) ? -1 : Number(requires);
     }
@@ -764,7 +779,13 @@ class Properties {
      */
     bTravesableUp = false;
 
-    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false} = {}) {
+    /**
+     * Whether to use extra ability icons
+     * @var bool
+     */
+    useAlternativeAbilityIcons = false;
+
+    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false, useAlternativeAbilityIcons = false} = {}) {
         
         this.classs = Object.keys(classDictionary).includes(String(classs)) ? String(classs) : Object.keys(classDictionary)[0];
 
@@ -778,6 +799,7 @@ class Properties {
 
         this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
         this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
+        this.useAlternativeAbilityIcons = Boolean(useAlternativeAbilityIcons) ? Boolean(useAlternativeAbilityIcons) : useAlternativeAbilityIcons;
     }
 }
 
@@ -941,7 +963,7 @@ class BaseTree
     }
 
     readProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID,
-        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch") {
+        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch", useAlternativeAbilityIcons = "altIconSwitch") {
 
         if (this.properties != null && this.properties.loopTree != document.getElementById(loopTreeId).checked) {
 
@@ -970,11 +992,12 @@ class BaseTree
         this.properties = new Properties({
             classs : document.getElementById(classSelectId).value,
             maxAbilityPoints : document.getElementById(maxAbilityPointsId).value,
-            loopTree : document.getElementById(loopTreeId).checked,
             pages : document.getElementById(pagesId).value,
             rowsPerPage : document.getElementById(rowsPerPageId).value,
             pagesDisplayed : document.getElementById(pagesDisplayedId).value,
-            bTravesableUp : document.getElementById(bTravesableUp).checked
+            loopTree : document.getElementById(loopTreeId).checked,
+            bTravesableUp : document.getElementById(bTravesableUp).checked,
+            useAlternativeAbilityIcons : document.getElementById(useAlternativeAbilityIcons).checked
         });
         
         this.setMode(this.bEditMode);
@@ -983,15 +1006,16 @@ class BaseTree
     }
 
     writeProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID,
-        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch") {
+        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch", useAlternativeAbilityIcons = "altIconSwitch") {
 
         document.getElementById(classSelectId).value = this.properties.classs;
         document.getElementById(maxAbilityPointsId).value = this.properties.maxAbilityPoints;
-        document.getElementById(loopTreeId).checked = this.properties.loopTree;
         document.getElementById(pagesId).value = this.properties.pages;
         document.getElementById(rowsPerPageId).value = this.properties.rowsPerPage;
         document.getElementById(pagesDisplayedId).value = this.properties.pagesDisplayed;
+        document.getElementById(loopTreeId).checked = this.properties.loopTree;
         document.getElementById(bTravesableUp).checked = this.properties.bTravesableUp;
+        document.getElementById(useAlternativeAbilityIcons).checked = this.properties.useAlternativeAbilityIcons;
 
     }
 
@@ -1432,8 +1456,12 @@ class BaseTree
         container.innerHTML = "";
         container.value = selected;
 
-        Object.keys(abilityIconDictionary).forEach( (type) => {
-            const div = generateIconDiv(type, null, this.properties.classs, type == selected ? 2 : 1, false);
+        let iconDictionary = abilityIconDictionary;
+        if (this.properties.useAlternativeAbilityIcons)
+            iconDictionary = altAbilityIconDictionary;
+
+        Object.keys(iconDictionary).forEach( (type) => {
+            const div = generateIconDiv(type, null, this.properties.classs, type == selected ? 2 : 1, false, this.properties.useAlternativeAbilityIcons);
             div.classList.add('ability-type-selector');
             container.appendChild(div);
             div.addEventListener("click", (e) => { this.renderAbilityTypeSelector(type) });
@@ -1823,7 +1851,7 @@ class BaseTree
             const imgholder = document.createElement("div");
             imgholder.style = "width: 56px; text-align: center;";
             div.appendChild(imgholder);
-            imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, abilitiesOnTree[id] ? 2 : 1, false));
+            imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, abilitiesOnTree[id] ? 2 : 1, false, true));
 
             imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(id); });
             imgholder.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
@@ -1882,6 +1910,25 @@ class BaseTree
     // #endregion
 
     // #region Tree editing
+    removeAllTravelNodes() {
+        for (let cell of Object.keys(this.cellMap))
+            if (this.cellMap[cell]['abilityID'] != null)
+                delete this.cellMap[cell]['travelNode'];
+            else
+                delete this.cellMap[cell]
+        this.renderTree();
+    }
+
+    removeAllAbilityNodes() {
+        for (let cell of Object.keys(this.cellMap))
+            if (this.cellMap[cell]['travelNode'] != null)
+                delete this.cellMap[cell]['abilityID'];
+            else
+                delete this.cellMap[cell]
+        this.renderAbilities();
+        this.renderTree();
+    }
+
     incrementPage(increment = 0) {
 
         this.setCurrentPage(this.currentPage + increment);
@@ -2206,17 +2253,11 @@ class BaseTree
 
                 if (this.abilities[this.selectedAbilityID] != null) {
 
-                    if (this.cellMap[cellKey]['abilityID'] == this.selectedAbilityID)
-                        break;
-
                     this.removeAbilityFromTree(this.selectedAbilityID);
                     this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
                     editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
                     this.selectedAbilityID = -1;
                     this.renderAbilities();
-
-                    if (this.cellMap[cellKey]['travelNode'] == null)
-                        this.cellMap[cellKey]['travelNode'] = new TravelNode({up : 0, down : 0, left : 0, right : 0});
                     
                 } else {
 
@@ -2309,13 +2350,12 @@ class BaseTree
 
                 }
 
-                const connected = this.getConnectedCells(cellKey);
+                const connected = Object.keys(this.getConnectedCells(cellKey));
                 
                 if (connected.length == 0)
-                    this.removeCellFromTree(cellKey);
+                    delete this.cellMap[cellKey];
                 else
-                    this.cellMap[cellKey]['abilityID'] = null;
-
+                    delete this.cellMap[cellKey]['abilityID'];
             }
         }
 
@@ -2372,6 +2412,7 @@ class BaseTree
                             cell['travelNode'],
                             this.properties.classs,
                             1,
+                            true,
                             true
                         );
 
@@ -2910,6 +2951,7 @@ class BaseTree
                             travelNode,
                             this.properties.classs,
                             allocationStatus,
+                            true,
                             true
                         );
 

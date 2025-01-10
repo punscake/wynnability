@@ -120,6 +120,11 @@ section {
   border-color: #612bb8;
 }
 
+.settingNumberInput {
+  width: 70px;
+  height: 30px;
+}
+
 .history-record-overriden {
   text-decoration: line-through;
   margin: 6px;
