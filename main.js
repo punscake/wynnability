@@ -1770,7 +1770,7 @@ class BaseTree
     sortAbilities() {
 
         let priorityMap = {};
-        Object.keys(abilityIconDictionary).forEach( (elem, i) => {
+        Object.keys(altAbilityIconDictionary).forEach( (elem, i) => {
             priorityMap[elem] = i;
         });
         
