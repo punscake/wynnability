@@ -1916,6 +1916,8 @@ class BaseTree
                 delete this.cellMap[cell]['travelNode'];
             else
                 delete this.cellMap[cell]
+        
+        this.saveState(`Removed all paths from the tree`);
         this.renderTree();
     }
 
@@ -1925,6 +1927,8 @@ class BaseTree
                 delete this.cellMap[cell]['abilityID'];
             else
                 delete this.cellMap[cell]
+        
+        this.saveState(`Removed all abilities from the tree`);
         this.renderAbilities();
         this.renderTree();
     }
