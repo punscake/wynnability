@@ -612,6 +612,7 @@ class Ability
     }
 }
 
+const NUMOFVARIANTS = 4;
 class TravelNode {
     /**
      * up : empty/0 means unconnected, 1 means connected, 2 means allocated
@@ -637,11 +638,18 @@ class TravelNode {
      */
     right = 0;
 
-    constructor({up = 0, down = 0, left = 0, right = 0} = {}) {
+    /**
+     * Which variant to pick when rendering
+     * @var int
+     */
+    variant = 1;
+
+    constructor({up = 0, down = 0, left = 0, right = 0, variant = Math.ceil(Math.random() * NUMOFVARIANTS)} = {}) {
         this.up = isNaN(Number(up)) ? 0 : clamp(Number(up), 0, 2);
         this.down = isNaN(Number(down)) ? 0 : clamp(Number(down), 0, 2);
         this.left = isNaN(Number(left)) ? 0 : clamp(Number(left), 0, 2);
         this.right = isNaN(Number(right)) ? 0 : clamp(Number(right), 0, 2);
+        this.variant = isNaN(Number(variant)) ? 1 : clamp(Number(variant), 1, NUMOFVARIANTS);
     }
 
     mergeTravelNodes(travelNode) {
@@ -655,54 +663,27 @@ class TravelNode {
 
         let result = '';
 
-        if (this.up == 2 || this.down == 2 || this.left == 2 || this.right == 2)
-            result += '<img src="abilities/generic/travel_center_6_a.png" class="ability-icon" style="z-index: 6;"></img>\n';
-        else
-            result += '<img src="abilities/generic/travel_center_1.png" class="ability-icon" style="z-index: 1;"></img>\n';
+        let connectionCountMap = {'connected' : 0, 'active' : 0};
+        const properties = ['up', 'down', 'left', 'right'];
+        for (let property of properties)
+            if (this[property] == 1)
+                connectionCountMap['connected']++;
+            else if (this[property] == 2)
+                connectionCountMap['active']++;
 
-        switch (this.left) {
-            case 1 :
-                result += '<img src="abilities/generic/travel_left_2.png" class="ability-icon" style="z-index: 2;"></img>\n';
-                break;
-            case 2 :
-                result += '<img src="abilities/generic/travel_left_7_a.png" class="ability-icon" style="z-index: 7;"></img>\n';
-                break;
-            default :
-                break;
-        }
+        if (connectionCountMap['connected'] == 0 && connectionCountMap['active'] == 0)
+            return '<img src="abilities/branch/0000.png" class="ability-icon" style="z-index: 1;"></img>\n';
 
-        switch (this.down) {
-            case 1 :
-                result += '<img src="abilities/generic/travel_down_3.png" class="ability-icon" style="z-index: 3;"></img>\n';
-                break;
-            case 2 :
-                result += '<img src="abilities/generic/travel_down_8_a.png" class="ability-icon" style="z-index: 8;"></img>\n';
-                break;
-            default :
-                break;
-        }
+        if (connectionCountMap['connected'] > 0)
+            result += `<img src="abilities/branch/${this.up != 0 ? 1 : 0}${this.down != 0 ? 1 : 0}${this.left != 0 ? 1 : 0}${this.right != 0 ? 1 : 0}.png" class="ability-icon" style="z-index: 1;"></img>\n`;
 
-        switch (this.right) {
-            case 1 :
-                result += '<img src="abilities/generic/travel_right_4.png" class="ability-icon" style="z-index: 4;"></img>\n';
-                break;
-            case 2 :
-                result += '<img src="abilities/generic/travel_right_9_a.png" class="ability-icon" style="z-index: 9;"></img>\n';
-                break;
-            default :
-                break;
-        }
+        if (connectionCountMap['active'] == 1 || connectionCountMap['active'] == 4)
+            result += `<img src="abilities/branch/${this.up == 2 ? 2 : 0}${this.down == 2 ? 2 : 0}${this.left == 2 ? 2 : 0}${this.right == 2 ? 2 : 0}.png" class="ability-icon" style="z-index: 2;"></img>\n`;
+        else if (connectionCountMap['active'] == 2)
+            result += `<img src="abilities/branch/${this.up == 2 ? 2 : 0}${this.down == 2 ? 2 : 0}${this.left == 2 ? 2 : 0}${this.right == 2 ? 2 : 0}/${this.variant}.png" class="ability-icon" style="z-index: 2;"></img>\n`;
+        else if (connectionCountMap['active'] == 3)
+            result += `<img src="abilities/branch/${this.up == 2 ? 2 : 0}${this.down == 2 ? 2 : 0}${this.left == 2 ? 2 : 0}${this.right == 2 ? 2 : 0}/${Math.ceil(this.variant / NUMOFVARIANTS * 2)}.png" class="ability-icon" style="z-index: 2;"></img>\n`;
 
-        switch (this.up) {
-            case 1 :
-                result += '<img src="abilities/generic/travel_up_5.png" class="ability-icon" style="z-index: 5;"></img>\n';
-                break;
-            case 2 :
-                result += '<img src="abilities/generic/travel_up_10_a.png" class="ability-icon" style="z-index: 10;"></img>\n';
-                break;
-            default :
-                break;
-        }
 
         return result;
     }
