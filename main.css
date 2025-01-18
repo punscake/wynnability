@@ -99,7 +99,7 @@ section {
   border: 2px solid #230158;
   background-color: #110111;
   color: white;
-  font-family: minecraft, unifont, unifontEmoji;
+  font-family: minecraft, mojangles, unifont, unifontEmoji;
   -webkit-filter: blur(0);
   filter: blur(0);
   text-shadow: 0.125rem 0.125rem 0 color-mix(in srgb, currentColor 24%, black);
@@ -240,6 +240,15 @@ section {
   font-family: 'minecraft';
   src: url('mergedbold.woff');
   font-weight: 900;
+  font-style: normal;
+  font-display: block;
+  text-rendering: optimizeLegibility;
+}
+
+@font-face {
+  font-family: 'mojangles';
+  src: url('mojangles.otf');
+  font-weight: normal;
   font-style: normal;
   font-display: block;
   text-rendering: optimizeLegibility;
