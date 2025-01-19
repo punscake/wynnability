@@ -1391,7 +1391,7 @@ class BaseTree
             div.appendChild(abilityCount);
             
             const editbtn = document.createElement("button");
-            editbtn.classList.add('small-btn', 'me-1', 'ms-2');
+            editbtn.classList.add('small-btn', 'me-1', 'ms-2', 'font-default');
             editbtn.type = "button";
             editbtn.style = "background-color: transparent;";
             editbtn.title = "Edit";
@@ -1402,7 +1402,7 @@ class BaseTree
             div.appendChild(editbtn);
             
             const delbtn = document.createElement("button");
-            delbtn.classList.add('small-btn');
+            delbtn.classList.add('small-btn', 'font-default');
             delbtn.type = "button";
             delbtn.style = "background-color: transparent;";
             delbtn.title = "Delete";
@@ -2782,7 +2782,7 @@ class BaseTree
             div.appendChild(text);
             
             const editbtn = document.createElement("button");
-            editbtn.classList.add('small-btn', 'me-1', 'ms-2');
+            editbtn.classList.add('small-btn', 'me-1', 'ms-2', 'font-default');
             editbtn.type = "button";
             editbtn.style = "background-color: transparent;";
             editbtn.title = "Edit";
@@ -2793,7 +2793,7 @@ class BaseTree
             div.appendChild(editbtn);
             
             const delbtn = document.createElement("button");
-            delbtn.classList.add('small-btn');
+            delbtn.classList.add('small-btn', 'font-default');
             delbtn.type = "button";
             delbtn.style = "background-color: transparent;";
             delbtn.title = "Delete";
