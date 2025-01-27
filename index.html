@@ -631,6 +631,25 @@
         localStorage.setItem(LAST_SESSION_STORAGE_NAME, JSON.stringify(tree, null, 0));
       });
 
+      if (typeof document.hidden !== "undefined") {
+        document.addEventListener("visibilitychange", (e) => {
+
+          if (document.hidden) {
+
+            localStorage.setItem(LAST_SESSION_STORAGE_NAME, JSON.stringify(tree, null, 0));
+
+          } else if (document.wasDiscarded) {
+            
+            const json = localStorage.getItem(LAST_SESSION_STORAGE_NAME);
+            if (json != null) {
+              localStorage.removeItem(LAST_SESSION_STORAGE_NAME);
+              tree.loadFromJSON(json);
+            }
+            document.wasDiscarded = false;
+          }
+        });
+      }
+
       document.addEventListener("DOMContentLoaded", (event) => {
 
         const json = localStorage.getItem(LAST_SESSION_STORAGE_NAME);
