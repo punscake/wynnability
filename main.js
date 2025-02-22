@@ -2157,7 +2157,7 @@ class BaseTree
 
         if (selectedCellsLength > MAXSELECTEDCELLS) {
 
-            this.finallizeEditNodes();
+            this.finallizeEditNode();
             return;
 
         }

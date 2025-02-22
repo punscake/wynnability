@@ -38,7 +38,7 @@
           <!-- Prevent implicit submission of the form -->
           <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
-          <div class="row ps-2 pe-2">
+          <div class="row">
     
             <div class="col-xs-12 col-sm-6 col-lg-3 d-flex flex-column align-items-center justify-content-center">
 
@@ -633,20 +633,8 @@
 
       if (typeof document.hidden !== "undefined") {
         document.addEventListener("visibilitychange", (e) => {
-
-          if (document.hidden) {
-
+          if (document.hidden)
             localStorage.setItem(LAST_SESSION_STORAGE_NAME, JSON.stringify(tree, null, 0));
-
-          } else if (document.wasDiscarded) {
-            
-            const json = localStorage.getItem(LAST_SESSION_STORAGE_NAME);
-            if (json != null) {
-              localStorage.removeItem(LAST_SESSION_STORAGE_NAME);
-              tree.loadFromJSON(json);
-            }
-            document.wasDiscarded = false;
-          }
         });
       }
 
