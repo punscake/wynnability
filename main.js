@@ -506,14 +506,25 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
 
         img.src = url;
         img.style.zIndex = 11;
-    
+
         if (bScaleAbilityIcon)
-            img.onload = (e) => {img.style.width = `${img.naturalWidth * 100 / 36}%`};
-    
+            img.style.width = getImgScaleForType(type) + `%`;
+
         result.appendChild(img);
     }
 
     return result;
+}
+
+function getImgScaleForType(type) {
+    switch (type) {
+        case 'skill': return `122.222`;
+        case 'magenta': return `111.111`;
+        case 'red': return `144.444`;
+        case 'blue': return `122.222`;
+        case `yellow`: return `111.111`;
+        case `white`: return '100';
+    }
 }
 
 const POINTSREQUIRED_LOWER = 1;
