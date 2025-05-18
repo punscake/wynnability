@@ -583,7 +583,7 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
         img.style.zIndex = 11;
 
         if (bScaleAbilityIcon) {
-            img.style.width = getImgScaleForType(type) + `%`;
+            //img.style.width = getImgScaleForType(type) + `%`;
 
             // here to guarantee nothing breaks
             img.onload = (e) => {img.style.width = `${img.naturalWidth * 100 / 36}%`};
@@ -2581,11 +2581,24 @@ class BaseTree
                         processTouch(
                             e,
                             () => {
+                                if (this.abilities[this.selectedAbilityID] != null) {
+
+                                    this.removeAbilityFromTree(this.selectedAbilityID);
+                                    this.cellMap[cellKey] = this.cellMap[cellKey] ?? {};
+                                    this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
+                                    let editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
+                                    this.selectedAbilityID = -1;
+                                    this.saveState(editSummary);
+                                    this.renderAbilities();
+                                    this.renderTree();
+                                    
+                                } else {
                                     const td = e.target.closest("td");
                                     try {
                                         this.renderHoverAbilityTooltip(this.cellMap[td.cellKey]['abilityID']);
                                         moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                                     } catch (e) {};
+                                }
                             },
                             () => {}, 
                             () => {
