@@ -1504,13 +1504,19 @@ class BaseTree
         const container = document.getElementById(containerID);
 
         let archetypeCounts = {};
+        let placedArchetypeCounts = {};
         for (let archetype of this.archetypes) {
             archetypeCounts[archetype] = 0;
+            placedArchetypeCounts[archetype] = 0;
         }
 
         for (let ability of Object.values(this.abilities)) {
             if (ability.archetype.length > 0)
                 archetypeCounts[ability.archetype]++;
+        }
+        for(let cellKey of Object.keys(this.cellMap)) {
+            if (this.cellMap[cellKey]['abilityID'] != null)
+                placedArchetypeCounts[ this.abilities[ this.cellMap[cellKey]['abilityID'] ]['archetype'] ]++;
         }
         
         container.innerHTML = "";
@@ -1526,7 +1532,7 @@ class BaseTree
             div.appendChild(text);
 
             const abilityCount = document.createElement("div");
-            abilityCount.innerHTML = archetypeCounts[archetype];
+            abilityCount.innerHTML = placedArchetypeCounts[archetype] + '/' + archetypeCounts[archetype];
             div.appendChild(abilityCount);
             
             const editbtn = document.createElement("button");
@@ -1563,8 +1569,6 @@ class BaseTree
             if (this.abilities[abilityID]['archetype'] == oldarchetype)
                 this.abilities[abilityID]['archetype'] = newarchetype;
         }
-        
-        this.renderAbilities();
     }
     // #endregion
 
@@ -2053,6 +2057,7 @@ class BaseTree
         
         this.saveState(`Removed all abilities from the tree`);
         this.renderAbilities();
+        this.renderArchetypes();
         this.renderTree();
     }
 
@@ -2400,7 +2405,6 @@ class BaseTree
                     this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
                     editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
                     this.selectedAbilityID = -1;
-                    this.renderAbilities();
                     
                 } else {
 
@@ -2456,6 +2460,8 @@ class BaseTree
         this.selectedCells = [];
         this.saveState(editSummary);
         this.renderTree();
+        this.renderAbilities();
+        this.renderArchetypes();
 
     }
 
@@ -2501,8 +2507,6 @@ class BaseTree
                     delete this.cellMap[cellKey]['abilityID'];
             }
         }
-
-        this.renderAbilities();
     }
 
     renderTreeForEditing(tableBodyID = "treeTableBody") {
@@ -2590,6 +2594,7 @@ class BaseTree
                                     this.selectedAbilityID = -1;
                                     this.saveState(editSummary);
                                     this.renderAbilities();
+                                    this.renderArchetypes();
                                     this.renderTree();
                                     
                                 } else {
