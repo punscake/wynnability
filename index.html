@@ -92,8 +92,8 @@
 
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between" style="width:85%">
 
-                <div class="me-5 text-light"><label for="trePages" class="form-label">Horizontal Pages</label></div>
-                <div><input type="number" class="form-control integer settingNumberInput" id="trePages" onchange="tree.readProperties()"></div>
+                <div class="me-5 text-light"><label for="horizontalPages" class="form-label">Horizontal Pages</label></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="horizontalPages" disabled onchange="tree.readProperties()"></div>
                 
               </div>
 
@@ -118,7 +118,7 @@
               <div class="d-flex flex-row pt-3 ps-3 align-items-center justify-content-between"  style="width:85%">
 
                 <div class="me-5 text-light"><label for="startingPage" class="form-label">Starting Page</label></div>
-                <div><input type="number" class="form-control integer settingNumberInput" id="startingPage" onchange="tree.readProperties()"></div>
+                <div><input type="number" class="form-control integer settingNumberInput" id="startingPage" onchange="tree.readProperties()" disabled></div>
                 
               </div>
 
@@ -163,24 +163,23 @@
 
         <div class="col-xs-12 col-sm-12 col-md-6 p-0" style="max-width: 500px;">
 
-          <div class="d-flex">
+          <div class="text-center col shown-on-single-horizontal-page">
 
-            <div class="col"></div>
+            <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(-1)">
+            <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="tree.setMode(false)">
+            <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="tree.setMode(true)">
+            <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(1)">
+            
+          </div>
 
-            <div class="text-center col">
+          <div class="text-center col shown-on-multi-horizontal-page">
 
-              <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementPage(-1)">
-              <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="setMode(false)">
-              <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="setMode(true)">
-              <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementPage(1)">
-              
-            </div>
-
-            <div class="minecraftTooltip text-center pt-2 overflow-hidden col" style="background: none; border: none;">
-
-              <span class="shown-on-allocation" id="abilityPointsUsed"></span>
-
-            </div>
+            <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(-1)">
+            <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(1)">
+            <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="tree.setMode(false)">
+            <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="tree.setMode(true)">
+            <img src="background/page_left.png" class="page-left-arrow" width="auto" height="40" onclick="tree.incrementHorizontalPage(-1)">
+            <img src="background/page_right.png" class="page-right-arrow" width="auto" height="40" onclick="tree.incrementHorizontalPage(1)">
 
           </div>
 
@@ -194,13 +193,13 @@
 
             </div>
 
-            <table class="w-100 m-0" style="table-layout: fixed" onwheel="event.preventDefault(); tree.incrementPage( event.deltaY > 0 ? 1 : -1 )">
+            <table class="w-100 m-0" style="table-layout: fixed" onwheel="event.preventDefault(); tree.incrementVerticalPage( event.deltaY > 0 ? 1 : -1 )">
 
               <tbody id="treeTableBody"></tbody>
               
             </table>
 
-            <div style="width: calc(100% / 406 * 34);" onmouseenter="tree.continueEditWithloopedNode(1)">
+            <div style="width: calc(100% / 406 * 34);" onmouseenter="tree.continueEditWithloopedNode(1)" id="rightTreeBoundary">
 
             </div>
 
@@ -210,13 +209,24 @@
             
           </div>
 
-          <div class="w-100 text-center">
+          <div class="text-center col shown-on-single-horizontal-page">
 
-            <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementPage(-1)">
-            <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="setMode(false)">
-            <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="setMode(true)">
-            <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementPage(1)">
+            <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(-1)">
+            <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="tree.setMode(false)">
+            <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="tree.setMode(true)">
+            <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(1)">
             
+          </div>
+
+          <div class="text-center col shown-on-multi-horizontal-page">
+
+            <img src="background/page_up.png" class="page-up-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(-1)">
+            <img src="background/page_down.png" class="page-down-arrow" width="auto" height="40" onclick="tree.incrementVerticalPage(1)">
+            <img src="background/orb_edit.png" class="orb-edit shown-on-tree-edit" width="auto" height="40" onclick="tree.setMode(false)">
+            <img src="background/orb_allocate.png" class="orb-allocate shown-on-allocation" width="auto" height="40" onclick="tree.setMode(true)">
+            <img src="background/page_left.png" class="page-left-arrow" width="auto" height="40" onclick="tree.incrementHorizontalPage(-1)">
+            <img src="background/page_right.png" class="page-right-arrow" width="auto" height="40" onclick="tree.incrementHorizontalPage(1)">
+
           </div>
 
         </div>
@@ -298,7 +308,13 @@
 
             <div class="position-absolute normal-container" style="left: 0; top: 0; width: 100%; height: 100%">
             
-              <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-1">
+              <div class="d-flex justify-content-between align-items-center ps-2 pe-2 mt-1">
+
+                <div class="minecraftTooltip pt-2 overflow-hidden col" style="background: none; border: none;">
+
+                  <span class="shown-on-allocation" id="abilityPointsUsed"></span>
+    
+                </div>
 
                 <div class="text-light ms-2 me-2">
                   TREES
@@ -606,24 +622,6 @@
 
       let tree = new BaseTree();
 
-      function setMode(bEditMode) {
-
-        tree.setMode(bEditMode);
-
-        let hideElementsOfClass = bEditMode ? "shown-on-allocation" : "shown-on-tree-edit";
-        let showElementsOfClass = bEditMode ? "shown-on-tree-edit" : "shown-on-allocation";
-
-        const containersToHide = document.getElementsByClassName(hideElementsOfClass);
-        const containersToShow = document.getElementsByClassName(showElementsOfClass);
-
-        for (container of containersToHide)
-          container.hidden = true;
-
-        for (container of containersToShow)
-          container.hidden = false;
-
-      }
-
       // #region Cookies
       const LAST_SESSION_STORAGE_NAME = 'lastClosedSession';
 
@@ -797,25 +795,9 @@
 
         //Makes .integer inputs round floats
         const automatedRoundInputs = document.getElementsByClassName("integer");
-        
         for (let input of automatedRoundInputs) {
           input.addEventListener( "change", (e) => {input.value = Math.round(input.value)}, true);
         }
-
-        //Attaches a div to a cursor, used to display content
-        document.addEventListener( 'mousemove', (e) => {
-          const cursorTooltip = document.getElementById('cursorTooltip');
-          if (!cursorTooltip || cursorTooltip.hidden == true)
-            return;
-
-          let leftOffset = (e.clientX + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : e.clientX + 5;
-          leftOffset = Math.max(leftOffset, 12);
-
-          let upOffset = e.clientY > (window.innerHeight / 2) ? e.clientY - cursorTooltip.offsetHeight - 2 : e.clientY + 2;
-          
-          cursorTooltip.style = `top: ${upOffset}px; left: ${leftOffset}px`;
-        });
-        document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
 
       });
 

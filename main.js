@@ -1,3 +1,23 @@
+function moveTooltip(X, Y, checkHidden = false) {
+        const cursorTooltip = document.getElementById('cursorTooltip');
+        if (checkHidden && cursorTooltip.hidden == true)
+        return;
+
+        let leftOffset = (X + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : X + 5;
+        leftOffset = Math.max(leftOffset, 12);
+
+        let upOffset = Y > (window.innerHeight / 2) ? Y - cursorTooltip.offsetHeight - 2 : Y + 2;
+        
+        cursorTooltip.style = `top: ${upOffset}px; left: ${leftOffset}px`;
+    }
+document.addEventListener('DOMContentLoaded', (e) => {
+    //Attaches a div to a cursor, used to display content
+    document.addEventListener( 'mousemove', (e) => {moveTooltip(e.clientX, e.clientY, true);} );
+    //Makes tooltip disappear on tap
+    document.addEventListener( 'touchend', () => {tree.hideHoverAbilityTooltip()});
+    document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
+})
+
 function copyFromField(fieldID) {
 
     const field = document.getElementById(fieldID);
@@ -93,6 +113,61 @@ function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay =
 
     const toast = bootstrap.Toast.getOrCreateInstance( container, {'autohide': autohide, 'delay': autohide ? hideDelay : null} );
     toast.show();
+}
+
+let lastTap = 0;
+const TAPLENGTH = 250;
+let singeTapTimeout;
+function processTouch(event, singleTapCallback, doubleTapCallback, holdStartCallback, holdMoveCallback, holdEndCallback) {
+    if (singeTapTimeout != null) {
+        clearTimeout(singeTapTimeout);
+        singeTapTimeout = null;
+    }
+
+    const currentTime = new Date().getTime();
+    const timeSinceLastTap = currentTime - lastTap;
+
+    if (timeSinceLastTap < TAPLENGTH && timeSinceLastTap > 0) {
+        doubleTapCallback();
+    } else {
+
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const target = event.target;
+
+        let holdTimeout = setTimeout(
+            () => {
+                controller.abort();
+                holdStartCallback();
+                target.addEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
+                target.addEventListener("touchend", (e) => {
+                    holdEndCallback(e);
+                    target.removeEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
+                }, {once: true});
+            },
+            TAPLENGTH
+        );
+        target.addEventListener("touchend", () => {
+
+            if (holdTimeout) {
+                clearTimeout(holdTimeout);
+                delete holdTimeout;
+            }
+
+            const currentTime = new Date().getTime();
+            const timeSinceLastTap = currentTime - lastTap;
+
+            singeTapTimeout = setTimeout(
+                () => {
+                singleTapCallback();
+                singeTapTimeout = null;
+                },
+                TAPLENGTH + lastTap - currentTime
+            );
+        }, {once: true, signal});
+
+    }
+    lastTap = currentTime;
 }
 
 const codeDictionaryGenericSymbols = {
@@ -705,6 +780,12 @@ const PAGES_UPPER = 30;
 const PAGES_INPUTID = 'treePages';
 enforceMinMax(PAGES_INPUTID, PAGES_LOWER, PAGES_UPPER);
 
+const HORIZONTAL_PAGES_LOWER = 1;
+const HORIZONTAL_PAGES_DEFAULT = 1;
+const HORIZONTAL_PAGES_UPPER = 30;
+const HORIZONTAL_PAGES_INPUTID = 'horizontalPages';
+enforceMinMax(HORIZONTAL_PAGES_INPUTID, HORIZONTAL_PAGES_LOWER, HORIZONTAL_PAGES_UPPER);
+
 const ROWSPERPAGE_LOWER = 3;
 const ROWSPERPAGE_DEFAULT = 6;
 const ROWSPERPAGE_UPPER = 11;
@@ -731,10 +812,16 @@ class Properties {
     maxAbilityPoints = 45;
 
     /**
-     * Number of ability tree pages unsigned
+     * Number of vertical ability tree pages unsigned
      * @var int
      */
     pages = 7;
+
+    /**
+     * Number of horizontal ability tree pages unsigned
+     * @var int
+     */
+    horizontalPages = 1;
 
     /**
      * How many cells per page
@@ -766,13 +853,15 @@ class Properties {
      */
     useAlternativeAbilityIcons = false;
 
-    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false, useAlternativeAbilityIcons = false} = {}) {
+    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, horizontalPages = HORIZONTAL_PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false, useAlternativeAbilityIcons = false} = {}) {
         
         this.classs = Object.keys(classDictionary).includes(String(classs)) ? String(classs) : Object.keys(classDictionary)[0];
 
         this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? MAXABILITYPOINTS_DEFAULT : clamp(Number(maxAbilityPoints), MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
         this.pages = isNaN(Number(pages)) ? PAGES_DEFAULT : clamp(Number(pages), PAGES_LOWER, PAGES_UPPER);
+
+        this.horizontalPages = isNaN(Number(horizontalPages)) ? HORIZONTAL_PAGES_DEFAULT : clamp(Number(horizontalPages), HORIZONTAL_PAGES_LOWER, HORIZONTAL_PAGES_UPPER);
 
         this.rowsPerPage = isNaN(Number(rowsPerPage)) ? ROWSPERPAGE_DEFAULT : clamp(Number(rowsPerPage), ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
@@ -817,6 +906,8 @@ const MAXSELECTEDCELLS = 40;
 const CELLIDPREFIX = 'cell-';
 const COLUMNS = 9;
 
+let abilityTooltipTimeout;
+const ABILITYTOOLTIPDURATION = 5000;
 class BaseTree
 {
     /**
@@ -862,10 +953,16 @@ class BaseTree
     cellMap = {};
 
     /**
-     * Current page
+     * Current horizontal page
      * @var int
      */
-    currentPage = 1;
+    currentVerticalPage = 1;
+
+    /**
+     * Current vertical page
+     * @var int
+     */
+    currentHorizontaPage = 1;
 
     /**
      * Used by initializeEditNode method to keep track of affected cells
@@ -935,7 +1032,7 @@ class BaseTree
     toJSON() {
         var result = {};
         for (var x in this) {
-            if (x !== "history" && x !== "currentHistoryState" && x !== "selectedAbilityID" && x !== "currentPage"  &&
+            if (x !== "history" && x !== "currentHistoryState" && x !== "selectedAbilityID" && x !== "currentVerticalPage"  &&
                 x !== "selectedCells" && x !== "currentTree" && x !== "potentialAllocationMap") {
                 result[x] = this[x];
             }
@@ -943,7 +1040,7 @@ class BaseTree
         return result;
     }
 
-    readProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID,
+    readProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID, horizontalPagesId = HORIZONTAL_PAGES_INPUTID,
         rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch", useAlternativeAbilityIcons = "altIconSwitch") {
 
         if (this.properties != null && this.properties.loopTree != document.getElementById(loopTreeId).checked) {
@@ -974,6 +1071,7 @@ class BaseTree
             classs : document.getElementById(classSelectId).value,
             maxAbilityPoints : document.getElementById(maxAbilityPointsId).value,
             pages : document.getElementById(pagesId).value,
+            horizontalPages : document.getElementById(horizontalPagesId).value,
             rowsPerPage : document.getElementById(rowsPerPageId).value,
             pagesDisplayed : document.getElementById(pagesDisplayedId).value,
             loopTree : document.getElementById(loopTreeId).checked,
@@ -986,18 +1084,39 @@ class BaseTree
         this.saveState('Updated properties');
     }
 
-    writeProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID,
+    writeProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID, horizontalPagesId = HORIZONTAL_PAGES_INPUTID,
         rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch", useAlternativeAbilityIcons = "altIconSwitch") {
 
         document.getElementById(classSelectId).value = this.properties.classs;
         document.getElementById(maxAbilityPointsId).value = this.properties.maxAbilityPoints;
         document.getElementById(pagesId).value = this.properties.pages;
+        document.getElementById(horizontalPagesId).value = this.properties.horizontalPages;
         document.getElementById(rowsPerPageId).value = this.properties.rowsPerPage;
         document.getElementById(pagesDisplayedId).value = this.properties.pagesDisplayed;
         document.getElementById(loopTreeId).checked = this.properties.loopTree;
         document.getElementById(bTravesableUp).checked = this.properties.bTravesableUp;
         document.getElementById(useAlternativeAbilityIcons).checked = this.properties.useAlternativeAbilityIcons;
 
+    }
+
+    renderScrollArrows(bShowSidewayArrows) {
+
+        let hideElementsOfClass = bShowSidewayArrows ? "shown-on-single-horizontal-page" : "shown-on-multi-horizontal-page";
+        let showElementsOfClass = !bShowSidewayArrows ? "shown-on-single-horizontal-page" : "shown-on-multi-horizontal-page";
+
+        const containersToHide = document.getElementsByClassName(hideElementsOfClass);
+        const containersToShow = document.getElementsByClassName(showElementsOfClass);
+
+        for (let container of containersToHide)
+            container.hidden = true;
+        
+        for (let container of containersToShow)
+          container.hidden = false;
+
+    }
+
+    remapCells(bKeepCurrent) {
+        
     }
 
     saveState(change = "", type = "", replaceSameType = false, jsonContainerID = "json-container") {
@@ -1101,6 +1220,8 @@ class BaseTree
             this.renderArchetypeCounts();
             this.renderAbilityPointsUsed();
         }
+
+        this.renderScrollArrows(this.properties.horizontalPages > 1 ? true : false);
 
         let hideElementsOfClass = this.bEditMode ? "shown-on-allocation" : "shown-on-tree-edit";
         let showElementsOfClass = this.bEditMode ? "shown-on-tree-edit" : "shown-on-allocation";
@@ -1479,13 +1600,12 @@ class BaseTree
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
-
         const container = document.getElementById(containerId);
         const ability = this.abilities[abilityId];
 
         if (this.selectedCells.length > 0 || ability == null)
             return;
-
+        
         container.hidden = false;
 
         container.innerHTML = this._getAbilityTooltipHTML(ability);
@@ -1519,6 +1639,10 @@ class BaseTree
     }
 
     hideHoverAbilityTooltip(containerId = "cursorTooltip") {
+        if (abilityTooltipTimeout != null) {
+            clearTimeout(abilityTooltipTimeout);
+            abilityTooltipTimeout = null;
+        }
         const container = document.getElementById(containerId);
 
         container.hidden = true;
@@ -1914,19 +2038,35 @@ class BaseTree
         this.renderTree();
     }
 
-    incrementPage(increment = 0) {
+    incrementVerticalPage(increment = 0) {
 
-        this.setCurrentPage(this.currentPage + increment);
+        this.setcurrentVerticalPage(this.currentVerticalPage + increment);
         this.renderTree();
 
     }
 
-    setCurrentPage(page = this.currentPage) {
+    incrementHorizontalPage(increment = 0) {
+
+        this.setcurrentHorizontalPage(this.currentHorizontaPage + increment);
+        this.renderTree();
+
+    }
+
+    setcurrentVerticalPage(page = this.currentVerticalPage) {
 
         if (page == null || typeof page != "number" || page < 1)
             return;
 
-        this.currentPage = clamp(page, 1, this.properties.pages - this.properties.pagesDisplayed + 1);
+        this.currentVerticalPage = clamp(page, 1, this.properties.pages - this.properties.pagesDisplayed + 1);
+
+    }
+
+    setcurrentHorizontalPage(page = this.currentHorizontalPage) {
+
+        if (page == null || typeof page != "number" || page < 1)
+            return;
+
+        this.currentHorizontalPage = clamp(page, 1, this.properties.horizontalPages);
 
     }
 
@@ -2355,11 +2495,11 @@ class BaseTree
 
         table.innerHTML = '';
 
-        this.setCurrentPage();
+        this.setcurrentVerticalPage();
 
         const CELLSPERPAGE = this.properties.rowsPerPage * COLUMNS;
 
-        for (let page = this.currentPage; page < this.currentPage + this.properties.pagesDisplayed; page++) {
+        for (let page = this.currentVerticalPage; page < this.currentVerticalPage + this.properties.pagesDisplayed; page++) {
             
             const pageRow = document.createElement('tr');
             table.appendChild(pageRow);
@@ -2384,6 +2524,7 @@ class BaseTree
                     
                     const newCol = document.createElement('td');
                     newCol.id = CELLIDPREFIX + cellKey;
+                    newCol.cellKey = cellKey;
                     newRow.appendChild(newCol);
 
                     const cell = this.cellMap[cellKey];
@@ -2403,8 +2544,9 @@ class BaseTree
 
                         if (this.abilities[ cell['abilityID'] ] != null) {
 
-                            div.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(cell['abilityID']); });
-                            div.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
+                            div.addEventListener('mouseover', () => this.renderHoverAbilityTooltip(cell['abilityID']));
+                            
+                            div.addEventListener('mouseout', () => this.hideHoverAbilityTooltip());
     
                         }
 
@@ -2414,14 +2556,55 @@ class BaseTree
                     }
 
                     div.style.userSelect = 'none';
-                    div.addEventListener('mousedown', (e) => { this.initializeEditNode(cellKey) });
-                    div.addEventListener('mouseenter', (e) => { this.continueEditNode(cellKey) });
+                    div.addEventListener('mousedown', () => this.initializeEditNode(cellKey));
+                    div.addEventListener('mouseenter', () => this.continueEditNode(cellKey));
+                    div.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        processTouch(
+                            e,
+                            () => {
+                                    const td = e.target.closest("td");
+                                    try {
+                                        this.renderHoverAbilityTooltip(this.cellMap[td.cellKey]['abilityID']);
+                                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                                    } catch (e) {};
+                            },
+                            () => {}, 
+                            () => {
+                                this.hideHoverAbilityTooltip();
+                                document.body.style.overflow = 'hidden';
+                                this.initializeEditNode(cellKey);
+                            },
+                            (event) => {
+                                const location = event.changedTouches[0];
+                                const target = document.elementFromPoint(location.clientX, location.clientY);
+                                if (target == null)
+                                    return;
+
+                                if (target.id == "rightTreeBoundary")
+                                    this.continueEditWithloopedNode(1);
+                                else if (target.id == "leftTreeBoundary")
+                                    this.continueEditWithloopedNode(-1);
+                                else {
+                                    const td = target.closest("td");
+                                    if (td && td.cellKey != null)
+                                        this.continueEditNode(td.cellKey);
+                                }
+                            },
+                            () => {
+                                document.body.style.overflow = 'auto';
+                                this.finallizeEditNode();
+                            }
+                        );
+                        }, {passive: false});
                     newCol.appendChild(div);
                     
                 }
             }
         }
     }
+
+
     // #endregion
 
     renderTree(tableBodyID = "treeTableBody") {
@@ -2885,13 +3068,13 @@ class BaseTree
 
         table.innerHTML = '';
 
-        this.setCurrentPage();
+        this.setcurrentVerticalPage();
 
         const CELLSPERPAGE = this.properties.rowsPerPage * COLUMNS;
 
         const allocatableNodes = this.getAllocatableNodes();
 
-        for (let page = this.currentPage; page < this.currentPage + this.properties.pagesDisplayed; page++) {
+        for (let page = this.currentVerticalPage; page < this.currentVerticalPage + this.properties.pagesDisplayed; page++) {
             
             const pageRow = document.createElement('tr');
             table.appendChild(pageRow);
@@ -2941,7 +3124,7 @@ class BaseTree
                         );
 
                         if (this.abilities[ cell['abilityID'] ] != null) {
-
+                            
                             switch (allocationStatus) {
                                 case 1:
                                     div.addEventListener('click', (e) => {
@@ -2956,17 +3139,54 @@ class BaseTree
                                         this.deallocateNode( cell['abilityID'] );
                                         this.renderTree();
                                         this.renderArchetypeCounts();
-                                        this.renderAbilityPointsUsed()} );
+                                        this.renderAbilityPointsUsed()}
+                                    );
                                     break;
                                 default:
                                     break;
                             }
 
-                            div.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(cell['abilityID']); });
-                            div.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
-    
-                        }
-
+                            div.addEventListener('mouseover', () => this.renderHoverAbilityTooltip(cell['abilityID']) );
+                            div.addEventListener('mouseout', () => this.hideHoverAbilityTooltip() );
+                            div.addEventListener('touchstart', (e) => {
+                                e.preventDefault();
+                                processTouch(
+                                    e,
+                                    () => {
+                                        switch (allocationStatus) {
+                                            case 1:
+                                                this.allocateNode( cell['abilityID'] );
+                                                this.renderTree();
+                                                this.renderArchetypeCounts();
+                                                this.renderAbilityPointsUsed();
+                                                break;
+                                            case 2:
+                                                this.deallocateNode( cell['abilityID'] );
+                                                this.renderTree();
+                                                this.renderArchetypeCounts();
+                                                this.renderAbilityPointsUsed();
+                                                break;
+                                            default:
+                                                break;
+                                        }
+                                    },
+                                    () => {}, 
+                                    () => {
+                                        document.body.style.overflow = 'hidden';
+                                        this.renderHoverAbilityTooltip(cell['abilityID']);
+                                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                                    },
+                                    (e) => {
+                                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                                    },
+                                    () => {
+                                        this.hideHoverAbilityTooltip();
+                                        document.body.style.overflow = 'auto';
+                                    }
+                                );
+                                }, {passive: false});
+            
+                            }
                     } else {
                         div = document.createElement('div');
                         div.classList.add("centered-element-container");
