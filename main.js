@@ -953,6 +953,12 @@ class BaseTree
     selectedAbilityID = -1;
 
     /**
+     * Selected archetype for ability sorting
+     * @var string
+     */
+    selectedArchetype = "";
+
+    /**
      * Recorded changes queue
      * @var StateLog[]
      */
@@ -1051,7 +1057,7 @@ class BaseTree
         var result = {};
         for (var x in this) {
             if (x !== "history" && x !== "currentHistoryState" && x !== "selectedAbilityID" && x !== "currentVerticalPage"  &&
-                x !== "selectedCells" && x !== "currentTree" && x !== "potentialAllocationMap") {
+                x !== "selectedCells" && x !== "currentTree" && x !== "potentialAllocationMap" && x !== "selectedArchetype") {
                 result[x] = this[x];
             }
         }
@@ -1526,6 +1532,23 @@ class BaseTree
             const div = document.createElement("div");
             div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1');
 
+            if (archetype == this.selectedArchetype) {
+
+                div.classList.add('selected-ability');
+                div.addEventListener('click', (e) => {
+                    if (e.target.nodeName != 'BUTTON')
+                        this.selectArchetype("");
+                });
+
+            } else {
+
+                div.addEventListener('click', (e) => {
+                    if (e.target.nodeName != 'BUTTON')
+                        this.selectArchetype(archetype);
+                });
+
+            }
+
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'overflow-hidden');
             text.innerHTML = minecraftToHTML(archetype);
@@ -1569,6 +1592,14 @@ class BaseTree
             if (this.abilities[abilityID]['archetype'] == oldarchetype)
                 this.abilities[abilityID]['archetype'] = newarchetype;
         }
+    }
+
+    selectArchetype(archetype = "") {
+
+        this.selectedArchetype = archetype;
+        this.renderArchetypes();
+        this.renderAbilities();
+
     }
     // #endregion
 
@@ -1929,6 +1960,12 @@ class BaseTree
         container.innerHTML = "";
 
         let sortedAbilityIDs = this.sortAbilities();
+
+        if (this.selectedArchetype != '') {
+            sortedAbilityIDs = sortedAbilityIDs.filter( (id) => {
+                return this.abilities[id].archetype == this.selectedArchetype;
+            });
+        }
 
         const searchContainer = document.getElementById(searchFieldID);
         if (searchFieldID != null && searchContainer.value != null && String(searchContainer.value) != null && String(searchContainer.value) != '') {
