@@ -1530,7 +1530,7 @@ class BaseTree
         for (let archetype of this.archetypes) {
 
             const div = document.createElement("div");
-            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1');
+            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1', 'pt-1');
 
             if (archetype == this.selectedArchetype) {
 
