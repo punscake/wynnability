@@ -199,6 +199,10 @@ section {
   color: white;
 }
 
+.rtl {
+  direction: rtl;
+}
+
 .page-up-arrow:hover {
   content: url("background/page_up_a.png");
 }

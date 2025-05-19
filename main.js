@@ -956,7 +956,7 @@ class BaseTree
      * Selected archetype for ability sorting
      * @var string
      */
-    selectedArchetype = "";
+    selectedArchetype = null;
 
     /**
      * Recorded changes queue
@@ -1505,12 +1505,13 @@ class BaseTree
 
     }
 
-    renderArchetypes(containerID = "archetypeContainer") {
+    renderArchetypes(containerID = "archetypeContainer", neutralContainerID = "neutralContainer") {
 
         const container = document.getElementById(containerID);
 
         let archetypeCounts = {};
-        let placedArchetypeCounts = {};
+        let placedArchetypeCounts = {"" : 0};
+        let neutralCount = 0;
         for (let archetype of this.archetypes) {
             archetypeCounts[archetype] = 0;
             placedArchetypeCounts[archetype] = 0;
@@ -1519,6 +1520,8 @@ class BaseTree
         for (let ability of Object.values(this.abilities)) {
             if (ability.archetype.length > 0)
                 archetypeCounts[ability.archetype]++;
+            else
+                neutralCount++;
         }
         for(let cellKey of Object.keys(this.cellMap)) {
             if (this.cellMap[cellKey]['abilityID'] != null)
@@ -1537,7 +1540,7 @@ class BaseTree
                 div.classList.add('selected-ability');
                 div.addEventListener('click', (e) => {
                     if (e.target.nodeName != 'BUTTON')
-                        this.selectArchetype("");
+                        this.selectArchetype(null);
                 });
 
             } else {
@@ -1581,6 +1584,32 @@ class BaseTree
             container.appendChild(div);
 
         }
+
+        const div = document.createElement("div");
+        div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1', 'pt-1');
+
+        if (this.selectedArchetype == "") {
+
+            div.classList.add('selected-ability');
+            div.addEventListener('click', (e) => {
+                this.selectArchetype(null);
+            });
+
+        } else {
+
+            div.addEventListener('click', (e) => {
+                this.selectArchetype("");
+            });
+
+        }
+
+        const abilityCount = document.createElement("div");
+        abilityCount.innerHTML = minecraftToHTML("§f§lNeutral ") + placedArchetypeCounts[""] + '/' + neutralCount;
+        div.appendChild(abilityCount);
+        
+        const neutralContainer = document.getElementById(neutralContainerID);
+        neutralContainer.innerHTML = "";
+        neutralContainer.appendChild(div);
     }
 
     updateArchetype(oldarchetype, newarchetype = "") {
@@ -1594,7 +1623,7 @@ class BaseTree
         }
     }
 
-    selectArchetype(archetype = "") {
+    selectArchetype(archetype = null) {
 
         this.selectedArchetype = archetype;
         this.renderArchetypes();
@@ -1961,7 +1990,7 @@ class BaseTree
 
         let sortedAbilityIDs = this.sortAbilities();
 
-        if (this.selectedArchetype != '') {
+        if (this.selectedArchetype != null) {
             sortedAbilityIDs = sortedAbilityIDs.filter( (id) => {
                 return this.abilities[id].archetype == this.selectedArchetype;
             });
