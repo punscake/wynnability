@@ -12,7 +12,7 @@ function moveTooltip(X, Y, checkHidden = false) {
     }
 document.addEventListener('DOMContentLoaded', (e) => {
     //Attaches a div to a cursor, used to display content
-    document.addEventListener( 'mousemove', (e) => {moveTooltip(e.clientX, e.clientY, true);} );
+    document.addEventListener( 'pointermove', (e) => {moveTooltip(e.clientX, e.clientY, true);} );
     //Makes tooltip disappear on tap
     document.addEventListener( 'touchend', () => {tree.hideHoverAbilityTooltip()});
     document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
@@ -117,8 +117,13 @@ function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay =
 
 let lastTap = 0;
 const TAPLENGTH = 250;
+const SWIPEMINDISTANCE = 40;
+let startX, startY;
 let singeTapTimeout;
-function processTouch(event, singleTapCallback, doubleTapCallback, holdStartCallback, holdMoveCallback, holdEndCallback) {
+function processTouch(event, singleTapCallback = (e) => {}, doubleTapCallback = (e) => {},
+    holdStartCallback = (e) => {}, holdMoveCallback = (e) => {}, holdEndCallback = (e) => {},
+    swipeStartCallback = (e) => {}, swipeMoveCallback = (e) => {}, swipeEndCallback = (e) => {}) {
+
     if (singeTapTimeout != null) {
         clearTimeout(singeTapTimeout);
         singeTapTimeout = null;
@@ -128,17 +133,46 @@ function processTouch(event, singleTapCallback, doubleTapCallback, holdStartCall
     const timeSinceLastTap = currentTime - lastTap;
 
     if (timeSinceLastTap < TAPLENGTH && timeSinceLastTap > 0) {
-        doubleTapCallback();
+        doubleTapCallback(event);
     } else {
 
-        const controller = new AbortController();
-        const signal = controller.signal;
         const target = event.target;
+        startX = event.touches[0].clientX;
+        startY = event.touches[0].clientY;
+
+        let touchend;
+
+        target.addEventListener("touchmove", touchmove = function(e) {
+
+            const deltaX = e.changedTouches[0].clientX - startX;
+            const deltaY = e.changedTouches[0].clientY - startY;
+
+            if (deltaX ** 2 + deltaY ** 2 >= SWIPEMINDISTANCE ** 2){
+
+                if (holdTimeout) {
+                    clearTimeout(holdTimeout);
+                    delete holdTimeout;
+                }
+                target.removeEventListener("touchend", touchend);
+                target.removeEventListener("touchmove", touchmove);
+
+                swipeStartCallback(event);
+                target.addEventListener("touchmove", touchmoveElectricBoogaloo = function(e) {
+                    swipeMoveCallback(e);
+                }, {passive: true});
+                target.addEventListener("touchend", (e) => {
+                    target.removeEventListener("touchmove", touchmoveElectricBoogaloo);
+                    swipeEndCallback(e);
+                }, {once: true});
+
+            }
+        }, {passive: true});
 
         let holdTimeout = setTimeout(
             () => {
-                controller.abort();
-                holdStartCallback();
+                target.removeEventListener("touchend", touchend);
+                target.removeEventListener("touchmove", touchmove);
+                holdStartCallback(event);
                 target.addEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
                 target.addEventListener("touchend", (e) => {
                     holdEndCallback(e);
@@ -147,25 +181,25 @@ function processTouch(event, singleTapCallback, doubleTapCallback, holdStartCall
             },
             TAPLENGTH
         );
-        target.addEventListener("touchend", () => {
 
+        target.addEventListener("touchend", touchend = function() {
             if (holdTimeout) {
                 clearTimeout(holdTimeout);
                 delete holdTimeout;
             }
+            target.removeEventListener("touchmove", touchmove);
 
             const currentTime = new Date().getTime();
             const timeSinceLastTap = currentTime - lastTap;
 
             singeTapTimeout = setTimeout(
                 () => {
-                singleTapCallback();
+                singleTapCallback(event);
                 singeTapTimeout = null;
                 },
                 TAPLENGTH + lastTap - currentTime
             );
-        }, {once: true, signal});
-
+        }, {once: true});
     }
     lastTap = currentTime;
 }
@@ -1049,7 +1083,7 @@ class BaseTree
         this.writeProperties();
         this.renderEverything();
         this.saveState('Reset tree and settings');
-        window.addEventListener("mouseup", (e) => {this.finallizeEditNode()});
+        window.addEventListener("pointerup", (e) => {this.finallizeEditNode()});
     }
 
     // #region Serialization and history
@@ -2046,8 +2080,8 @@ class BaseTree
             div.appendChild(imgholder);
             imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, abilitiesOnTree[id] ? 2 : 1, false, true));
 
-            imgholder.addEventListener('mouseover', (e) => { this.renderHoverAbilityTooltip(id); });
-            imgholder.addEventListener('mouseout', (e) => { this.hideHoverAbilityTooltip(); });
+            imgholder.addEventListener('pointerover', (e) => { this.renderHoverAbilityTooltip(id); });
+            imgholder.addEventListener('pointerout', (e) => { this.hideHoverAbilityTooltip(); });
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'align-items-center', 'overflow-hidden', 'ms-2');
@@ -2478,6 +2512,7 @@ class BaseTree
 
                         const abilityID = this.cellMap[cellKey]['abilityID'];
                         this.removeAbilityFromTree(abilityID);
+                        this.hideHoverAbilityTooltip();
                         editSummary = `Removed ${minecraftToHTML(this.abilities[abilityID].name)} from tree`;
 
                     } else if (this.cellMap[cellKey]['travelNode'] == null) {
@@ -2632,9 +2667,9 @@ class BaseTree
 
                         if (this.abilities[ cell['abilityID'] ] != null) {
 
-                            div.addEventListener('mouseover', () => this.renderHoverAbilityTooltip(cell['abilityID']));
+                            div.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(cell['abilityID'])});
                             
-                            div.addEventListener('mouseout', () => this.hideHoverAbilityTooltip());
+                            div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip()});
     
                         }
 
@@ -2644,10 +2679,9 @@ class BaseTree
                     }
 
                     div.style.userSelect = 'none';
-                    div.addEventListener('mousedown', () => this.initializeEditNode(cellKey));
-                    div.addEventListener('mouseenter', () => this.continueEditNode(cellKey));
+                    div.addEventListener('pointerdown', (e) => {if (e.pointerType !== "touch") this.initializeEditNode(cellKey)});
+                    div.addEventListener('pointerenter', (e) => {if (e.pointerType !== "touch") this.continueEditNode(cellKey)});
                     div.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
                         processTouch(
                             e,
                             () => {
@@ -3248,8 +3282,8 @@ class BaseTree
                                     break;
                             }
 
-                            div.addEventListener('mouseover', () => this.renderHoverAbilityTooltip(cell['abilityID']) );
-                            div.addEventListener('mouseout', () => this.hideHoverAbilityTooltip() );
+                            div.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(cell['abilityID'])} );
+                            div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip()} );
                             div.addEventListener('touchstart', (e) => {
                                 e.preventDefault();
                                 processTouch(

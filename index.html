@@ -190,7 +190,7 @@
 
           <div class="w-100 h-auto d-flex flex-row" style="background-image: url(background/tree_scroll.png); background-repeat: repeat-y; background-size: 100% auto;">
             
-            <div style="width: calc(100% / 406 * 32);" onmouseenter="tree.continueEditWithloopedNode(-1)">
+            <div style="width: calc(100% / 406 * 32);" onpointerenter="tree.continueEditWithloopedNode(-1)">
 
             </div>
 
@@ -200,7 +200,7 @@
               
             </table>
 
-            <div style="width: calc(100% / 406 * 34);" onmouseenter="tree.continueEditWithloopedNode(1)" id="rightTreeBoundary">
+            <div style="width: calc(100% / 406 * 34);" onpointerenter="tree.continueEditWithloopedNode(1)" id="rightTreeBoundary">
 
             </div>
 
@@ -384,7 +384,7 @@
     </section>
 
     <div class="modal fade" id="archetypeModal" tabindex="-1" aria-labelledby="Archetype Edit" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
+      <div class="modal-dialog modal-dialog-centered" onpointerdown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
 
         <div class="modal-content">
 
@@ -443,7 +443,7 @@
     </div>
 
     <div class="modal fade modal-lg" id="abilityModal" tabindex="-1" aria-labelledby="Ability Edit" aria-hidden="true" data-bs-backdrop="static">
-      <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;" onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
+      <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;" onpointerdown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
 
         <div class="modal-content">
 
@@ -547,7 +547,7 @@
     </div>
 
     <div class="modal fade" id="treeModal" tabindex="-1" aria-labelledby="Tree name edit" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" onmousedown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
+      <div class="modal-dialog modal-dialog-centered" onpointerdown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
 
         <div class="modal-content">
 
