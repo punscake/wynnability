@@ -117,7 +117,7 @@ function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay =
 
 let lastTap = 0;
 const TAPLENGTH = 250;
-const SWIPEMINDISTANCE = 40;
+const SWIPEMINDISTANCE = 30;
 let startX, startY;
 let singeTapTimeout;
 function processTouch(event, singleTapCallback = (e) => {}, doubleTapCallback = (e) => {},
