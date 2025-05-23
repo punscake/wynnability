@@ -3158,6 +3158,15 @@ class BaseTree
 
     renderArchetypeCounts(containerID = "archetypeCountContainer") {
 
+        let archetypeCounts = {};
+        for (let archetype of this.archetypes) {
+            archetypeCounts[archetype] = 0;
+        }
+        for (let ability of Object.values(this.abilities)) {
+            if (ability.archetype.length > 0)
+                archetypeCounts[ability.archetype]++;
+        }
+
         const container = document.getElementById(containerID);
         
         container.innerHTML = "";
@@ -3173,7 +3182,7 @@ class BaseTree
             div.appendChild(text);
 
             const abilityCount = document.createElement("div");
-            abilityCount.innerHTML = this.currentTree['archetypes'][archetype] ?? 0;
+            abilityCount.innerHTML = `${this.currentTree['archetypes'][archetype] ?? 0} / ${archetypeCounts[archetype]}`;
             div.appendChild(abilityCount);
             
             container.appendChild(div);
