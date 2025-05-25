@@ -94,6 +94,10 @@ section {
   --bs-modal-bg: #343640;
 }
 
+.abilityName {
+  padding-bottom: 4px;
+}
+
 .minecraftTooltip {
   padding: 1px 5px 1px 5px;
   border: 2px solid #230158;

@@ -1666,19 +1666,21 @@ class BaseTree
             const div = generateIconDiv(type, null, this.properties.classs, type == selected ? 2 : 1, false, this.properties.useAlternativeAbilityIcons);
             div.classList.add('ability-type-selector');
             container.appendChild(div);
-            div.addEventListener("click", (e) => { this.renderAbilityTypeSelector(type) });
+            div.addEventListener("click", (e) => { this.renderAbilityTypeSelector(type); this.renderEditorAbilityTooltip() });
         });
 
     }
 
-    renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
-        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput", abilityBlockCountDisplayID="abilityBlockCountDisplay") {
+    renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
+        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip",
+        prerequisiteFormID = "abilityPrerequiseteInput", abilityBlockCountDisplayID="abilityBlockCountDisplay", typeFormID = "abilityTypeInput") {
         
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
+        const typeInputElement = document.getElementById(typeFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
         const container = document.getElementById(containerId);
         
@@ -1695,6 +1697,7 @@ class BaseTree
             archetype : archetypeInputElement.value,
             pointsRequired : pointsRequiredInputElement.value,
             archetypePointsRequired : archetypePointsRequiredInputElement.value,
+            type : typeInputElement.value,
             requires : prerequisiteInputElement.value
         }));
     }
@@ -1713,7 +1716,12 @@ class BaseTree
 
     _getAbilityTooltipHTML(ability = new Ability()) {
 
-        result = `
+        if (ability.type == 'skill')
+            result = `
+                <div class="abilityName">${minecraftToHTML(ability.name)}</div>
+                ${minecraftToHTML(ability.description)}<br><br>`;
+        else
+            result = `
                 ${minecraftToHTML(ability.name)}<br><br>
                 ${minecraftToHTML(ability.description)}<br><br>`;
 
