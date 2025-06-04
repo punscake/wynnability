@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', (e) => {
     //Attaches a div to a cursor, used to display content
     document.addEventListener( 'pointermove', (e) => {moveTooltip(e.clientX, e.clientY, true);} );
     //Makes tooltip disappear on tap
-    document.addEventListener( 'touchend', () => {tree.hideHoverAbilityTooltip()});
+    document.addEventListener( 'touchstart', () => {tree.hideHoverAbilityTooltip()});
     document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
 })
 
@@ -627,7 +627,7 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
     return result;
 }
 
-const POINTSREQUIRED_LOWER = 1;
+const POINTSREQUIRED_LOWER = 0;
 const POINTSREQUIRED_UPPER = 5;
 const POINTSREQUIRED_INPUTID = 'pointsRequiredInput';
 enforceMinMax(POINTSREQUIRED_INPUTID, POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
