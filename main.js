@@ -627,8 +627,8 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
     return result;
 }
 
-const POINTSREQUIRED_LOWER = 0;
-const POINTSREQUIRED_UPPER = 5;
+const POINTSREQUIRED_LOWER = -100;
+const POINTSREQUIRED_UPPER = 100;
 const POINTSREQUIRED_INPUTID = 'pointsRequiredInput';
 enforceMinMax(POINTSREQUIRED_INPUTID, POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
