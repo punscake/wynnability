@@ -2673,7 +2673,14 @@ class BaseTree
                     div.style.userSelect = 'none';
                     div.addEventListener('pointerdown', (e) => {if (e.pointerType !== "touch") this.initializeEditNode(cellKey)});
                     div.addEventListener('pointerenter', (e) => {if (e.pointerType !== "touch") this.continueEditNode(cellKey)});
+                    div.addEventListener('contextmenu', (e) => {e.preventDefault()});
                     div.addEventListener('touchstart', (e) => {
+                        //e.preventDefault();
+
+                        let scrollLockX;
+                        let scrollLockY;
+                        let scrollLock = (e) => {window.scrollTo(scrollLockX, scrollLockY);};
+
                         processTouch(
                             e,
                             () => {
@@ -2698,8 +2705,10 @@ class BaseTree
                                 }
                             },
                             () => {}, 
-                            (event) => {
-                                event.preventDefault();
+                            () => {
+                                scrollLockX = window.scrollX;
+                                scrollLockY = window.scrollY;
+                                window.addEventListener("scroll", scrollLock);
                                 this.hideHoverAbilityTooltip();
                                 document.body.style.overflow = 'hidden';
                                 this.initializeEditNode(cellKey);
@@ -2721,6 +2730,7 @@ class BaseTree
                                 }
                             },
                             () => {
+                                window.removeEventListener("scroll", scrollLock);
                                 document.body.style.overflow = 'auto';
                                 this.finallizeEditNode();
                             }
