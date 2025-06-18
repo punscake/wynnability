@@ -2698,7 +2698,8 @@ class BaseTree
                                 }
                             },
                             () => {}, 
-                            () => {
+                            (event) => {
+                                event.preventDefault();
                                 this.hideHoverAbilityTooltip();
                                 document.body.style.overflow = 'hidden';
                                 this.initializeEditNode(cellKey);
