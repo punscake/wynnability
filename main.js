@@ -2072,8 +2072,27 @@ class BaseTree
             div.appendChild(imgholder);
             imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, abilitiesOnTree[id] ? 2 : 1, false, true));
 
-            imgholder.addEventListener('pointerover', (e) => { this.renderHoverAbilityTooltip(id); });
-            imgholder.addEventListener('pointerout', (e) => { this.hideHoverAbilityTooltip(); });
+            imgholder.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(id); });
+            imgholder.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip(); });
+            imgholder.addEventListener('touchstart', (e) => {
+                processTouch(
+                    e,
+                    () => {},
+                    () => {}, 
+                    () => {
+                        document.body.style.overflow = 'hidden';
+                        this.renderHoverAbilityTooltip(id);
+                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                    },
+                    () => {
+                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                    },
+                    () => {
+                        this.hideHoverAbilityTooltip();
+                        document.body.style.overflow = 'auto';
+                    }
+                );
+            }, {passive: false});
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'align-items-center', 'overflow-hidden', 'ms-2');
@@ -2673,14 +2692,8 @@ class BaseTree
                     div.style.userSelect = 'none';
                     div.addEventListener('pointerdown', (e) => {if (e.pointerType !== "touch") this.initializeEditNode(cellKey)});
                     div.addEventListener('pointerenter', (e) => {if (e.pointerType !== "touch") this.continueEditNode(cellKey)});
-                    div.addEventListener('contextmenu', (e) => {e.preventDefault()});
                     div.addEventListener('touchstart', (e) => {
-                        //e.preventDefault();
-
-                        let scrollLockX;
-                        let scrollLockY;
-                        let scrollLock = (e) => {window.scrollTo(scrollLockX, scrollLockY);};
-
+                        e.preventDefault();
                         processTouch(
                             e,
                             () => {
@@ -2706,11 +2719,8 @@ class BaseTree
                             },
                             () => {}, 
                             () => {
-                                scrollLockX = window.scrollX;
-                                scrollLockY = window.scrollY;
-                                window.addEventListener("scroll", scrollLock);
                                 this.hideHoverAbilityTooltip();
-                                document.body.style.overflow = 'hidden';
+                                //document.body.style.overflow = 'hidden';
                                 this.initializeEditNode(cellKey);
                             },
                             (event) => {
@@ -2730,8 +2740,7 @@ class BaseTree
                                 }
                             },
                             () => {
-                                window.removeEventListener("scroll", scrollLock);
-                                document.body.style.overflow = 'auto';
+                                //document.body.style.overflow = 'auto';
                                 this.finallizeEditNode();
                             }
                         );
@@ -3324,7 +3333,7 @@ class BaseTree
                                         this.renderHoverAbilityTooltip(cell['abilityID']);
                                         moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                                     },
-                                    (e) => {
+                                    () => {
                                         moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                                     },
                                     () => {
@@ -3333,7 +3342,6 @@ class BaseTree
                                     }
                                 );
                                 }, {passive: false});
-            
                             }
                     } else {
                         div = document.createElement('div');
