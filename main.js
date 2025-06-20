@@ -16,6 +16,30 @@ document.addEventListener('DOMContentLoaded', (e) => {
     //Makes tooltip disappear on tap
     document.addEventListener( 'touchstart', () => {tree.hideHoverAbilityTooltip()});
     document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
+
+    let treescrollprocessor = new TouchProcessor();
+    document.getElementById('treeTableBody').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        let swipeY = e.changedTouches[0].clientY;
+        treescrollprocessor.processTouch(e, 
+            () => {},
+            () => {},
+            () => {},
+            () => {},
+            () => {},
+            () => {},
+            (event) => {
+                const deltaY = event.changedTouches[0].clientY - swipeY;
+                if (Math.abs(deltaY) > 30) {
+                    swipeY = event.changedTouches[0].clientY;
+                    if (deltaY < 0)
+                        tree.incrementVerticalPage(1);
+                    else
+                        tree.incrementVerticalPage(-1);
+                }
+            }
+        );
+    }, {passive: false});
 })
 
 function copyFromField(fieldID) {
@@ -115,93 +139,137 @@ function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay =
     toast.show();
 }
 
-let lastTap = 0;
 const TAPLENGTH = 250;
 const SWIPEMINDISTANCE = 30;
-let startX, startY;
-let singeTapTimeout;
-function processTouch(event, singleTapCallback = (e) => {}, doubleTapCallback = (e) => {},
-    holdStartCallback = (e) => {}, holdMoveCallback = (e) => {}, holdEndCallback = (e) => {},
-    swipeStartCallback = (e) => {}, swipeMoveCallback = (e) => {}, swipeEndCallback = (e) => {}) {
+class TouchProcessor{
 
-    if (singeTapTimeout != null) {
-        clearTimeout(singeTapTimeout);
-        singeTapTimeout = null;
+    lastTap = 0;
+
+    taplength = 250;
+
+    swipemindistance = 30;
+    
+    startX;
+    startY;
+
+    singeTapTimeout;
+
+    constructor({taplength = TAPLENGTH, swipemindistance = SWIPEMINDISTANCE} = {}) {
+        this.taplength = isNaN(Number(taplength)) ? TAPLENGTH : Math.max(Number(taplength), 0);
+        this.swipemindistance = isNaN(Number(swipemindistance)) ? SWIPEMINDISTANCE : Math.max(Number(swipemindistance), 0);
     }
 
-    const currentTime = new Date().getTime();
-    const timeSinceLastTap = currentTime - lastTap;
+    processTouch(event, singleTapCallback = (e) => {}, doubleTapCallback = (e) => {},
+        holdStartCallback = (e) => {}, holdMoveCallback = (e) => {}, holdEndCallback = (e) => {},
+        swipeStartCallback = (e) => {}, swipeMoveCallback = (e) => {}, swipeEndCallback = (e) => {}) {
 
-    if (timeSinceLastTap < TAPLENGTH && timeSinceLastTap > 0) {
-        doubleTapCallback(event);
-    } else {
+        if (this.singeTapTimeout != null) {
+            clearTimeout(this.singeTapTimeout);
+            this.singeTapTimeout = null;
+        }
 
-        const target = event.target;
-        startX = event.touches[0].clientX;
-        startY = event.touches[0].clientY;
+        const currentTime = new Date().getTime();
+        const timeSinceLastTap = currentTime - this.lastTap;
 
-        let touchend;
+        if (timeSinceLastTap < TAPLENGTH && timeSinceLastTap > 0) {
+            doubleTapCallback(event);
+        } else {
 
-        target.addEventListener("touchmove", touchmove = function(e) {
+            const target = event.target;
+            this.startX = event.touches[0].clientX;
+            this.startY = event.touches[0].clientY;
 
-            const deltaX = e.changedTouches[0].clientX - startX;
-            const deltaY = e.changedTouches[0].clientY - startY;
+            let touchmove;
+            let touchmoveElectricBoogaloo;
+            let touchend;
 
-            if (deltaX ** 2 + deltaY ** 2 >= SWIPEMINDISTANCE ** 2){
+            let processor = this;
 
+            target.addEventListener("touchmove", touchmove = function(e) {
+
+                const deltaX = e.changedTouches[0].clientX - processor.startX;
+                const deltaY = e.changedTouches[0].clientY - processor.startY;
+
+                if (deltaX ** 2 + deltaY ** 2 >= processor.swipemindistance ** 2){
+
+                    if (holdTimeout) {
+                        clearTimeout(holdTimeout);
+                        holdTimeout = null;
+                    }
+                    target.removeEventListener("touchend", touchend);
+                    target.removeEventListener("touchmove", touchmove);
+
+                    swipeStartCallback(event);
+                    target.addEventListener("touchmove", touchmoveElectricBoogaloo = function(e) {
+                        swipeMoveCallback(e);
+                    }, {passive: true});
+                    target.addEventListener("touchend", (e) => {
+                        target.removeEventListener("touchmove", touchmoveElectricBoogaloo);
+                        swipeEndCallback(e);
+                    }, {once: true});
+
+                }
+            }, {passive: true});
+
+            let holdTimeout = setTimeout(
+                () => {
+                    target.removeEventListener("touchend", touchend);
+                    target.removeEventListener("touchmove", touchmove);
+                    holdStartCallback(event);
+                    target.addEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
+                    target.addEventListener("touchend", (e) => {
+                        holdEndCallback(e);
+                        target.removeEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
+                    }, {once: true});
+                },
+                TAPLENGTH
+            );
+
+            target.addEventListener("touchend", touchend = function() {
                 if (holdTimeout) {
                     clearTimeout(holdTimeout);
-                    delete holdTimeout;
+                    holdTimeout = null;
                 }
-                target.removeEventListener("touchend", touchend);
                 target.removeEventListener("touchmove", touchmove);
 
-                swipeStartCallback(event);
-                target.addEventListener("touchmove", touchmoveElectricBoogaloo = function(e) {
-                    swipeMoveCallback(e);
-                }, {passive: true});
-                target.addEventListener("touchend", (e) => {
-                    target.removeEventListener("touchmove", touchmoveElectricBoogaloo);
-                    swipeEndCallback(e);
-                }, {once: true});
+                const currentTime = new Date().getTime();
 
-            }
-        }, {passive: true});
+                processor.singeTapTimeout = setTimeout(
+                    () => {
+                    singleTapCallback(event);
+                    processor.singeTapTimeout = null;
+                    },
+                    TAPLENGTH + processor.lastTap - currentTime
+                );
+            }, {once: true});
+        }
+        this.lastTap = currentTime;
+    }
 
-        let holdTimeout = setTimeout(
-            () => {
-                target.removeEventListener("touchend", touchend);
-                target.removeEventListener("touchmove", touchmove);
-                holdStartCallback(event);
-                target.addEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
-                target.addEventListener("touchend", (e) => {
-                    holdEndCallback(e);
-                    target.removeEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
-                }, {once: true});
-            },
-            TAPLENGTH
-        );
+    touchmove(e) {
+        const deltaX = e.changedTouches[0].clientX - this.startX;
+        const deltaY = e.changedTouches[0].clientY - this.startY;
 
-        target.addEventListener("touchend", touchend = function() {
+        if (deltaX ** 2 + deltaY ** 2 >= this.swipemindistance ** 2){
+
             if (holdTimeout) {
                 clearTimeout(holdTimeout);
-                delete holdTimeout;
+                holdTimeout = null;
             }
+            target.removeEventListener("touchend", touchend);
             target.removeEventListener("touchmove", touchmove);
 
-            const currentTime = new Date().getTime();
-            const timeSinceLastTap = currentTime - lastTap;
+            swipeStartCallback(event);
+            target.addEventListener("touchmove", touchmoveElectricBoogaloo = function(e) {
+                swipeMoveCallback(e);
+            }, {passive: true});
+            target.addEventListener("touchend", (e) => {
+                target.removeEventListener("touchmove", touchmoveElectricBoogaloo);
+                swipeEndCallback(e);
+            }, {once: true});
 
-            singeTapTimeout = setTimeout(
-                () => {
-                singleTapCallback(event);
-                singeTapTimeout = null;
-                },
-                TAPLENGTH + lastTap - currentTime
-            );
-        }, {once: true});
+        }
     }
-    lastTap = currentTime;
 }
 
 const codeDictionaryGenericSymbols = {
@@ -1062,6 +1130,8 @@ class BaseTree
      */
     currentTree;
 
+    #treeTouchProcessor = new TouchProcessor();
+
     constructor() {
         this.properties = new Properties();
         this.writeProperties();
@@ -1075,7 +1145,7 @@ class BaseTree
         var result = {};
         for (var x in this) {
             if (x !== "history" && x !== "currentHistoryState" && x !== "selectedAbilityID" && x !== "currentVerticalPage"  &&
-                x !== "selectedCells" && x !== "currentTree" && x !== "potentialAllocationMap" && x !== "selectedArchetype") {
+                x !== "selectedCells" && x !== "currentTree" && x !== "potentialAllocationMap" && x !== "selectedArchetype" && x !== "treeTouchProcessor") {
                 result[x] = this[x];
             }
         }
@@ -2075,7 +2145,7 @@ class BaseTree
             imgholder.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(id); });
             imgholder.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip(); });
             imgholder.addEventListener('touchstart', (e) => {
-                processTouch(
+                this.#treeTouchProcessor.processTouch(
                     e,
                     () => {},
                     () => {}, 
@@ -2693,8 +2763,7 @@ class BaseTree
                     div.addEventListener('pointerdown', (e) => {if (e.pointerType !== "touch") this.initializeEditNode(cellKey)});
                     div.addEventListener('pointerenter', (e) => {if (e.pointerType !== "touch") this.continueEditNode(cellKey)});
                     div.addEventListener('touchstart', (e) => {
-                        e.preventDefault();
-                        processTouch(
+                        this.#treeTouchProcessor.processTouch(
                             e,
                             () => {
                                 if (this.abilities[this.selectedAbilityID] != null) {
@@ -3306,8 +3375,7 @@ class BaseTree
                             div.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(cell['abilityID'])} );
                             div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip()} );
                             div.addEventListener('touchstart', (e) => {
-                                e.preventDefault();
-                                processTouch(
+                                this.#treeTouchProcessor.processTouch(
                                     e,
                                     () => {
                                         switch (allocationStatus) {
