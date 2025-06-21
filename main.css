@@ -46,6 +46,10 @@ section {
   z-index: 40;
 }
 
+#editAbilityTooltip {
+  overflow: auto;
+}
+
 .small-btn {
   height: 23px;
   width: 23px;
