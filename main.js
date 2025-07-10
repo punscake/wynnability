@@ -1012,6 +1012,7 @@ const COLUMNS = 9;
 
 let abilityTooltipTimeout;
 const ABILITYTOOLTIPDURATION = 5000;
+const LSHAPEDALLOCATION = false;
 class BaseTree
 {
     /**
@@ -2282,69 +2283,53 @@ class BaseTree
 
     }
 
+    getAdjecentCell(cellKey, direction) {
+        switch (direction) {
+            case "up":
+                const upKey = cellKey - COLUMNS;
+                if (upKey >= 1)
+                    return upKey;
+                break;
+
+            case "down":
+                const downKey = cellKey + COLUMNS;
+                if (downKey <= this.properties.pages * this.properties.rowsPerPage * COLUMNS)
+                    return downKey;
+                break;
+
+            case "left":
+                if (this.cellPositionInRow(cellKey) > 1)
+                    return cellKey - 1;
+                else if(this.properties.loopTree)
+                    return cellKey - 1 + COLUMNS;
+                break;
+
+            case "right":
+                if (this.cellPositionInRow(cellKey) < COLUMNS)
+                    return cellKey + 1;
+                else if(this.properties.loopTree)
+                    return cellKey + 1 - COLUMNS;
+                break;
+
+            default:
+                break;
+        }
+        return null;
+    }
+
     getAdjacentCells(cellKey, bUseCellsAsKeys = true) {
 
         cellKey = Number(cellKey);
         let result = {};
 
-        const totalCells = this.properties.pages * this.properties.rowsPerPage * COLUMNS;
-
-        //up
-        const upKey = cellKey - COLUMNS;
-        if (upKey >= 1) {
-
-            if (bUseCellsAsKeys)
-                result[upKey] = 'up';
-            else
-                result['up'] = upKey;
-
-        }
-
-        //down
-        const downKey = cellKey + COLUMNS;
-        if (downKey <= totalCells) {
-
-            if (bUseCellsAsKeys)
-                result[downKey] = 'down';
-            else
-                result['down'] = downKey;
-
-        }
-        
-        const cellPositionInRow = this.cellPositionInRow(cellKey);
-        
-        //left
-        if (cellPositionInRow > 1) {
-
-            if (bUseCellsAsKeys)
-                result[cellKey - 1] = 'left';
-            else
-                result['left'] = cellKey - 1;
-
-        } else if(this.properties.loopTree) {
-
-            if (bUseCellsAsKeys)
-                result[cellKey - 1 + COLUMNS] = 'left';
-            else
-                result['left'] = cellKey - 1 + COLUMNS;
-
-        }
-        
-        //right
-        if (cellPositionInRow < COLUMNS) {
-
-            if (bUseCellsAsKeys)
-                result[cellKey + 1] = 'right';
-            else
-                result['right'] = cellKey + 1;
-
-        } else if(this.properties.loopTree) {
-
-            if (bUseCellsAsKeys)
-                result[cellKey + 1 - COLUMNS] = 'right';
-            else
-                result['right'] = cellKey + 1 - COLUMNS;
-
+        for (let direction of Object.keys(reverseDirectionDictionary)) {
+            const adjacentCell = this.getAdjecentCell(cellKey, direction);
+            if (adjacentCell != null) {
+                if (bUseCellsAsKeys)
+                    result[adjacentCell] = direction;
+                else
+                    result[direction] = adjacentCell;
+            }
         }
         
         return result;
@@ -2876,23 +2861,25 @@ class BaseTree
             undirectedConnectionsMap[key] = this.getConnectedCells(key);
         }
         let directedConnectionsMap = {};
-        if (this.properties.bTravesableUp) {
+        if (this.properties.bTravesableUp)
             directedConnectionsMap = undirectedConnectionsMap;
-        } else {
+        else {
             for (let key of Object.keys(undirectedConnectionsMap)) {
+                
                 directedConnectionsMap[key] = Object.assign({}, undirectedConnectionsMap[key]);
-                if (directedConnectionsMap[key]['up'] != null)
+
+                if (!this.properties.bTravesableUp)
                     delete directedConnectionsMap[key]['up'];
             }
         }
 
-        // cellID : {abilityID : distance from ability}
+        // cellID : {abilityID : {distance from ability : int, restrict going sideways : false}}
         let pathwayMap = {};
 
         for (let cellID of Object.keys(this.cellMap)) {
             if (this.cellMap[cellID]["abilityID"] != null) {
                 pathwayMap[cellID] = pathwayMap[cellID] ?? {};
-                pathwayMap[cellID][ this.cellMap[cellID]["abilityID"] ] = 0;
+                pathwayMap[cellID][ this.cellMap[cellID]["abilityID"] ] = {'distance' : 0, 'restrictSides' : false};
             }
         }
 
@@ -2904,26 +2891,35 @@ class BaseTree
 
                 let pendingAbilityIDs = [];
                 for (let abilityID of Object.keys(pathwayMap[cellID])) {
-                    if (pathwayMap[cellID][abilityID] == currentProcessingTarget)
+                    if (pathwayMap[cellID][abilityID]['distance'] == currentProcessingTarget)
                         pendingAbilityIDs.push(abilityID);
                 }
 
                 if (pendingAbilityIDs.length != 0) {
                     keepGoing = true;
 
-                    let connectedCellNumbers = Object.values(directedConnectionsMap[cellID]);
-                    for (let connectedCellNumber of connectedCellNumbers) {
+                    for (let connectedCellDirection of Object.keys(directedConnectionsMap[cellID])) {
+
+                        const connectedCellNumber = directedConnectionsMap[cellID][connectedCellDirection];
 
                         if (this.cellMap[connectedCellNumber]["abilityID"] == null) {
 
                             pathwayMap[connectedCellNumber] = pathwayMap[connectedCellNumber] ?? {};
+                            const restrictSides = (connectedCellDirection == 'down' && !LSHAPEDALLOCATION);
 
-                            for (let abilityID of pendingAbilityIDs) {
-                                    pathwayMap[connectedCellNumber][abilityID] = pathwayMap[connectedCellNumber][abilityID] ?? currentProcessingTarget + 1;
+                            for (let parentAbilityID of pendingAbilityIDs) {
+
+                                    if ( pathwayMap[cellID][parentAbilityID]['restrictSides'] && (connectedCellDirection == 'left' || connectedCellDirection == 'right') )
+                                        continue;
+
+                                    pathwayMap[connectedCellNumber][parentAbilityID] = pathwayMap[connectedCellNumber][parentAbilityID] ?? {'distance' : currentProcessingTarget + 1, restrictSides};
                             }
 
                         } else {
                             for (let parentAbilityID of pendingAbilityIDs) {
+
+                                if ( pathwayMap[cellID][parentAbilityID]['restrictSides'] && (connectedCellDirection == 'left' || connectedCellDirection == 'right') )
+                                    continue;
 
                                 const childAbilityID = this.cellMap[connectedCellNumber]["abilityID"];
 
@@ -2947,7 +2943,8 @@ class BaseTree
                                             const cellID = undirectedConnectionsMap[currentCell][direction];
 
                                             if (pathwayMap[cellID] &&
-                                                pathwayMap[cellID][parentAbilityID] == backtrackProcessingTarget) {
+                                                pathwayMap[cellID][parentAbilityID] &&
+                                                pathwayMap[cellID][parentAbilityID]['distance'] == backtrackProcessingTarget) {
 
                                                 lastTravelNode[direction] = 2;
                                                 this.potentialAllocationMap[parentAbilityID][childAbilityID][currentCell] = lastTravelNode;
