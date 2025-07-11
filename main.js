@@ -664,6 +664,9 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
 
     else if (type in iconDictionary)
         switch (allocationStatus) {
+            case -1:
+                url = iconDictionary[type] + '_blocked.png';
+                break;
             case 0:
                 url = iconDictionary[type] + '_dark.png';
                 break;
@@ -1073,7 +1076,7 @@ class BaseTree
      * Current vertical page
      * @var int
      */
-    currentHorizontaPage = 1;
+    currentHorizontalPage = 1;
 
     /**
      * Used by initializeEditNode method to keep track of affected cells
@@ -2252,7 +2255,7 @@ class BaseTree
 
     incrementHorizontalPage(increment = 0) {
 
-        this.setcurrentHorizontalPage(this.currentHorizontaPage + increment);
+        this.setcurrentHorizontalPage(this.currentHorizontalPage + increment);
         this.renderTree();
 
     }
@@ -3336,6 +3339,8 @@ class BaseTree
                             allocationStatus = 2;
                         else if (allocatableNodes[ cell['abilityID'] ] != null)
                             allocationStatus = 1;
+                        else if (this.currentTree['blockedNodes'][ cell['abilityID'] ])
+                            allocationStatus = -1;
 
                         div = generateIconDiv(
                             this.abilities[ cell['abilityID'] ] ? this.abilities[ cell['abilityID'] ].type : null,
