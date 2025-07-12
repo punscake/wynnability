@@ -1491,7 +1491,8 @@ class BaseTree
 
                 this.cellMap[id] = {};
                 this.cellMap[id]['travelNode'] = new TravelNode(cellMap[id]['travelNode']);
-                this.cellMap[id]['abilityID'] = cellMap[id]['abilityID'];
+                if (cellMap[id]['abilityID'] != null)
+                    this.cellMap[id]['abilityID'] = cellMap[id]['abilityID'];
 
             });
         }
