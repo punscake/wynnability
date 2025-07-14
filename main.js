@@ -1,6 +1,6 @@
 function moveTooltip(X, Y, checkHidden = false) {
         const cursorTooltip = document.getElementById('cursorTooltip');
-        if (checkHidden && cursorTooltip.hidden == true)
+        if (checkHidden && cursorTooltip.hidden)
         return;
     
         let scale = 1;
@@ -11,7 +11,12 @@ function moveTooltip(X, Y, checkHidden = false) {
         let leftOffset = (X + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : X + 5;
         leftOffset = Math.max(leftOffset, 12);
 
-        let upOffset = Y > (window.innerHeight / 2) ? Y - cursorTooltip.offsetHeight - 2 : Y + 2;
+        let upOffset = Y + 2;
+        if (Y > (window.innerHeight / 2)) {
+            upOffset = Y - cursorTooltip.offsetHeight - 2;
+            cursorTooltip.style.transformOrigin = `bottom left`;
+        } else
+            cursorTooltip.style.transformOrigin = `top left`;
         
         cursorTooltip.style.top = `${upOffset}px`;
         cursorTooltip.style.left = `${leftOffset}px`;
