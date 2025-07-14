@@ -2,13 +2,19 @@ function moveTooltip(X, Y, checkHidden = false) {
         const cursorTooltip = document.getElementById('cursorTooltip');
         if (checkHidden && cursorTooltip.hidden == true)
         return;
+    
+        let scale = 1;
+        if (cursorTooltip.offsetWidth + 24 > window.innerWidth)
+            scale = (window.innerWidth - 24) / cursorTooltip.offsetWidth;
+        cursorTooltip.style.transform = `scale(${scale})`;
 
         let leftOffset = (X + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : X + 5;
         leftOffset = Math.max(leftOffset, 12);
 
         let upOffset = Y > (window.innerHeight / 2) ? Y - cursorTooltip.offsetHeight - 2 : Y + 2;
         
-        cursorTooltip.style = `top: ${upOffset}px; left: ${leftOffset}px`;
+        cursorTooltip.style.top = `${upOffset}px`;
+        cursorTooltip.style.left = `${leftOffset}px`;
     }
 document.addEventListener('DOMContentLoaded', (e) => {
     //Attaches a div to a cursor, used to display content
@@ -1790,6 +1796,8 @@ class BaseTree
     }
 
     _getAbilityTooltipHTML(ability = new Ability()) {
+
+        let result = '';
 
         if (ability.type == 'skill')
             result = `
