@@ -17,6 +17,16 @@ section {
   border-width: 3px;
 }
 
+.share-dropdown {
+  background-color: #343640;
+}
+
+.share-dropdown li button {
+  background-color: #6c757d;
+  color: white;
+  border-radius: 3px;
+}
+
 #treeTableBody tr td {
   padding: 0px;
 }
@@ -41,9 +51,26 @@ section {
   position: relative;
 }
 
+#abilityTypeInput {
+  max-width: 230px;
+  min-height: 56px;
+}
+
+.customCredit {
+  font-size: 80%;
+}
+
+.customDescription {
+  font-style: italic;
+}
+
+#customAbilityPreview div {
+  width: 36px;
+}
+
 #cursorTooltip {
   position: fixed;
-  z-index: 40;
+  z-index: 69420;
 }
 
 #editAbilityTooltip {
@@ -290,4 +317,16 @@ section {
 
 .font-default {
   font-family: none;
+}
+
+@media (pointer: coarse) {
+  .hide-cursor-coarse {
+    display: none;
+  }
+}
+
+@media (pointer: none) {
+  .hide-cursor-none {
+    display: none;
+  }
 }

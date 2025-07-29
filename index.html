@@ -8,30 +8,48 @@
     <link href="main.css" rel="stylesheet">
     <link rel="icon" href="img/wynnability.png" />
   </head>
-  <body id="dropzone" class="generic-background" ondrop="tree.loadTreeFromFile(event)">
+  <body id="dropzone" class="generic-background" data-bs-theme="light" ondrop="tree.loadTreeFromDrop(event); loadModal.hide()">
 
-    <section class="mt-2 pb-2">
+    <section class="mt-2 pb-2 pt-2">
 
-      <form>
+      <div class="d-flex justify-content-start align-items-center ps-1 pe-1">
 
-        <div class="d-flex justify-content-start align-items-center ps-2 pe-2">
+        <button type="button" class="btn btn-primary me-auto" data-bs-toggle="collapse" data-bs-target="#extraSettings" aria-expanded="false" aria-controls="extraSettings">Class Settings</button>
 
-          <!-- Prevent implicit submission of the form -->
-          <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-
-          <button type="button" onclick="copyFromField('json-container')" class="btn btn-primary me-2" title="Copies a shareable JSON">Copy</button>
+        <div class="ms-1 me-auto d-flex align-items-center" style="height: 40px;"
+          onpointerover="
+            const container = document.getElementById('cursorTooltip');
+            container.hidden = false;
+            container.innerHTML = `
+                  <span style='color:#FF55FF' class='fw-bold'>Eye&nbsp;Piercer</span><br><br>
+                  <span style='color:#AAAAAA'>Effect:&nbsp;</span><span style='color:#FFFFFF'>Blindness&nbsp;(</span><span style='color:#FF5555'>⬣</span><span style='color:#FFFFFF'>)&nbsp;to&nbsp;Self</span>
+            `
+          "
+          onpointerout="utils.hideHoverAbilityTooltip()"
+        >
           
-          <button type="button" onclick="tree.downloadJSON()" class="btn btn-primary me-2" title="Saves current configuration in a shareable file">Download</button>
+          <img id="themeSwitchDark" hidden src="abilities/generic/purple.png" onclick="switchTheme('light'); this.hidden = true; changeHidden(false, [], ['themeSwitchLight']);">
 
-          <button type="button" onclick="tree.loadTreeFromField()" class="btn btn-primary me-2" title="From a JSON pasted into the field on the right">Load</button>
-
-          <input type="textbox" id="json-container" class="me-2 overflow-hidden" style="min-width: 40px" onfocus="this.select()">
-
-          <button type="button" class="btn btn-primary ms-auto" data-bs-toggle="collapse" data-bs-target="#extraSettings" aria-expanded="false" aria-controls="extraSettings">Class Settings</button>
+          <img id="themeSwitchLight" src="abilities/generic/purple_a.png" onclick="switchTheme('dark'); this.hidden = true; changeHidden(false, [], ['themeSwitchDark']);">
 
         </div>
 
-      </form>
+        <button type="button" class="btn btn-primary ms-1 me-2" data-bs-toggle="modal" data-bs-target="#loadModal"
+          onclick="changeHidden(false, [], ['loadinterface']); changeHidden(true, [], ['libraryinterface']);"
+        >Load</button>
+
+        <div class="dropdown">
+
+          <button type="button" class="btn btn-primary dropdown-toggle" title="Display sharing options" data-bs-toggle="dropdown">Share</button>
+        
+          <ul class="p-0 dropdown-menu share-dropdown">
+            <li><button type="button" onclick="navigator.clipboard.writeText(JSON.stringify(tree, null, 0))" class="dropdown-item mb-1" title="Copies a shareable JSON">Copy</button></li>
+            <li><button type="button" onclick="tree.downloadJSON()" class="dropdown-item" title="Saves current configuration in a shareable file">Download</button></li>
+          </ul>
+
+        </div>
+
+      </div>
   
       <div class="collapse" id="extraSettings">
 
@@ -45,7 +63,7 @@
 
               <div class="pt-2" style="width:85%">
 
-                <select class="form-select form-select-sm mt-1" aria-label="Small select example" id="classSelect" oninput="tree.readProperties()" title="Affects ability icons and default tree">
+                <select class="form-select form-select-sm mt-1" aria-label="Class selection" id="classSelect" oninput="tree.readProperties()" title="Affects ability icons and default tree">
   
                   <option selected value="archer">Archer</option>
                   <option value="warrior">Warrior</option>
@@ -264,7 +282,7 @@
             
               <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-2">
                 
-                <input type="textbox" class="generic-background" style="color: white; min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
+                <input type="textbox" class="generic-background text-light" style="min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
 
                 <div class="me-auto ms-2">
 
@@ -383,6 +401,109 @@
 
     </section>
 
+    <div class="modal" id="loadModal" tabindex="-1" aria-labelledby="Load Modal" aria-hidden="true">
+      <div class="modal-dialog">
+
+        <div class="modal-content">
+
+          <div class="modal-header text-light" data-bs-theme="dark">
+            <h1 class="modal-title fs-5 overflow-hidden text-nowrap" id="exampleModalLabel">Load a custom tree</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body">
+
+            <div id="loadinterface">
+
+              <input type="textbox" id="json-container" class="overflow-hidden generic-background text-light" style="min-width: 40px; width: 100%" onfocus="this.value = ''" placeholder="Paste the JSON here"
+                onpaste="setTimeout( () => {
+                  try {
+                    tree.loadTreeFromField();
+                    loadModal.hide();
+                  } catch (e) {
+                    this.select();
+                  };
+                  this.value = '';
+                }, 0)"
+              >
+              
+              <div class="d-flex mt-2 mb-2">
+
+                <button type="button" class="btn btn-primary me-2 flex-fill"
+                  onclick="document.getElementById('autofileinput').click()"
+                  onmouseover="changeHidden(false, [], ['selectfiletip']); changeHidden(true, [], ['browselibrarytip']);"
+                >Select a file</button>
+                <input hidden type="file" id="autofileinput" accept=".json,.txt" onchange="tree.loadTreeFromFile(this.files[0]); loadModal.hide()"/>
+                
+                <button type="button" class="btn btn-primary flex-fill"
+                  onmouseover="changeHidden(false, [], ['browselibrarytip']); changeHidden(true, [], ['selectfiletip']);"
+                  onclick="changeHidden(false, [], ['libraryinterface']); changeHidden(true, [], ['loadinterface']); custom.renderSearchResults();"
+                >Browse library</button>
+              
+              </div>
+
+              <div class="minecraftTooltip p-2 hide-cursor-coarse hide-cursor-none">
+
+                <div id="selectfiletip">
+                  <p>Select a file from your device</p>
+                  <p>TIP: Dragging and dropping the file onto the page also works</p>
+                </div>
+
+                <div id="browselibrarytip" hidden>
+                  <p>Custom classes and reworks made by the community</p>
+                  <p>TIP: If you want your work to be featured, contact me (punscake) on discord</p>
+                </div>
+
+              </div>
+
+            </div>
+
+            <div id="libraryinterface" hidden>
+
+            
+              <input type="textbox" id="customSearch" class="overflow-hidden generic-background text-light" style="min-width: 40px; width: 100%" placeholder="Search..."
+                oninput="custom.renderSearchResults()"
+              >
+              
+              <div class="d-flex mt-2 mb-2">
+
+                <select class="form-select form-select-sm me-3" aria-label="Class filter" id="customClassSelect" oninput="custom.renderSearchResults()" title="Select reworked class">
+  
+                  <option value="all">All</option>
+                  <option value="archer">Archer</option>
+                  <option value="warrior">Warrior</option>
+                  <option value="assassin">Assassin</option>
+                  <option value="mage">Mage</option>
+                  <option value="shaman">Shaman</option>
+                  <option value="custom">Custom</option>
+  
+                </select>
+
+                <button type="button" class="btn btn-primary col-5 ms-2"
+                  onmouseover="changeHidden(false, [], ['browselibrarytip']); changeHidden(true, [], ['selectfiletip']);"  
+                  onclick="changeHidden(false, [], ['loadinterface']); changeHidden(true, [], ['libraryinterface']);"
+                >Back</button>
+              
+              </div>
+
+              <div id="customPresetContainer" class="p-2 generic-background" style="border-radius: 2px; max-height: 50vh; overflow: auto;">
+
+              </div>
+
+
+
+            </div>
+            
+          </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
     <div class="modal fade" id="archetypeModal" tabindex="-1" aria-labelledby="Archetype Edit" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" onpointerdown = "event.target.classList.contains('focusable') ? function() {} : event.preventDefault()">
 
@@ -400,12 +521,12 @@
               <div class="colorContainer" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(preferredDelimiter + 'r')">Reset style</button>-->
-                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(preferredDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(preferredDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(preferredDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(preferredDelimiter + 'm')">S</button>
-                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(preferredDelimiter + value)">
+                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'r')">Reset style</button>-->
+                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'm')">S</button>
+                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="utils.insertStringBeforeSelected(utils.preferredDelimiter + value)">
               </div>
 
             </div>
@@ -416,7 +537,7 @@
 
             <div class="form-floating">
 
-              <input type="text" class="form-control focusable" id="archetypeNameInput" autocomplete="off" placeholder="ex. Boltslinger" oninput="convertToMinecraftTooltip(value, 'archetypeTooltip')" maxlength="150">
+              <input type="text" class="form-control focusable" id="archetypeNameInput" autocomplete="off" placeholder="ex. Boltslinger" oninput="utils.convertToMinecraftTooltip(value, 'archetypeTooltip')" maxlength="150">
               <label class="maxlength-label" for="archetypeNameInput">ex. Boltslinger</label>
 
             </div>
@@ -464,12 +585,12 @@
               <div class="colorContainer mt-1" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(preferredDelimiter + 'r')">Reset style</button>-->
-                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(preferredDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(preferredDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(preferredDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(preferredDelimiter + 'm')">S</button>
-                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(preferredDelimiter + value)">
+                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'r')">Reset style</button>-->
+                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-line-through medium-btn" title="Strikethrough" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'm')">S</button>
+                <input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="utils.insertStringBeforeSelected(utils.preferredDelimiter + value)">
               </div>
 
             </div>
@@ -527,7 +648,7 @@
 
           <div class="modal-footer justify-content-between">
 
-            <div class="d-flex justify-content-between align-items-center flex-fill" style="max-width: 230px; min-height: 56px;" id="abilityTypeInput"></div>
+            <div class="d-flex justify-content-between align-items-center flex-fill" id="abilityTypeInput"></div>
 
             <div>
 
@@ -563,12 +684,12 @@
               <div class="colorContainer" style="text-align: end;"></div>
 
               <div class="row justify-content-end mt-2" style="text-align: end;">
-                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="insertStringBeforeSelected(preferredDelimiter + 'r')">Reset style</button>-->
-                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="insertStringBeforeSelected(preferredDelimiter + 'l')">B</button>
-                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="insertStringBeforeSelected(preferredDelimiter + 'o')">I</button>
-                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="insertStringBeforeSelected(preferredDelimiter + 'n')">U</button>
-                <button type="button" class="btn btn-secondary me-3 text-decoration-line-through medium-btn" title="Strikethrough" onclick="insertStringBeforeSelected(preferredDelimiter + 'm')">S</button>
-                <!--<input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="insertStringBeforeSelected(preferredDelimiter + value)">-->
+                <!--<button type="button" class="btn btn-secondary me-2 medium-btn" style="width: 100px;" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'r')">Reset style</button>-->
+                <button type="button" class="btn btn-secondary me-2 fw-bold medium-btn" title="Bold" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'l')">B</button>
+                <button type="button" class="btn btn-secondary me-2 fst-italic medium-btn" title="Italic" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'o')">I</button>
+                <button type="button" class="btn btn-secondary me-2 text-decoration-underline medium-btn" title="Underline" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'n')">U</button>
+                <button type="button" class="btn btn-secondary me-3 text-decoration-line-through medium-btn" title="Strikethrough" onclick="utils.insertStringBeforeSelected(utils.preferredDelimiter + 'm')">S</button>
+                <!--<input type="color" style="height: 25px; width: 25px;" class="form-control form-control-color me-3" value="#18f7d1" title="Custom color" onchange="utils.insertStringBeforeSelected(utils.preferredDelimiter + value)">-->
               </div>
 
             </div>
@@ -579,7 +700,7 @@
 
             <div class="form-floating">
 
-              <input type="text" class="form-control focusable" id="treeNameInput" autocomplete="off" placeholder="ex. Trickshade" oninput="convertToMinecraftTooltip(value, 'treeTooltip')" maxlength="100">
+              <input type="text" class="form-control focusable" id="treeNameInput" autocomplete="off" placeholder="ex. Trickshade" oninput="utils.convertToMinecraftTooltip(value, 'treeTooltip')" maxlength="100">
               <label class="maxlength-label" for="treeNameInput">ex. Mango Tree</label>
 
             </div>
@@ -624,13 +745,19 @@
     <div class="minecraftTooltip overflow-hidden pe-none" id="cursorTooltip" hidden></div>
 
     <script src="bootstrap.bundle.min.js"></script>
-    <script src="main.js"></script>
-    <script>
+    <script type="module">
+    import * as main from '/main.mjs';
+    import * as utils from '/utils.mjs';
+    import * as custom from '/custompresets.mjs';
+      window.utils = utils;
+      window.custom = custom;
 
-      let tree = new BaseTree();
+      let tree = new main.BaseTree();
+      window.tree = tree;
 
       // #region Cookies
       const LAST_SESSION_STORAGE_NAME = 'lastClosedSession';
+      const LAST_SESSION_THEME = 'theme';
 
       window.addEventListener('beforeunload', (e) => {
         localStorage.setItem(LAST_SESSION_STORAGE_NAME, JSON.stringify(tree, null, 0));
@@ -643,6 +770,11 @@
         });
       }
 
+      window.switchTheme = function switchTheme(theme) {
+        document.body.dataset['bsTheme'] = theme;
+        localStorage.setItem(LAST_SESSION_THEME, theme);
+      }
+
       document.addEventListener("DOMContentLoaded", (event) => {
 
         const json = localStorage.getItem(LAST_SESSION_STORAGE_NAME);
@@ -652,6 +784,14 @@
           tree.saveState('Loaded last closed session');
         }
 
+        const theme = localStorage.getItem(LAST_SESSION_THEME);
+        if (theme != null) {
+          document.body.dataset['bsTheme'] = theme;
+          if (theme == 'dark') {
+                changeHidden(false, [], ['themeSwitchDark']);
+                changeHidden(true, [], ['themeSwitchLight']);
+          }
+        }
       });
       // #endregion
 
@@ -672,47 +812,89 @@
         archetypeNameInput.focus();
       })
 
-      const abilityModal = document.getElementById('abilityModal');
-      const abilityNameInput = document.getElementById('abilityNameInput');
-      abilityModal.addEventListener('shown.bs.modal', () => {
-        abilityNameInput.focus();
+      utils.enforceMinMax('maxSaveStates', 1, 100);
+
+      window.loadModal = new bootstrap.Modal('#loadModal', {
+        keyboard: false
       })
 
-      enforceMinMax('maxSaveStates', 1, 100);
+      window.changeHidden = function changeHidden(bHidden, classes = [], ids = []) {
+
+        if (classes.length > 0) {
+          classes.forEach(c => {
+            document.getElementsByClassName(c).forEach(e => {
+              e.hidden = bHidden;
+            });
+          });
+        }
+        if (ids.length > 0) {
+          ids.forEach(id => {document.getElementById(id).hidden = bHidden});
+        }
+      }
 
       document.addEventListener("DOMContentLoaded", (event) => {
+        
+        //Attaches a div to a cursor, used to display content
+        document.addEventListener( 'pointermove', (e) => {utils.movetooltip(e.clientX, e.clientY, true);} );
+        //Makes tooltip disappear on tap
+        document.addEventListener( 'touchstart', () => {utils.hideHoverAbilityTooltip()});
+        document.addEventListener( 'wheel', (e) => utils.hideHoverAbilityTooltip() );
+
+        let treescrollprocessor = new utils.TouchProcessor();
+        document.getElementById('treeTableBody').addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            let swipeY = e.changedTouches[0].clientY;
+            treescrollprocessor.processTouch(e, 
+                () => {},
+                () => {},
+                () => {},
+                () => {},
+                () => {},
+                () => {},
+                (event) => {
+                    const deltaY = event.changedTouches[0].clientY - swipeY;
+                    if (Math.abs(deltaY) > 30) {
+                        swipeY = event.changedTouches[0].clientY;
+                        if (deltaY < 0)
+                            tree.incrementVerticalPage(1);
+                        else
+                            tree.incrementVerticalPage(-1);
+                    }
+                }
+            );
+        }, {passive: false});
 
         const containersToHide = document.getElementsByClassName("shown-on-allocation");
-        for (container of containersToHide)
+        for (let container of containersToHide)
           container.hidden = true;
 
-        //Populates color options from codeDictionaryColor map
+        //Populates color options from utils.codeDictionaryColor map
         const colorContainers = document.getElementsByClassName("colorContainer");
 
-        for (let key in codeDictionaryColor) {
+        for (let key in utils.codeDictionaryColor) {
 
-          if (codeDictionaryColor[key] == null)
+          if (utils.codeDictionaryColor[key] == null)
             continue;
 
           const button = document.createElement("button");
-          button.style = "height: 16px; width: 16px; margin-right: 4px; background-color:" + codeDictionaryColor[key];
+          button.style = "height: 16px; width: 16px; margin-right: 4px; background-color:" + utils.codeDictionaryColor[key];
           button.tabIndex = "-1";
           button.type = "button";
 
-          for (container of colorContainers) {
+          for (let container of colorContainers) {
             const clone = button.cloneNode(false);
             container.appendChild(clone);
-            clone.addEventListener("click", () => {insertStringBeforeSelected(preferredDelimiter + key)});
+            clone.addEventListener("click", () => {utils.insertStringBeforeSelected(utils.preferredDelimiter + key)});
           }
 
           button.remove();
 
         }
 
-        //Populates generic unicode options from codeDictionaryGenericSymbols map
+        //Populates generic unicode options from utils.codeDictionaryGenericSymbols map
         const genericUnicodeContainers = document.getElementsByClassName("genericUnicodeContainer");
 
-        for (let key in codeDictionaryGenericSymbols) {
+        for (let key in utils.codeDictionaryGenericSymbols) {
 
           const button = document.createElement("button");
           button.title = key;
@@ -720,24 +902,24 @@
 
           const div = document.createElement("div");
           button.appendChild(div);
-          div.innerHTML = minecraftToHTML(codeDictionaryGenericSymbols[key]);
+          div.innerHTML = utils.minecraftToHTML(utils.codeDictionaryGenericSymbols[key]);
           button.tabIndex = "-1";
           button.type = "button";
 
-          for (container of genericUnicodeContainers) {
+          for (let container of genericUnicodeContainers) {
             const clone = button.cloneNode(true);
             container.appendChild(clone);
-            clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryGenericSymbols[key])});
+            clone.addEventListener("click", () => {utils.insertStringBeforeSelected(utils.codeDictionaryGenericSymbols[key])});
           }
           
           button.remove();
           
         }
 
-        //Populates class unicode options from codeDictionaryClassSymbols map
+        //Populates class unicode options from utils.codeDictionaryClassSymbols map
         const classUnicodeContainers = document.getElementsByClassName("classUnicodeContainer");
 
-        for (let key in codeDictionaryClassSymbols) {
+        for (let key in utils.codeDictionaryClassSymbols) {
 
           const button = document.createElement("button");
           button.title = key;
@@ -745,25 +927,25 @@
 
           const div = document.createElement("div");
           button.appendChild(div);
-          div.innerHTML = minecraftToHTML(codeDictionaryClassSymbols[key]);
+          div.innerHTML = utils.minecraftToHTML(utils.codeDictionaryClassSymbols[key]);
 
           button.tabIndex = "-1";
           button.type = "button";
 
-          for (container of classUnicodeContainers) {
+          for (let container of classUnicodeContainers) {
             const clone = button.cloneNode(true);
             container.appendChild(clone);
-            clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryClassSymbols[key])});
+            clone.addEventListener("click", () => {utils.insertStringBeforeSelected(utils.codeDictionaryClassSymbols[key])});
           }
           
           button.remove();
           
         }
 
-        //Populates common ability options from codeDictionaryCommonAbilityAttributes map
+        //Populates common ability options from utils.codeDictionaryCommonAbilityAttributes map
         const commonAbilityUnicodeContainers = document.getElementsByClassName("commonAbilityUnicodeContainer");
 
-        for (let key in codeDictionaryCommonAbilityAttributes) {
+        for (let key in utils.codeDictionaryCommonAbilityAttributes) {
 
           const button = document.createElement("button");
           button.title = key;
@@ -771,15 +953,15 @@
 
           const div = document.createElement("div");
           button.appendChild(div);
-          div.innerHTML = minecraftToHTML(codeDictionaryCommonAbilityAttributes[key][0]);
+          div.innerHTML = utils.minecraftToHTML(utils.codeDictionaryCommonAbilityAttributes[key][0]);
 
           button.tabIndex = "-1";
           button.type = "button";
 
-          for (container of commonAbilityUnicodeContainers) {
+          for (let container of commonAbilityUnicodeContainers) {
             const clone = button.cloneNode(true);
             container.appendChild(clone);
-            clone.addEventListener("click", () => {insertStringBeforeSelected(codeDictionaryCommonAbilityAttributes[key][1])});
+            clone.addEventListener("click", () => {utils.insertStringBeforeSelected(utils.codeDictionaryCommonAbilityAttributes[key][1])});
           }
           
           button.remove();

@@ -1,608 +1,4 @@
-function moveTooltip(X, Y, checkHidden = false) {
-        const cursorTooltip = document.getElementById('cursorTooltip');
-        if (checkHidden && cursorTooltip.hidden)
-        return;
-    
-        let scale = 1;
-        if (cursorTooltip.offsetWidth + 24 > window.innerWidth)
-            scale = (window.innerWidth - 24) / cursorTooltip.offsetWidth;
-        cursorTooltip.style.transform = `scale(${scale})`;
-
-        let leftOffset = (X + cursorTooltip.offsetWidth + 12) > window.innerWidth ? window.innerWidth - cursorTooltip.offsetWidth - 12 : X + 5;
-        leftOffset = Math.max(leftOffset, 12);
-
-        let upOffset = Y + 2;
-        if (Y > (window.innerHeight / 2)) {
-            upOffset = Y - cursorTooltip.offsetHeight - 2;
-            cursorTooltip.style.transformOrigin = `bottom left`;
-        } else
-            cursorTooltip.style.transformOrigin = `top left`;
-        
-        cursorTooltip.style.top = `${upOffset}px`;
-        cursorTooltip.style.left = `${leftOffset}px`;
-    }
-document.addEventListener('DOMContentLoaded', (e) => {
-    //Attaches a div to a cursor, used to display content
-    document.addEventListener( 'pointermove', (e) => {moveTooltip(e.clientX, e.clientY, true);} );
-    //Makes tooltip disappear on tap
-    document.addEventListener( 'touchstart', () => {tree.hideHoverAbilityTooltip()});
-    document.addEventListener( 'wheel', (e) => tree.hideHoverAbilityTooltip() );
-
-    let treescrollprocessor = new TouchProcessor();
-    document.getElementById('treeTableBody').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        let swipeY = e.changedTouches[0].clientY;
-        treescrollprocessor.processTouch(e, 
-            () => {},
-            () => {},
-            () => {},
-            () => {},
-            () => {},
-            () => {},
-            (event) => {
-                const deltaY = event.changedTouches[0].clientY - swipeY;
-                if (Math.abs(deltaY) > 30) {
-                    swipeY = event.changedTouches[0].clientY;
-                    if (deltaY < 0)
-                        tree.incrementVerticalPage(1);
-                    else
-                        tree.incrementVerticalPage(-1);
-                }
-            }
-        );
-    }, {passive: false});
-})
-
-function copyFromField(fieldID) {
-
-    const field = document.getElementById(fieldID);
-    if (field == null || field.value == null)
-        return;
-
-    if (!navigator.clipboard) {
-        field.select();
-        document.execCommand('copy');
-        return;
-    }
-
-    navigator.clipboard.writeText(field.value);
-    
-}
-
-function clamp(number, min, max) {
-
-    return Math.max(min, Math.min(number, max));
-
-}
-
-function shortenText(text, maxChars, replaceEndWith = "...") {
-
-    if (text.length <= maxChars || maxChars < 1 || text.length < 2)
-        return text;
-
-    if (replaceEndWith.length >= text.length)
-        replaceEndWith = replaceEndWith.substring(0, text.length);
-
-    return text.substring(0, maxChars - replaceEndWith.length) + replaceEndWith;
-}
-
-function enforceMinMax(inputElementID, min, max) {
-
-    const inputElement = document.getElementById(inputElementID);
-
-    if (inputElement == null)
-        return;
-
-    min = isNaN(Number(min)) ? null : Number(min);
-    max = isNaN(Number(max)) ? null : Number(max);
-
-    if (document.readyState === "complete" || document.readyState === "loaded") {
-
-        if (min != null)
-            inputElement.min = min;
-
-        if (max != null)
-            inputElement.max = max;
-
-        inputElement.addEventListener('change', (e) => {
-    
-            if (inputElement.hasAttribute('min'))
-                inputElement.value = Math.max(inputElement.value, inputElement.min);
-    
-            if (inputElement.hasAttribute('max'))
-                inputElement.value = Math.min(inputElement.value, inputElement.max);
-    
-        }, true)
-
-    } else {
-
-        document.addEventListener("DOMContentLoaded", () => {
-
-            if (min != null)
-                inputElement.min = min;
-
-            if (max != null)
-                inputElement.max = max;
-
-            inputElement.addEventListener('change', (e) => {
-        
-                if (inputElement.hasAttribute('min'))
-                    inputElement.value = Math.max(inputElement.value, inputElement.min);
-
-                if (inputElement.hasAttribute('max'))
-                    inputElement.value = Math.min(inputElement.value, inputElement.max);
-        
-            }, true)
-
-        });
-   }
-}
-
-function showSmallToast(innerHTML = "I'm a toast!", autohide = true, hideDelay = 5000, id = 'smallToast') {
-
-    const container = document.getElementById(id);
-    if(container == null)
-        return;
-
-    container.querySelector('.toast-body').innerHTML = innerHTML;
-
-    const toast = bootstrap.Toast.getOrCreateInstance( container, {'autohide': autohide, 'delay': autohide ? hideDelay : null} );
-    toast.show();
-}
-
-const TAPLENGTH = 250;
-const SWIPEMINDISTANCE = 30;
-class TouchProcessor{
-
-    lastTap = 0;
-
-    taplength = 250;
-
-    swipemindistance = 30;
-    
-    startX;
-    startY;
-
-    singeTapTimeout;
-
-    constructor({taplength = TAPLENGTH, swipemindistance = SWIPEMINDISTANCE} = {}) {
-        this.taplength = isNaN(Number(taplength)) ? TAPLENGTH : Math.max(Number(taplength), 0);
-        this.swipemindistance = isNaN(Number(swipemindistance)) ? SWIPEMINDISTANCE : Math.max(Number(swipemindistance), 0);
-    }
-
-    processTouch(event, singleTapCallback = (e) => {}, doubleTapCallback = (e) => {},
-        holdStartCallback = (e) => {}, holdMoveCallback = (e) => {}, holdEndCallback = (e) => {},
-        swipeStartCallback = (e) => {}, swipeMoveCallback = (e) => {}, swipeEndCallback = (e) => {}) {
-
-        if (this.singeTapTimeout != null) {
-            clearTimeout(this.singeTapTimeout);
-            this.singeTapTimeout = null;
-        }
-
-        const currentTime = new Date().getTime();
-        const timeSinceLastTap = currentTime - this.lastTap;
-
-        if (timeSinceLastTap < TAPLENGTH && timeSinceLastTap > 0) {
-            doubleTapCallback(event);
-        } else {
-
-            const target = event.target;
-            this.startX = event.touches[0].clientX;
-            this.startY = event.touches[0].clientY;
-
-            let touchmove;
-            let touchmoveElectricBoogaloo;
-            let touchend;
-
-            let processor = this;
-
-            target.addEventListener("touchmove", touchmove = function(e) {
-
-                const deltaX = e.changedTouches[0].clientX - processor.startX;
-                const deltaY = e.changedTouches[0].clientY - processor.startY;
-
-                if (deltaX ** 2 + deltaY ** 2 >= processor.swipemindistance ** 2){
-
-                    if (holdTimeout) {
-                        clearTimeout(holdTimeout);
-                        holdTimeout = null;
-                    }
-                    target.removeEventListener("touchend", touchend);
-                    target.removeEventListener("touchmove", touchmove);
-
-                    swipeStartCallback(event);
-                    target.addEventListener("touchmove", touchmoveElectricBoogaloo = function(e) {
-                        swipeMoveCallback(e);
-                    }, {passive: true});
-                    target.addEventListener("touchend", (e) => {
-                        target.removeEventListener("touchmove", touchmoveElectricBoogaloo);
-                        swipeEndCallback(e);
-                    }, {once: true});
-
-                }
-            }, {passive: true});
-
-            let holdTimeout = setTimeout(
-                () => {
-                    target.removeEventListener("touchend", touchend);
-                    target.removeEventListener("touchmove", touchmove);
-                    holdStartCallback(event);
-                    target.addEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
-                    target.addEventListener("touchend", (e) => {
-                        holdEndCallback(e);
-                        target.removeEventListener("touchmove", (e) => holdMoveCallback(e), {passive: true});
-                    }, {once: true});
-                },
-                TAPLENGTH
-            );
-
-            target.addEventListener("touchend", touchend = function() {
-                if (holdTimeout) {
-                    clearTimeout(holdTimeout);
-                    holdTimeout = null;
-                }
-                target.removeEventListener("touchmove", touchmove);
-
-                const currentTime = new Date().getTime();
-
-                processor.singeTapTimeout = setTimeout(
-                    () => {
-                    singleTapCallback(event);
-                    processor.singeTapTimeout = null;
-                    },
-                    TAPLENGTH + processor.lastTap - currentTime
-                );
-            }, {once: true});
-        }
-        this.lastTap = currentTime;
-    }
-
-    touchmove(e) {
-        const deltaX = e.changedTouches[0].clientX - this.startX;
-        const deltaY = e.changedTouches[0].clientY - this.startY;
-
-        if (deltaX ** 2 + deltaY ** 2 >= this.swipemindistance ** 2){
-
-            if (holdTimeout) {
-                clearTimeout(holdTimeout);
-                holdTimeout = null;
-            }
-            target.removeEventListener("touchend", touchend);
-            target.removeEventListener("touchmove", touchmove);
-
-            swipeStartCallback(event);
-            target.addEventListener("touchmove", touchmoveElectricBoogaloo = function(e) {
-                swipeMoveCallback(e);
-            }, {passive: true});
-            target.addEventListener("touchend", (e) => {
-                target.removeEventListener("touchmove", touchmoveElectricBoogaloo);
-                swipeEndCallback(e);
-            }, {once: true});
-
-        }
-    }
-}
-
-const codeDictionaryGenericSymbols = {
-    'mana' : '§b✺',
-
-    'damage' : '§c⚔',
-    'neuteral' : '§6✣',
-    'earth' : '§2✤',
-    'thunder' : '§e✦',
-    'water' : '§b❉',
-    'fire' : '§c✹',
-    'air' : '§f❋',
-
-    'effect' : '§e✧',
-    'duration' : '§d⌛',
-    'AoE' : '§3☀',
-    'range' : '§a➼',
-    'cooldown' : '§3⌚',
-    'heal' : '§d❤',
-    'blindness' : '§c⬣',
-    'slowness' : '§c⬤',
-};
-const codeDictionaryClassSymbols = {
-    'focus' : '§e➽',
-
-    'winded' : '§b≈',
-    'dilation' : '§3➲',
-
-    'resistance' : '§a❁',
-    'corrupted' : '§4☠',
-    'armorbreak' : '§c✃',
-    'sacred' : '§6✧',
-    'provoke' : '§4💢',
-    'invincibility' : '§b☗',
-
-    'marked' : '§c✜',
-    'clone' : '§5',
-
-    'puppet' : '§6⚘',
-    'whipped' : '§6⇶',
-    'awakened' : '§f♚',
-    'bloodpool' : '§4⚕',
-    'bleeding' : '§c',
-};
-const codeDictionaryCommonAbilityAttributes = {
-    
-    'manacost' : ['§b✺', '\n§b✺ §7Mana Cost: §f_'],
-
-    'damage' : ['§c⚔', '\n§c⚔ §7Total Damage: §f_% §8(of your DPS)'],
-    'neuteral' : ['§6✣', '\n   §8(§6✣ §8Damage: _%)'],
-    'earth' : ['§2✤', '\n   §8(§2✤ §8Earth: _%)'],
-    'thunder' : ['§e✦', '\n   §8(§e✦ §8Thunder: _%)'],
-    'water' : ['§b❉', '\n   §8(§b❉ §8Water: _%)'],
-    'fire' : ['§c✹', '\n   §8(§c✹ §8Fire: _%)'],
-    'air' : ['§f❋', '\n   §8(§f❋ §8Air: _%)'],
-    
-    'effect' : ['§e✧', '\n§e✧ §7Effect: §f_'],
-    'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
-    'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
-    'AoE' : ['§3☀', '\n§3☀ §7Area of Effect: §f_ Blocks §7(Circle-Shaped)'],
-    'cooldown' : ['§3⌚', '\n§3⌚ §7Cooldown: §f_s'],
-
-};
-
-const codeDictionaryColor = {
-    '0' : '#000000',
-    '1' : '#0000AA',
-    '2' : '#00AA00',
-    '3' : '#00AAAA',
-    '4' : '#AA0000',
-    '5' : '#AA00AA',
-    '6' : '#FFAA00',
-    '7' : '#AAAAAA',
-    '8' : '#555555',
-    '9' : '#5555FF',
-    'a' : '#55FF55',
-    'b' : '#55FFFF',
-    'c' : '#FF5555',
-    'd' : '#FF55FF',
-    'e' : '#FFFF55',
-    'f' : '#FFFFFF',
-    'r' : null,
-};
-const codeDictionaryDecoration = {
-    'm' : 'line-through',
-    'n' : 'underline',
-};
-const codeDictionaryStyle = {
-    'l' : 'fw-bold',
-    'o' : 'fst-italic',
-};
-const minecraftDelimiters = {'§' : true, '&' : true};
-const preferredDelimiter = '§';
-
-function sanitizeHTML(text) {
-    return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function splitByColorFormats(string) {
-
-    let result =
-        [
-            {
-                color : null,
-                content : ''
-            }
-        ];
-
-    if (string.length == 0)
-        return result;
-
-    let i = 0;
-    for (i; i < string.length; i++) {
-
-        let char = string[i];
-
-        if (!minecraftDelimiters[char]) {
-            result[result.length - 1]['content'] += char;
-            continue;
-        }
-
-        i++;
-        if (i >= string.length)
-            continue;
-
-        let code = string[i];
-        
-        if (code in codeDictionaryColor)
-            result.push( {color : code, content : ''} );
-
-        else if (code == '#' && string.length - i >= 7) {
-            const endOfColorCode = i + 6;
-            for (i; i < endOfColorCode; i++) {
-                code += string[i + 1];
-            }
-            result.push( {color : code, content : ''} );
-
-        } else
-            result[result.length - 1]['content'] += char + code;
-    }
-    
-    return result;
-
-}
-
-function splitByOtherFormats(string = '') {
-
-    let result =
-        [
-            {
-                decoration : null,
-                style : null,
-                content : ''
-            }
-        ];
-
-    if (string.length == 0)
-        return result;
-    
-    let i = 0;
-    for (i; i < string.length - 1; i++) {
-
-        const char = string[i];
-        
-        if (!minecraftDelimiters[char]) {
-
-            result[result.length - 1]['content'] += char;
-            continue;
-
-        }
-        
-        i++;
-        const code = string[i];
-        
-        if (code in codeDictionaryStyle)
-            result.push( {style : code, content : ''} );
-
-        else if (code in codeDictionaryDecoration)
-            result.push( {decoration : code, content : ''} );
-    }
-    if (i < string.length && !minecraftDelimiters[string[string.length - 1]])
-        result[result.length - 1]['content'] += string[string.length - 1];
-    
-    return result;
-
-}
-
-function anyToHTML(text = "") {
-    return sanitizeHTML(text).replace(/(?:\r\n|\r|\n)/g, '<br>').replace(/ /g, '&nbsp;').replace(/-/g, '-&#8288;');
-}
-
-function minecraftToHTML(text = "") {
-
-    result = '';
-
-    const colorSplitArr = splitByColorFormats(text);
-    
-    colorSplitArr.forEach( colorSplit => {
-
-        let pendingContent = '';
-
-        let spansToClose = 0;
-        let pendingTextDecorations = {};
-        let pendingTextStyles = {};
-        
-        const formatSplitArr = splitByOtherFormats(colorSplit['content']);
-        
-        formatSplitArr.forEach( formatSplit => {
-            
-            const decoration = formatSplit['decoration'];
-            const style = formatSplit['style'];
-            const content = formatSplit['content'];
-
-            if (decoration != null && codeDictionaryDecoration[decoration] != null)
-                pendingTextDecorations[ decoration ] = true;
-
-            if (style != null && codeDictionaryStyle[style] != null)
-                pendingTextStyles[ style ] = true;
-
-            if (content == null || content == '')
-                return;
-            
-
-            pendingContent += '<span';
-            spansToClose++;
-            const decorations = Object.keys(pendingTextDecorations);
-            const styles = Object.keys(pendingTextStyles);
-            pendingTextDecorations = {};
-            pendingTextStyles = {};
-            const bUseDecorations = decorations.length > 0;
-            const bUseStyles = styles.length > 0;
-
-            if (bUseDecorations) {
-                pendingContent += ' style="text-decoration:';
-
-                for (let decoration of decorations)
-                    pendingContent += ' ' + codeDictionaryDecoration[decoration];
-
-                pendingContent += '; text-decoration-thickness: 2px;"';
-            }
-
-            if (bUseStyles) {
-                pendingContent += ' class="';
-                for (let style of styles)
-                    pendingContent += ' ' + codeDictionaryStyle[style];
-                pendingContent += '"'
-            }
-
-            pendingContent += `>${anyToHTML(content)}`;
-
-        });
-
-        
-        if (pendingContent.length == 0)
-            return;
-
-        const color = colorSplit['color'];
-
-        if (color != null)
-            if (codeDictionaryColor[color] != null)
-                result += `<span style="color:${ codeDictionaryColor[color] }">`;
-            else
-                result += `<span style="color:${sanitizeHTML(color)}">`;
-        else
-            result += '<span>';
-
-        result += pendingContent;
-
-        for (spansToClose; spansToClose >= 0; spansToClose--)
-            result += '</span>';
-
-    });
-    
-    return result;
-}
-
-function stripMinecraftFormatting(text = "") {
-
-    result = '';
-
-    const colorSplitArr = splitByColorFormats(text);
-    
-    colorSplitArr.forEach( colorSplit => {
-        
-        const formatSplitArr = splitByOtherFormats(colorSplit['content']);
-        
-        formatSplitArr.forEach( formatSplit => {
-
-            result += formatSplit['content'];
-        });
-    });
-    
-    return result;
-}
-
-function insertStringBeforeSelected(insertString) {
-
-    const activeElement = document.activeElement;
-    if ( !activeElement || !(activeElement.type == 'textarea' || activeElement.type == 'text') ) {
-        return;
-    }
-
-    if (activeElement.maxLength != null && activeElement.value.length + insertString.length > activeElement.maxLength) {
-        return;
-    }
-   
-    const currentValue = activeElement.value;
-    const cursorPosition = activeElement.selectionStart;
-
-    activeElement.value = currentValue.substring(0, cursorPosition) + insertString + currentValue.substring(cursorPosition, currentValue.length);
-
-    activeElement.selectionStart = cursorPosition + insertString.length;
-    activeElement.selectionEnd = activeElement.selectionStart;
-
-    activeElement.dispatchEvent(new Event('input'));
-}
-
-function convertToMinecraftTooltip(text, outputFieldID) {
-    const outputField = document.getElementById(outputFieldID);
-    if (outputField != null)
-        outputField.innerHTML = minecraftToHTML(text);
-}
+import * as utils from '/utils.mjs';
 
 const classDictionary = {
     'archer' : 'abilities/class/archer',
@@ -612,7 +8,7 @@ const classDictionary = {
     'shaman' : 'abilities/class/shaman',
 }
 
-const abilityIconDictionary = {
+export const abilityIconDictionary = {
     'skill' : 'abilities/class/',
     'red' : 'abilities/generic/red',
     'blue' : 'abilities/generic/blue',
@@ -628,13 +24,6 @@ const altAbilityIconDictionary = {
     'purple' : 'abilities/generic/purple',
     'yellow' : 'abilities/generic/yellow',
     'white' : 'abilities/generic/white',
-}
-
-const travelIconDictionary = {
-    'up' : 'abilities/generic/travel_up_1',
-    'down' : 'abilities/generic/travel_down_2',
-    'right' : 'abilities/generic/travel_right_3',
-    'left' : 'abilities/generic/travel_left_4',
 }
 
 const reverseDirectionDictionary = {
@@ -712,13 +101,12 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
 const POINTSREQUIRED_LOWER = -69;
 const POINTSREQUIRED_UPPER = 69;
 const POINTSREQUIRED_INPUTID = 'pointsRequiredInput';
-enforceMinMax(POINTSREQUIRED_INPUTID, POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
+utils.enforceMinMax(POINTSREQUIRED_INPUTID, POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
 const ARCHETYPEPOINTSREQUIRED_LOWER = 0;
 const ARCHETYPEPOINTSREQUIRED_UPPER = 420;
 const ARCHETYPEPOINTSREQUIRED_INPUTID = 'archetypePointsRequiredInput';
-enforceMinMax(ARCHETYPEPOINTSREQUIRED_INPUTID, ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
-
+utils.enforceMinMax(ARCHETYPEPOINTSREQUIRED_INPUTID, ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
 class Ability
 {   
     /**
@@ -778,7 +166,7 @@ class Ability
     constructor({name = '', description = '', unlockingWillBlock = [], archetype = '', pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
 
         this.name = String(name) ? String(name) : '';
-        this._plainname = stripMinecraftFormatting(this.name);
+        this._plainname = utils.stripMinecraftFormatting(this.name);
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
 
@@ -789,9 +177,9 @@ class Ability
                     this.unlockingWillBlock.push(Number(element));
             });
 
-        this.pointsRequired = isNaN(Number(pointsRequired)) ? POINTSREQUIRED_LOWER : clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
+        this.pointsRequired = isNaN(Number(pointsRequired)) ? POINTSREQUIRED_LOWER : utils.clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
-        this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? ARCHETYPEPOINTSREQUIRED_LOWER : clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
+        this.archetypePointsRequired = isNaN(Number(archetypePointsRequired)) ? ARCHETYPEPOINTSREQUIRED_LOWER : utils.clamp(Number(archetypePointsRequired), ARCHETYPEPOINTSREQUIRED_LOWER, ARCHETYPEPOINTSREQUIRED_UPPER);
         
         this.type = Object.keys(abilityIconDictionary).includes(String(type))
             || Object.keys(altAbilityIconDictionary).includes(String(type))
@@ -838,11 +226,11 @@ class TravelNode {
     variant = 1;
 
     constructor({up = 0, down = 0, left = 0, right = 0, variant = Math.ceil(Math.random() * NUMOFVARIANTS)} = {}) {
-        this.up = isNaN(Number(up)) ? 0 : clamp(Number(up), 0, 2);
-        this.down = isNaN(Number(down)) ? 0 : clamp(Number(down), 0, 2);
-        this.left = isNaN(Number(left)) ? 0 : clamp(Number(left), 0, 2);
-        this.right = isNaN(Number(right)) ? 0 : clamp(Number(right), 0, 2);
-        this.variant = isNaN(Number(variant)) ? 1 : clamp(Number(variant), 1, NUMOFVARIANTS);
+        this.up = isNaN(Number(up)) ? 0 : utils.clamp(Number(up), 0, 2);
+        this.down = isNaN(Number(down)) ? 0 : utils.clamp(Number(down), 0, 2);
+        this.left = isNaN(Number(left)) ? 0 : utils.clamp(Number(left), 0, 2);
+        this.right = isNaN(Number(right)) ? 0 : utils.clamp(Number(right), 0, 2);
+        this.variant = isNaN(Number(variant)) ? 1 : utils.clamp(Number(variant), 1, NUMOFVARIANTS);
     }
 
     mergeTravelNodes(travelNode) {
@@ -890,32 +278,31 @@ const MAXABILITYPOINTS_LOWER = 1;
 const MAXABILITYPOINTS_DEFAULT = 45;
 const MAXABILITYPOINTS_UPPER = 1984;
 const MAXABILITYPOINTS_INPUTID = 'maxAbilityPoints';
-enforceMinMax(MAXABILITYPOINTS_INPUTID, MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
+utils.enforceMinMax(MAXABILITYPOINTS_INPUTID, MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
 const PAGES_LOWER = 1;
 const PAGES_DEFAULT = 7;
 const PAGES_UPPER = 30;
 const PAGES_INPUTID = 'treePages';
-enforceMinMax(PAGES_INPUTID, PAGES_LOWER, PAGES_UPPER);
+utils.enforceMinMax(PAGES_INPUTID, PAGES_LOWER, PAGES_UPPER);
 
 const HORIZONTAL_PAGES_LOWER = 1;
 const HORIZONTAL_PAGES_DEFAULT = 1;
 const HORIZONTAL_PAGES_UPPER = 30;
 const HORIZONTAL_PAGES_INPUTID = 'horizontalPages';
-enforceMinMax(HORIZONTAL_PAGES_INPUTID, HORIZONTAL_PAGES_LOWER, HORIZONTAL_PAGES_UPPER);
+utils.enforceMinMax(HORIZONTAL_PAGES_INPUTID, HORIZONTAL_PAGES_LOWER, HORIZONTAL_PAGES_UPPER);
 
 const ROWSPERPAGE_LOWER = 3;
 const ROWSPERPAGE_DEFAULT = 6;
 const ROWSPERPAGE_UPPER = 11;
 const ROWSPERPAGE_INPUTID = 'rowsPerPage';
-enforceMinMax(ROWSPERPAGE_INPUTID, ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
+utils.enforceMinMax(ROWSPERPAGE_INPUTID, ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
 const PAGESDISPLAYED_LOWER = 1;
 const PAGESDISPLAYED_DEFAULT = 2;
 const PAGESDISPLAYED_UPPER = 8;
 const PAGESDISPLAYED_INPUTID = 'pagesDisplayed';
-enforceMinMax(PAGESDISPLAYED_INPUTID, PAGESDISPLAYED_LOWER, PAGESDISPLAYED_UPPER);
-
+utils.enforceMinMax(PAGESDISPLAYED_INPUTID, PAGESDISPLAYED_LOWER, PAGESDISPLAYED_UPPER);
 class Properties {
     /**
      * Class
@@ -975,15 +362,15 @@ class Properties {
         
         this.classs = Object.keys(classDictionary).includes(String(classs)) ? String(classs) : Object.keys(classDictionary)[0];
 
-        this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? MAXABILITYPOINTS_DEFAULT : clamp(Number(maxAbilityPoints), MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
+        this.maxAbilityPoints = isNaN(Number(maxAbilityPoints)) ? MAXABILITYPOINTS_DEFAULT : utils.clamp(Number(maxAbilityPoints), MAXABILITYPOINTS_LOWER, MAXABILITYPOINTS_UPPER);
 
-        this.pages = isNaN(Number(pages)) ? PAGES_DEFAULT : clamp(Number(pages), PAGES_LOWER, PAGES_UPPER);
+        this.pages = isNaN(Number(pages)) ? PAGES_DEFAULT : utils.clamp(Number(pages), PAGES_LOWER, PAGES_UPPER);
 
-        this.horizontalPages = isNaN(Number(horizontalPages)) ? HORIZONTAL_PAGES_DEFAULT : clamp(Number(horizontalPages), HORIZONTAL_PAGES_LOWER, HORIZONTAL_PAGES_UPPER);
+        this.horizontalPages = isNaN(Number(horizontalPages)) ? HORIZONTAL_PAGES_DEFAULT : utils.clamp(Number(horizontalPages), HORIZONTAL_PAGES_LOWER, HORIZONTAL_PAGES_UPPER);
 
-        this.rowsPerPage = isNaN(Number(rowsPerPage)) ? ROWSPERPAGE_DEFAULT : clamp(Number(rowsPerPage), ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
+        this.rowsPerPage = isNaN(Number(rowsPerPage)) ? ROWSPERPAGE_DEFAULT : utils.clamp(Number(rowsPerPage), ROWSPERPAGE_LOWER, ROWSPERPAGE_UPPER);
 
-        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? PAGESDISPLAYED_DEFAULT : clamp(Number(pagesDisplayed), PAGESDISPLAYED_LOWER, Math.min(PAGESDISPLAYED_UPPER, this.pages));
+        this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? PAGESDISPLAYED_DEFAULT : utils.clamp(Number(pagesDisplayed), PAGESDISPLAYED_LOWER, Math.min(PAGESDISPLAYED_UPPER, this.pages));
 
         this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
         this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
@@ -1024,10 +411,8 @@ const MAXSELECTEDCELLS = 40;
 const CELLIDPREFIX = 'cell-';
 const COLUMNS = 9;
 
-let abilityTooltipTimeout;
-const ABILITYTOOLTIPDURATION = 5000;
 const LSHAPEDALLOCATION = false;
-class BaseTree
+export class BaseTree
 {
     /**
      * Generic properties of the editor
@@ -1145,14 +530,16 @@ class BaseTree
      */
     currentTree;
 
-    #treeTouchProcessor = new TouchProcessor();
+    #treeTouchProcessor = new utils.TouchProcessor();
 
-    constructor() {
+    constructor(affectPage = true) {
         this.properties = new Properties();
-        this.writeProperties();
-        this.renderEverything();
-        this.saveState('Reset tree and settings');
-        window.addEventListener("pointerup", (e) => {this.finallizeEditNode()});
+        if (affectPage) {
+            this.writeProperties();
+            this.renderEverything();
+            this.saveState('Reset tree and settings');
+            window.addEventListener("pointerup", (e) => {this.finallizeEditNode()});
+        }
     }
 
     // #region Serialization and history
@@ -1246,7 +633,7 @@ class BaseTree
         
     }
 
-    saveState(change = "", type = "", replaceSameType = false, jsonContainerID = "json-container") {
+    saveState(change = "", type = "", replaceSameType = false) {
         
         const state = JSON.stringify(this, null, 0);
 
@@ -1279,8 +666,6 @@ class BaseTree
         const newStateLog = new StateLog({changeDescription : change, type : type, state : state});
 
         this.currentHistoryState = this.history.push(newStateLog) - 1;
-
-        document.getElementById(jsonContainerID).value = state;
 
         this.renderStates();
     }
@@ -1383,7 +768,7 @@ class BaseTree
             console.log('Fetch request timed out');
           }, 5000);
 
-        fetch(`presets/${classSelect.value}.json`, {
+        fetch(`presets/base/${classSelect.value}.json`, {
 
             signal,
             cache: 'no-store',
@@ -1409,7 +794,7 @@ class BaseTree
         }).catch( (e) => {
             
             if (e != "Couldn't parse")
-                showSmallToast("Load Failed: couldn't reach the server");
+                utils.showSmallToast("Load Failed: couldn't reach the server");
 
             console.log(e.stack);
             
@@ -1434,8 +819,7 @@ class BaseTree
         this.saveState('Loaded tree from JSON');
     }
 
-    loadTreeFromFile(dropEvent) {
-
+    loadTreeFromDrop(dropEvent) {
         dropEvent.preventDefault();
         
         let file;
@@ -1445,13 +829,18 @@ class BaseTree
         else
             file = dropEvent.dataTransfer.files[0];
 
-        file.text().then( text => {
+        this.loadTreeFromFile(file);
+    }
 
-            this.loadFromJSON(text);
-            this.saveState(`Loaded tree from ${file.name}`);
-
-        });
-        
+    loadTreeFromFile(file) {
+        file.text()
+            .then( text => {
+                this.loadFromJSON(text);
+                this.saveState(`Loaded tree from ${file.name}`);
+            })
+            .catch ((e) => {
+                utils.showSmallToast("Wrong file type");
+            });
     }
 
     loadEmptyTree() {
@@ -1461,14 +850,14 @@ class BaseTree
 
     }
 
-    loadFromJSON(json, respectEditMode = false) {
+    loadFromJSON(json, respectEditMode = false, updatePage = true) {
 
         let obj = {};
 
         try {
             obj = JSON.parse(json);
         } catch (error) {
-            showSmallToast("Load Failed: couldn't parse JSON");
+            utils.showSmallToast("Load Failed: couldn't parse JSON");
             throw ("Couldn't parse");
         }
 
@@ -1526,6 +915,9 @@ class BaseTree
             });
         }
 
+        if (!updatePage)
+            return;
+
         if (respectEditMode && obj.bEditMode != null && obj.bEditMode === false) {
             this.bEditMode = false;
             this.compileAllocationMap();
@@ -1533,7 +925,6 @@ class BaseTree
         } else
             this.bEditMode = true;
 
-        document.getElementById("json-container").value = json;
         this.writeProperties();
         this.renderEverything();
     }
@@ -1579,14 +970,14 @@ class BaseTree
         if (oldname == "") {
             
             this.archetypes.push(newname);
-            this.saveState(`Added archetype: ${minecraftToHTML(newname)}`);
+            this.saveState(`Added archetype: ${utils.minecraftToHTML(newname)}`);
             
         } else {
 
             const existingIndex = this.archetypes.indexOf(oldname);
             this.archetypes[existingIndex] = newname;
             this.updateArchetype(oldname, newname);
-            this.saveState(`Renamed archetype: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
+            this.saveState(`Renamed archetype: ${utils.minecraftToHTML(oldname)} -> ${utils.minecraftToHTML(newname)}`);
 
         }
         
@@ -1605,7 +996,7 @@ class BaseTree
 
         this.updateArchetype(name);        
         this.renderArchetypes();
-        this.saveState(`Deleted archetype: ${minecraftToHTML(name)}`);
+        this.saveState(`Deleted archetype: ${utils.minecraftToHTML(name)}`);
 
     }
 
@@ -1658,7 +1049,7 @@ class BaseTree
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'overflow-hidden');
-            text.innerHTML = minecraftToHTML(archetype);
+            text.innerHTML = utils.minecraftToHTML(archetype);
             div.appendChild(text);
 
             const abilityCount = document.createElement("div");
@@ -1708,7 +1099,7 @@ class BaseTree
         }
 
         const abilityCount = document.createElement("div");
-        abilityCount.innerHTML = minecraftToHTML("§f§lNeutral ") + placedArchetypeCounts[""] + '/' + neutralCount;
+        abilityCount.innerHTML = utils.minecraftToHTML("§f§lNeutral ") + placedArchetypeCounts[""] + '/' + neutralCount;
         div.appendChild(abilityCount);
         
         const neutralContainer = document.getElementById(neutralContainerID);
@@ -1806,43 +1197,32 @@ class BaseTree
 
         if (ability.type == 'skill')
             result = `
-                <div class="abilityName">${minecraftToHTML(ability.name)}</div>
-                ${minecraftToHTML(ability.description)}<br><br>`;
+                <div class="abilityName">${utils.minecraftToHTML(ability.name)}</div>
+                ${utils.minecraftToHTML(ability.description)}<br><br>`;
         else
             result = `
-                ${minecraftToHTML(ability.name)}<br><br>
-                ${minecraftToHTML(ability.description)}<br><br>`;
+                ${utils.minecraftToHTML(ability.name)}<br><br>
+                ${utils.minecraftToHTML(ability.description)}<br><br>`;
 
         if (ability.unlockingWillBlock.length > 0) {
-            result += `<span style="color:${codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
+            result += `<span style="color:${utils.codeDictionaryColor['c']}">Unlocking&nbsp;will&nbsp;block:<br></span>`;
             for (let id of ability.unlockingWillBlock)
-                result += `<span style="color:${codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${codeDictionaryColor['7']}">${anyToHTML(this.abilities[id].getPlainName())}</span><br>`;
+                result += `<span style="color:${utils.codeDictionaryColor['c']}">-&#8288;&nbsp;</span><span style="color:${utils.codeDictionaryColor['7']}">${utils.anyToHTML(this.abilities[id].getPlainName())}</span><br>`;
             result += '<br>';
         }
 
         if (ability.archetype != "")
-            result += `${minecraftToHTML(ability.archetype + ' Archetype')}<br><br>`;
+            result += `${utils.minecraftToHTML(ability.archetype + ' Archetype')}<br><br>`;
 
-        result += `<span style="color:${codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>`;
+        result += `<span style="color:${utils.codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>`;
         
         if (this.abilities[ability.requires] != null)
-            result += `<span style="color:${codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${anyToHTML(stripMinecraftFormatting(this.abilities[ability.requires].name))}<br>`;
+            result += `<span style="color:${utils.codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${utils.anyToHTML(this.abilities[ability.requires].getPlainName())}<br>`;
 
         if (ability.archetype != "" && ability.archetypePointsRequired > 0)
-            result += `<span style="color:${codeDictionaryColor['7']}">Min&nbsp;${anyToHTML(stripMinecraftFormatting(ability.archetype))}&nbsp;Archetype:&nbsp;</span>${ability.archetypePointsRequired}`;
+            result += `<span style="color:${utils.codeDictionaryColor['7']}">Min&nbsp;${utils.anyToHTML(utils.stripMinecraftFormatting(ability.archetype))}&nbsp;Archetype:&nbsp;</span>${ability.archetypePointsRequired}`;
             
         return result;
-    }
-
-    hideHoverAbilityTooltip(containerId = "cursorTooltip") {
-        if (abilityTooltipTimeout != null) {
-            clearTimeout(abilityTooltipTimeout);
-            abilityTooltipTimeout = null;
-        }
-        const container = document.getElementById(containerId);
-
-        container.hidden = true;
-        container.innerHTML = "";
     }
 
     editAbility(abilityID = -1,
@@ -1866,7 +1246,7 @@ class BaseTree
 
                 const option = document.createElement('option');
                 option.value = archetype;
-                option.innerHTML = anyToHTML(shortenText(stripMinecraftFormatting(archetype), 50));
+                option.innerHTML = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(archetype), 50));
                 archetypeInputElement.appendChild(option);
 
             }
@@ -1875,7 +1255,7 @@ class BaseTree
             abilityBlockInputElement.innerHTML = '';
             for (let id of sortedAbilityIDs) {
 
-                const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
+                const abilityName = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(this.abilities[id].name), 50));
 
                 const option = document.createElement('option');
                 option.value = id;
@@ -1913,7 +1293,7 @@ class BaseTree
 
                 const option = document.createElement('option');
                 option.value = archetype;
-                option.innerHTML = anyToHTML(shortenText(stripMinecraftFormatting(archetype), 50));
+                option.innerHTML = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(archetype), 50));
                 if (archetype == this.abilities[abilityID].archetype)
                     option.selected = true;
                 archetypeInputElement.appendChild(option);
@@ -1931,7 +1311,7 @@ class BaseTree
                 if (id == abilityID)
                     continue;
 
-                const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 50));
+                const abilityName = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(this.abilities[id].name), 50));
 
                 const option = document.createElement('option');
                 option.value = id;
@@ -2023,7 +1403,7 @@ class BaseTree
             this.abilities[abilityID] = newAbility;
             nameInputElement.abilityId = abilityID;
 
-            this.saveState(`Added ability: ${minecraftToHTML(nameInputElement.value)}`);
+            this.saveState(`Added ability: ${utils.minecraftToHTML(nameInputElement.value)}`);
 
         } else {
 
@@ -2031,7 +1411,7 @@ class BaseTree
 
             this.abilities[abilityID] = newAbility;
 
-            this.saveState(`Edited ability: ${minecraftToHTML(oldName)} -> ${minecraftToHTML(nameInputElement.value)}`);            
+            this.saveState(`Edited ability: ${utils.minecraftToHTML(oldName)} -> ${utils.minecraftToHTML(nameInputElement.value)}`);            
         }
 
         this.renderAbilities();
@@ -2061,7 +1441,7 @@ class BaseTree
             this.removeAbilityFromTree(abilityID);
             const name = this.abilities[abilityID].name;
             delete this.abilities[abilityID];
-            this.saveState(`Deleted ability: ${minecraftToHTML(name)}`);
+            this.saveState(`Deleted ability: ${utils.minecraftToHTML(name)}`);
             this.renderArchetypes();
             this.renderAbilities();
             this.renderTree();
@@ -2161,7 +1541,7 @@ class BaseTree
             imgholder.appendChild(generateIconDiv(this.abilities[id].type, null, this.properties.classs, abilitiesOnTree[id] ? 2 : 1, false, true));
 
             imgholder.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(id); });
-            imgholder.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip(); });
+            imgholder.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") utils.hideHoverAbilityTooltip(); });
             imgholder.addEventListener('touchstart', (e) => {
                 this.#treeTouchProcessor.processTouch(
                     e,
@@ -2170,13 +1550,13 @@ class BaseTree
                     () => {
                         document.body.style.overflow = 'hidden';
                         this.renderHoverAbilityTooltip(id);
-                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                        utils.movetooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     },
                     () => {
-                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                        utils.movetooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                     },
                     () => {
-                        this.hideHoverAbilityTooltip();
+                        utils.hideHoverAbilityTooltip();
                         document.body.style.overflow = 'auto';
                     }
                 );
@@ -2184,7 +1564,7 @@ class BaseTree
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'align-items-center', 'overflow-hidden', 'ms-2');
-            text.innerHTML = minecraftToHTML(this.abilities[id].name);
+            text.innerHTML = utils.minecraftToHTML(this.abilities[id].name);
             div.appendChild(text);
             
             const editbtn = document.createElement("button");
@@ -2279,7 +1659,7 @@ class BaseTree
         if (page == null || typeof page != "number" || page < 1)
             return;
 
-        this.currentVerticalPage = clamp(page, 1, this.properties.pages - this.properties.pagesDisplayed + 1);
+        this.currentVerticalPage = utils.clamp(page, 1, this.properties.pages - this.properties.pagesDisplayed + 1);
 
     }
 
@@ -2288,7 +1668,7 @@ class BaseTree
         if (page == null || typeof page != "number" || page < 1)
             return;
 
-        this.currentHorizontalPage = clamp(page, 1, this.properties.horizontalPages);
+        this.currentHorizontalPage = utils.clamp(page, 1, this.properties.horizontalPages);
 
     }
 
@@ -2586,7 +1966,7 @@ class BaseTree
 
                     this.removeAbilityFromTree(this.selectedAbilityID);
                     this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
-                    editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
+                    editSummary = `Positioned ${utils.minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
                     this.selectedAbilityID = -1;
                     
                 } else {
@@ -2595,8 +1975,8 @@ class BaseTree
 
                         const abilityID = this.cellMap[cellKey]['abilityID'];
                         this.removeAbilityFromTree(abilityID);
-                        this.hideHoverAbilityTooltip();
-                        editSummary = `Removed ${minecraftToHTML(this.abilities[abilityID].name)} from tree`;
+                        utils.hideHoverAbilityTooltip();
+                        editSummary = `Removed ${utils.minecraftToHTML(this.abilities[abilityID].name)} from tree`;
 
                     } else if (this.cellMap[cellKey]['travelNode'] == null) {
                 
@@ -2752,7 +2132,7 @@ class BaseTree
 
                             div.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(cell['abilityID'])});
                             
-                            div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip()});
+                            div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") utils.hideHoverAbilityTooltip()});
     
                         }
 
@@ -2773,7 +2153,7 @@ class BaseTree
                                     this.removeAbilityFromTree(this.selectedAbilityID);
                                     this.cellMap[cellKey] = this.cellMap[cellKey] ?? {};
                                     this.cellMap[cellKey]['abilityID'] = this.selectedAbilityID;
-                                    let editSummary = `Positioned ${minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
+                                    let editSummary = `Positioned ${utils.minecraftToHTML(this.abilities[this.selectedAbilityID].name)} on tree`;
                                     this.selectedAbilityID = -1;
                                     this.saveState(editSummary);
                                     this.renderAbilities();
@@ -2784,13 +2164,13 @@ class BaseTree
                                     const td = e.target.closest("td");
                                     try {
                                         this.renderHoverAbilityTooltip(this.cellMap[td.cellKey]['abilityID']);
-                                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                                        utils.movetooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                                     } catch (e) {};
                                 }
                             },
                             () => {}, 
                             () => {
-                                this.hideHoverAbilityTooltip();
+                                utils.hideHoverAbilityTooltip();
                                 //document.body.style.overflow = 'hidden';
                                 this.initializeEditNode(cellKey);
                             },
@@ -3055,13 +2435,13 @@ class BaseTree
         this.addConnectedNodes(abilityID);
 
         if (saveAfter)
-            this.saveState(`Reallocated nodes on '${minecraftToHTML(this.selectedTree)}'`, 'treeAllocation', true);
+            this.saveState(`Reallocated nodes on '${utils.minecraftToHTML(this.selectedTree)}'`, 'treeAllocation', true);
     }
 
     deallocateNode(abilityID) {
         this.abilityTrees[this.selectedTree].splice( this.abilityTrees[this.selectedTree].indexOf(abilityID) , 1);
         this.compileCurrentTree();
-        this.saveState(`Reallocated nodes on '${minecraftToHTML(this.selectedTree)}'`, 'treeAllocation', true);
+        this.saveState(`Reallocated nodes on '${utils.minecraftToHTML(this.selectedTree)}'`, 'treeAllocation', true);
     }
 
     addConnectedNodes(abilityID) {
@@ -3137,7 +2517,7 @@ class BaseTree
         if (oldname == "") {
             
             this.abilityTrees[newname] = [];
-            this.saveState(`Added tree: ${minecraftToHTML(newname)}`);
+            this.saveState(`Added tree: ${utils.minecraftToHTML(newname)}`);
             this.selectTree(newname);
             
         } else {
@@ -3146,7 +2526,7 @@ class BaseTree
             if (this.selectedTree == oldname)
                 this.selectedTree = newname;
             delete this.abilityTrees[oldname];
-            this.saveState(`Renamed tree: ${minecraftToHTML(oldname)} -> ${minecraftToHTML(newname)}`);
+            this.saveState(`Renamed tree: ${utils.minecraftToHTML(oldname)} -> ${utils.minecraftToHTML(newname)}`);
             this.renderTreeNames();
 
         }
@@ -3162,7 +2542,7 @@ class BaseTree
 
         this.ensureDefaultTree(); 
         this.renderTreeNames();
-        this.saveState(`Deleted tree: ${minecraftToHTML(name)}`);
+        this.saveState(`Deleted tree: ${utils.minecraftToHTML(name)}`);
 
     }
 
@@ -3192,7 +2572,7 @@ class BaseTree
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'overflow-hidden');
-            text.innerHTML = minecraftToHTML(treeName);
+            text.innerHTML = utils.minecraftToHTML(treeName);
             div.appendChild(text);
             
             const editbtn = document.createElement("button");
@@ -3223,7 +2603,7 @@ class BaseTree
     selectTree(name) {
         this.selectedTree = name;
         this.compileCurrentTree();
-        this.saveState(`Selected '${minecraftToHTML(this.selectedTree)}' tree for allocation`, `${this.selectedTree}`, true);
+        this.saveState(`Selected '${utils.minecraftToHTML(this.selectedTree)}' tree for allocation`, `${this.selectedTree}`, true);
         this.renderTreeNames();
         this.renderArchetypeCounts();
         this.renderAbilityPointsUsed()
@@ -3233,7 +2613,7 @@ class BaseTree
     selectStartingAbility(abilityID) {
         this.startingAbilityID = abilityID;
         this.compileCurrentTree();
-        this.saveState(`Made ${minecraftToHTML(this.abilities[abilityID].name)} the starting ability`);
+        this.saveState(`Made ${utils.minecraftToHTML(this.abilities[abilityID].name)} the starting ability`);
         this.renderArchetypeCounts();
         this.renderAbilityPointsUsed()
         this.renderTree();
@@ -3248,7 +2628,7 @@ class BaseTree
         let sortedAbilityIDs = this.sortAbilities();
         for (let id of sortedAbilityIDs) {
 
-            const abilityName = anyToHTML(shortenText(stripMinecraftFormatting(this.abilities[id].name), 30));
+            const abilityName = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(this.abilities[id].name), 30));
 
             const option = document.createElement('option');
             option.value = id;
@@ -3289,7 +2669,7 @@ class BaseTree
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'overflow-hidden');
-            text.innerHTML = minecraftToHTML(archetype);
+            text.innerHTML = utils.minecraftToHTML(archetype);
             div.appendChild(text);
 
             const abilityCount = document.createElement("div");
@@ -3389,7 +2769,7 @@ class BaseTree
                             }
 
                             div.addEventListener('pointerover', (e) => {if (e.pointerType !== "touch") this.renderHoverAbilityTooltip(cell['abilityID'])} );
-                            div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") this.hideHoverAbilityTooltip()} );
+                            div.addEventListener('pointerout', (e) => {if (e.pointerType !== "touch") utils.hideHoverAbilityTooltip()} );
                             div.addEventListener('touchstart', (e) => {
                                 this.#treeTouchProcessor.processTouch(
                                     e,
@@ -3415,13 +2795,13 @@ class BaseTree
                                     () => {
                                         document.body.style.overflow = 'hidden';
                                         this.renderHoverAbilityTooltip(cell['abilityID']);
-                                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                                        utils.movetooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                                     },
                                     () => {
-                                        moveTooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+                                        utils.movetooltip(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
                                     },
                                     () => {
-                                        this.hideHoverAbilityTooltip();
+                                        utils.hideHoverAbilityTooltip();
                                         document.body.style.overflow = 'auto';
                                     }
                                 );

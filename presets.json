@@ -1,0 +1,29 @@
+[
+    {
+        "credit" : "Winteria",
+        "title" : "Mechanic",
+        "description" : "Dominate the battlefield with different Constructs, all while not needing high cps",
+        "class" : "custom",
+        "baseclass" : "mage",
+        "completeness" : 8,
+        "filename" : "winteria.mechanic1"
+    },
+    {
+        "credit" : "ChrisWildFire",
+        "title" : "Apprentice",
+        "description" : "A melee-oriented, close-range, stance-based weaponless class",
+        "class" : "custom",
+        "baseclass" : "warrior",
+        "completeness" : 10,
+        "filename" : "chris.apprentice1"
+    },
+    {
+        "credit" : "Matheo000",
+        "title" : "Lycan",
+        "description" : "Slash, whip, pounce, bite and spit at your opponents. Charm your way into the enemy's mind, unleash the wild ferocious beast within you, or shapeshit to play mischievous tricks on them",
+        "class" : "custom",
+        "baseclass" : "warrior",
+        "completeness" : 5,
+        "filename" : "matheo.lycan1"
+    }
+]
