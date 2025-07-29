@@ -1,5 +1,5 @@
-import * as utils from '/utils.mjs';
-import * as main from '/main.mjs';
+import * as utils from './utils.js';
+import * as main from './main.js';
 
 let sortedPresets = [];
 let treeCache = {};
