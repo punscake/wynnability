@@ -236,7 +236,7 @@ export async function renderSearchResults(containerID = "customPresetContainer")
             }
         });
         div.addEventListener('touchstart', (e) => {
-            if (e.target.tagName == "IMG")
+            if (e.target.tagName == "IMG" || !document.getElementById("cursorTooltip").hidden)
                 return;
             TOUCHPROCESSOR.processTouch(
                 e, 
