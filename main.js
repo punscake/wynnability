@@ -1588,7 +1588,7 @@ export class BaseTree
             div.appendChild(delbtn);
             
             div.addEventListener('dblclick', (e) => {
-                editbtn.click;
+                editbtn.click();
             });
 
             container.appendChild(div);
