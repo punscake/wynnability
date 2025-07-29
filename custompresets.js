@@ -239,8 +239,7 @@ export async function renderSearchResults(containerID = "customPresetContainer")
             if (e.target.tagName == "IMG")
                 return;
             TOUCHPROCESSOR.processTouch(
-                e,
-                () => {}, 
+                e, 
                 async () => {
                     const tree = await getPreset(preset['filename']);
                     window.tree.loadFromJSON(JSON.stringify(tree, null, 0));
