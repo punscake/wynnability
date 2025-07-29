@@ -1516,22 +1516,22 @@ export class BaseTree
 
             const div = document.createElement("div");
 
-            if (id == this.selectedAbilityID) {
-
+            if (id == this.selectedAbilityID)
                 div.classList.add('selected-ability');
-                div.addEventListener('click', (e) => {
-                    if (e.target.nodeName != 'BUTTON')
-                        this.selectAbility(-1);
-                });
 
-            } else {
 
-                div.addEventListener('click', (e) => {
-                    if (e.target.nodeName != 'BUTTON')
-                        this.selectAbility(id);
-                });
+            div.addEventListener('click', (e) => {
+                if (e.target.nodeName == 'BUTTON')
+                    return;
 
-            }
+                this.removeAbilitySelection();
+                if (id == this.selectedAbilityID) {
+                    this.selectedAbilityID = -1;
+                } else {
+                    this.selectedAbilityID = id;
+                    div.classList.add('selected-ability');
+                }
+            });
 
             div.classList.add('d-inline-flex', 'align-items-center', 'minecraftTooltip', 'w-100', 'mb-1');
 
@@ -1587,6 +1587,10 @@ export class BaseTree
             delbtn.addEventListener('click', (e) => this.deleteAbility(id));
             div.appendChild(delbtn);
             
+            div.addEventListener('dblclick', (e) => {
+                editbtn.click;
+            });
+
             container.appendChild(div);
 
         }   
@@ -1597,6 +1601,16 @@ export class BaseTree
         this.selectedAbilityID = abilityID;
         this.renderAbilities();
 
+    }
+
+    removeAbilitySelection(containerID = "abilityContainer") {
+        const container = document.getElementById(containerID);
+        for (const child of container.children) {
+            if (child.classList.contains('selected-ability')) {
+                child.classList.remove('selected-ability');
+                break;
+            }
+        }
     }
 
     focusSelectedAbility(containerID = "abilityContainer") {
