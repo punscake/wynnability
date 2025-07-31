@@ -1180,7 +1180,6 @@ export class BaseTree
         }));
         container.innerHTML = '';
         container.appendChild(div);
-        console.log(div.scrollHeight)
         const scale = (container.offsetWidth - 5) / (container.scrollWidth + 5);
         div.style.transform = `scale(${scale})`;
         div.style.transformOrigin = `top left`;
