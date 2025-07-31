@@ -74,7 +74,8 @@ section {
 }
 
 #editAbilityTooltip {
-  overflow: auto;
+  overflow: hidden;
+  display: block;
 }
 
 .small-btn {

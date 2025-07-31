@@ -812,6 +812,11 @@
         archetypeNameInput.focus();
       })
 
+      const abilityModal = document.getElementById('abilityModal');
+      abilityModal.addEventListener('shown.bs.modal', () => {
+        tree.renderEditorAbilityTooltip();
+      })
+
       utils.enforceMinMax('maxSaveStates', 1, 100);
 
       window.loadModal = new bootstrap.Modal('#loadModal', {

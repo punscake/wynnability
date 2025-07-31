@@ -1167,7 +1167,8 @@ export class BaseTree
         if (abilityBlockCountDisplay != null)
             abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
 
-        container.innerHTML = this._getAbilityTooltipHTML(new Ability({
+        const div = document.createElement('div');
+        div.innerHTML = this._getAbilityTooltipHTML(new Ability({
             name : nameInputElement.value,
             description : descriptionInputElement.value,
             unlockingWillBlock : blockedAbilities,
@@ -1177,6 +1178,13 @@ export class BaseTree
             type : typeInputElement.value,
             requires : prerequisiteInputElement.value
         }));
+        container.innerHTML = '';
+        container.appendChild(div);
+        console.log(div.scrollHeight)
+        const scale = (container.offsetWidth - 5) / (container.scrollWidth + 5);
+        div.style.transform = `scale(${scale})`;
+        div.style.transformOrigin = `top left`;
+        container.style.height = `${div.offsetHeight * scale + 3}px`;
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -1343,9 +1351,6 @@ export class BaseTree
             this.renderAbilityTypeSelector(this.abilities[abilityID].type);
             
         }
-
-        nameInputElement.dispatchEvent(new Event('input'));
-        descriptionInputElement.dispatchEvent(new Event('input'));
     }
 
     getBlockedAbilities(abilityBlockFormID = "abilityBlockInput") {
