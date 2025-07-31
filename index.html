@@ -816,12 +816,21 @@
       abilityModal.addEventListener('shown.bs.modal', () => {
         tree.renderEditorAbilityTooltip();
       })
+      document.getElementById('editAbilityTooltip').addEventListener('click', () => tree.renderEditorAbilityTooltip(false));
+      window.addEventListener('resize', () => {if (!abilityModal.ariaHidden) tree.renderEditorAbilityTooltip()});
+
+      history.pushState(null, null, location.href);
+      window.addEventListener('popstate', (e) => {
+        if (!abilityModal.ariaHidden)
+          history.pushState(null, null, location.href);
+        else
+          history.back();
+      });
+
 
       utils.enforceMinMax('maxSaveStates', 1, 100);
 
-      window.loadModal = new bootstrap.Modal('#loadModal', {
-        keyboard: false
-      })
+      window.loadModal = new bootstrap.Modal('#loadModal', {});
 
       window.changeHidden = function changeHidden(bHidden, classes = [], ids = []) {
 

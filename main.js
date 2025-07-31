@@ -1148,7 +1148,7 @@ export class BaseTree
 
     }
 
-    renderEditorAbilityTooltip(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
+    renderEditorAbilityTooltip(scaleDown = true, nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
         pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip",
         prerequisiteFormID = "abilityPrerequiseteInput", abilityBlockCountDisplayID="abilityBlockCountDisplay", typeFormID = "abilityTypeInput") {
         
@@ -1167,8 +1167,7 @@ export class BaseTree
         if (abilityBlockCountDisplay != null)
             abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
 
-        const div = document.createElement('div');
-        div.innerHTML = this._getAbilityTooltipHTML(new Ability({
+        const content = this._getAbilityTooltipHTML(new Ability({
             name : nameInputElement.value,
             description : descriptionInputElement.value,
             unlockingWillBlock : blockedAbilities,
@@ -1178,12 +1177,23 @@ export class BaseTree
             type : typeInputElement.value,
             requires : prerequisiteInputElement.value
         }));
-        container.innerHTML = '';
-        container.appendChild(div);
-        const scale = (container.offsetWidth - 5) / (container.scrollWidth + 5);
-        div.style.transform = `scale(${scale})`;
-        div.style.transformOrigin = `top left`;
-        container.style.height = `${div.offsetHeight * scale + 3}px`;
+        
+        if (scaleDown) {
+            container.innerHTML = '';
+            const div = document.createElement('div');
+            container.appendChild(div);
+            div.innerHTML = content;
+
+            const scale = (container.offsetWidth - 5) / (container.scrollWidth + 5);
+            div.style.transform = `scale(${scale})`;
+            div.style.transformOrigin = `top left`;
+            container.style.height = `${div.offsetHeight * scale + 5}px`;
+            container.style.paddingBottom = null;
+        } else {
+            container.innerHTML = content;
+            container.style.height = null;
+            container.style.paddingBottom = "8px";
+        }
     }
 
     renderHoverAbilityTooltip(abilityId = -1, containerId = "cursorTooltip") {
@@ -1378,7 +1388,6 @@ export class BaseTree
 
         if (nameInputElement.value == '') {
             nameInputElement.value = 'UNNAMED'
-            this.renderEditorAbilityTooltip();
         }
 
         const newAbility = new Ability({
