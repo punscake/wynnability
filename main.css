@@ -136,8 +136,6 @@ section {
   background-color: #110111;
   color: white;
   font-family: minecraft, mojangles, unifont, unifontEmoji;
-  -webkit-filter: blur(0);
-  filter: blur(0);
   text-shadow: 0.125rem 0.125rem 0 color-mix(in srgb, currentColor 24%, black);
   min-height: 30px;
   border-radius: 4px;

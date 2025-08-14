@@ -992,7 +992,10 @@
           if (input == null || input.getAttribute('maxlength') == null)
             continue;
           
-          input.addEventListener( "input", (e) =>
+          input.addEventListener( "input", () =>
+            label.innerHTML = input.value.length > 0 ? `${input.value.length}/${input.getAttribute('maxlength')}` : input.placeholder );
+            
+          abilityModal.addEventListener('shown.bs.modal', () =>
             label.innerHTML = input.value.length > 0 ? `${input.value.length}/${input.getAttribute('maxlength')}` : input.placeholder );
         }
 

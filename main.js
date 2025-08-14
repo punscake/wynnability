@@ -682,6 +682,7 @@ export class BaseTree
 
         this.currentHistoryState = stateIndex;
 
+        this.selectedAbilityID = -1;
         this.loadFromJSON(this.history[stateIndex].state, true);
         this.renderStates();
     }
