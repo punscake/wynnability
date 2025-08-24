@@ -25,5 +25,14 @@
         "baseclass" : "warrior",
         "completeness" : 5,
         "filename" : "matheo.lycan1"
+    },
+    {
+        "credit" : "CattenXD",
+        "title" : "Archer Rework",
+        "description" : "Focuses on reworking Boltslinger and Sharpshooter into fleshed out archetypes. Boltslinger stacks Frenzy and consumes it to boost Guardian Angels in order to vomit out arrows (I did the math, it's around 112 from purely Gangels). Sharpshooter stacks up a ton of damage bonuses like Initiator, Twain's Arc (You can now load spells into it), and several other ones in order to do big hits once a second",
+        "class" : "archer",
+        "baseclass" : "archer",
+        "completeness" : 7,
+        "filename" : "CattenXD.archerRework1"
     }
 ]
