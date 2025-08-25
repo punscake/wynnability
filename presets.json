@@ -34,5 +34,14 @@
         "baseclass" : "archer",
         "completeness" : 7,
         "filename" : "CattenXD.archerRework1"
+    },
+    {
+        "credit" : "Bee",
+        "title" : "Archer Rework",
+        "description" : "Tweaks to the archer tree to make remake the class as it should have been",
+        "class" : "archer",
+        "baseclass" : "archer",
+        "completeness" : 8,
+        "filename" : "Bee.archerRework1"
     }
 ]

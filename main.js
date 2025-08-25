@@ -2583,7 +2583,7 @@ export class BaseTree
         for (let treeName of Object.keys(this.abilityTrees)) {
 
             const div = document.createElement("div");
-            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1');
+            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1', 'pt-1');
 
             if (treeName == this.selectedTree) {
 
@@ -2693,7 +2693,7 @@ export class BaseTree
         for (let archetype of this.archetypes) {
 
             const div = document.createElement("div");
-            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1');
+            div.classList.add('d-inline-flex', 'minecraftTooltip', 'w-100', 'mb-1', 'pt-1');
 
             const text = document.createElement("div");
             text.classList.add('flex-fill', 'overflow-hidden');
