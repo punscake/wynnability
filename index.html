@@ -75,7 +75,7 @@
   
                 <div class="d-flex flex-row">
 
-                  <button type="button" class="btn btn-primary mt-2 me-1" style="min-width: 150px; width: 67%" onclick="tree.loadTreeFromPreset(this)">Load default tree</button>
+                  <button type="button" class="btn btn-primary mt-2 me-1" style="min-width: 150px; width: 67%" onclick="tree.loadTreeFromPreset(this)" title="Loads the in-game tree for the selected class">Load default tree</button>
                   
                   <button type="button" class="btn btn-primary mt-2 flex-grow-1" style="overflow: hidden" onclick="tree.loadEmptyTree()" title="Completely clears tree and settings">Reset</button>
 
@@ -83,14 +83,14 @@
 
                 <div class="d-flex flex-row">
 
-                  <button type="button" class="btn btn-primary mt-2 me-1 col" style="overflow: hidden" onclick="tree.removeAllAbilityNodes()">Clear abilities</button>
+                  <button type="button" class="btn btn-primary mt-2 me-1 col" style="overflow: hidden" onclick="tree.removeAllAbilityNodes()" title="Removes all abilities from the tree (but not from the menu)">Clear abilities</button>
                   
-                  <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.removeAllTravelNodes()" title="Completely clears tree and settings">Clear paths</button>
+                  <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.removeAllTravelNodes()" title="Removes all connections from the tree">Clear paths</button>
 
                 </div>
                 <div class="d-flex flex-row">
 
-                  <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.autoformatAbilityNames()">Autoformat ability names</button>
+                  <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.autoformatAbilityNames()" title="Reformats ability names to match in-game color">Autoformat ability names</button>
 
                 </div>
 
