@@ -191,6 +191,34 @@ class Ability
     getPlainName() {
         return this._plainname;
     }
+
+    autoformatName() {
+        const delimiter = utils.preferredDelimiter;
+        let prefix = `${delimiter}l`;
+        switch (this.type) {
+            case 'skill':
+                prefix = `${delimiter}g` + prefix;
+                break;
+            case 'white':
+                prefix = `${delimiter}f` + prefix;
+                break;
+            case 'yellow':
+                prefix = `${delimiter}h` + prefix;
+                break;
+            case 'purple':
+                prefix = `${delimiter}i` + prefix;
+                break;
+            case 'blue':
+                prefix = `${delimiter}j` + prefix;
+                break;
+            case 'red':
+                prefix = `${delimiter}k` + prefix;
+                break;
+            default:
+                return;
+        }
+        this.name = prefix + this._plainname;
+    }
 }
 
 const NUMOFVARIANTS = 4;
@@ -1641,6 +1669,13 @@ export class BaseTree
         //selected.scrollIntoView({block: "center", inline: "center", behavior: "instant"});
 
     }
+
+    autoformatAbilityNames() {
+        for (let ability of Object.values(this.abilities))
+            ability.autoformatName();
+        this.renderEverything();
+    }
+
     // #endregion
 
     // #region Tree editing

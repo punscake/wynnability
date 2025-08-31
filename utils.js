@@ -288,14 +288,23 @@ export const codeDictionaryClassSymbols = {
     'provoke' : '§4💢',
     'invincibility' : '§b☗',
 
-    'marked' : '§c✜',
-    'clone' : '§5',
-
     'puppet' : '§6⚘',
     'whipped' : '§6⇶',
     'awakened' : '§f♚',
     'bloodpool' : '§4⚕',
     'bleeding' : '§c',
+
+    'old clones' : '§5',
+    'marked' : '§c✜',
+    'mirror clone' : '§#c267f7',
+    'mirage clone' : '§#f5cfff',
+    'shadow clone' : '§#d84c4c',
+    'tricks' : '§#6afa65',
+    'confused' : '§#e1dca4',
+    'contaminated' : '§#94a771',
+    'enkindled' : '§#ff8e8e',
+    'noxious' : '§#eb3dfe',
+    'drained' : '§#a1fad9',
 };
 export const codeDictionaryCommonAbilityAttributes = {
     
@@ -335,6 +344,11 @@ export const codeDictionaryColor = {
     'e' : '#FFFF55',
     'f' : '#FFFFFF',
     'r' : null,
+    'g' : '#87DD47',
+    'h' : '#FFE14D',
+    'i' : '#F747C2',
+    'j' : '#99E9FF',
+    'k' : '#FF4545',
 };
 export const codeDictionaryDecoration = {
     'm' : 'line-through',

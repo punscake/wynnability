@@ -88,6 +88,11 @@
                   <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.removeAllTravelNodes()" title="Completely clears tree and settings">Clear paths</button>
 
                 </div>
+                <div class="d-flex flex-row">
+
+                  <button type="button" class="btn btn-primary mt-2 col" style="overflow: hidden" onclick="tree.autoformatAbilityNames()">Autoformat ability names</button>
+
+                </div>
 
               </div>
 
@@ -953,7 +958,6 @@
           }
           
           button.remove();
-          
         }
 
         //Populates common ability options from utils.codeDictionaryCommonAbilityAttributes map
