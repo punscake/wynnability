@@ -135,12 +135,12 @@ section {
   border: 2px solid #230158;
   background-color: #110111;
   color: white;
-  font-family: minecraft, mojangles, unifont, unifontEmoji;
+  font-family: minecraft, icons, mojangles, unifont, unifontEmoji;
   text-shadow: 0.125rem 0.125rem 0 color-mix(in srgb, currentColor 24%, black);
   min-height: 30px;
   border-radius: 4px;
-  word-spacing: 0.1rem;
-  letter-spacing: 0.02rem;
+  word-spacing: 0.09rem;
+  letter-spacing: 0.03rem;
   text-underline-offset: 0.1875rem;
   line-height: 1.25rem;
 }
@@ -282,7 +282,16 @@ section {
 
 @font-face {
   font-family: 'minecraft';
-  src: url('merged.woff');
+  src: url('minecraft.woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+  text-rendering: optimizeLegibility;
+}
+
+@font-face {
+  font-family: 'icons';
+  src: url('icons.woff');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -291,7 +300,7 @@ section {
 
 @font-face {
   font-family: 'minecraft';
-  src: url('mergedbold.woff');
+  src: url('minecraft_bold.woff');
   font-weight: 900;
   font-style: normal;
   font-display: block;
@@ -326,7 +335,7 @@ section {
 }
 
 .font-minecraft {
-  font-family: 'minecraft';
+  font-family: minecraft, icons, mojangles, unifont, unifontEmoji;
 }
 
 .font-default {
