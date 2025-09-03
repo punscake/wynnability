@@ -139,8 +139,8 @@ section {
   text-shadow: 0.125rem 0.125rem 0 color-mix(in srgb, currentColor 24%, black);
   min-height: 30px;
   border-radius: 4px;
-  word-spacing: 0.09rem;
-  letter-spacing: 0.03rem;
+  word-spacing: 0.075rem;
+  letter-spacing: 0.025rem;
   text-underline-offset: 0.1875rem;
   line-height: 1.25rem;
 }
