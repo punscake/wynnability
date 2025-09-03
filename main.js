@@ -1673,6 +1673,8 @@ export class BaseTree
     autoformatAbilityNames() {
         for (let ability of Object.values(this.abilities))
             ability.autoformatName();
+
+        this.saveState(`Autoformatted ability names`);
         this.renderEverything();
     }
 

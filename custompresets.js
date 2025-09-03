@@ -101,12 +101,9 @@ function cacheTree(filename, tree) {
     treeCache[filename] = tree;
 }
 
-const DELAYBEFOREFETCH = 1000;
 async function getPreset(filename) {
     if (treeCache[filename] != null)
         return treeCache[filename];
-
-    await new Promise(r => setTimeout(r, DELAYBEFOREFETCH));
 
     const controller = new AbortController();
     const signal = controller.signal;
@@ -116,7 +113,7 @@ async function getPreset(filename) {
         console.log('Fetch request timed out');
         }, 5000);
 
-    return fetch(`presets/custom/${filename}.json`, {
+    treeCache[filename] = fetch(`presets/custom/${filename}.json`, {
 
         signal,
         cache: 'no-store',
@@ -143,14 +140,18 @@ async function getPreset(filename) {
 
     }).catch( (e) => {
         console.log(e);
+        treeCache[filename] = null;
     }).finally(() => {
         clearTimeout(timeoutId);
     });
+    return treeCache[filename];
 }
 
 async function getRandomNodeOfType(filename, type = "red") {
 
     let tree = await getPreset(filename);
+    if (tree == null)
+        return -1;
     
     let filteredAbilities = [];
     for(let id of Object.keys(tree.abilities)) {
@@ -169,6 +170,8 @@ async function renderRandomAbilityTooltip(filename, type = "red", signal = {canc
 
     (async ()=>{
         const randomAbilityID = await getRandomNodeOfType(filename, type);
+        if (randomAbilityID == -1)
+            return;
         const tree = await getPreset(filename);
         if (!signal.cancel) {
             tree.renderHoverAbilityTooltip(randomAbilityID);
