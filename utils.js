@@ -320,7 +320,7 @@ export const codeDictionaryCommonAbilityAttributes = {
     
     'effect' : ['§e✧', '\n§e✧ §7Effect: §f_'],
     'duration' : ['§d⌛', '\n§d⌛ §7Duration: §f_s'],
-    'range' : ['§a➼', '\n§a➼ §7Range: §f_ Blocks'],
+    'range' : ['§2➼', '\n§2➼ §7Range: §f_ Blocks'],
     'AoE' : ['§3☀', '\n§3☀ §7Area of Effect: §f_ Blocks §7(Circle-Shaped)'],
     'cooldown' : ['§3⌚', '\n§3⌚ §7Cooldown: §f_s'],
 
