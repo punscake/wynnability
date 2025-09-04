@@ -164,6 +164,13 @@
                 
               </div>
 
+              <div class="d-flex flex-row mt-3 ps-3 align-items-center justify-content-between form-check form-switch" style="width:85%" title="Makes L-Shaped connections illegal (like in-game)">
+
+                <label class="form-check-label text-light" for="strictAllocationSwitch">Strict Allocation</label>
+                <input class="form-check-input me-4" type="checkbox" role="switch" id="strictAllocationSwitch" oninput="tree.readProperties()">
+                
+              </div>
+
               <div class="d-flex flex-row mt-3 ps-3 align-items-center justify-content-between form-check form-switch" style="width:85%" title="Feels warm to the touch">
 
                 <label class="form-check-label text-light" for="altIconSwitch">Extra Ability Icons</label>
@@ -705,7 +712,7 @@
 
             <div class="form-floating">
 
-              <input type="text" class="form-control focusable" id="treeNameInput" autocomplete="off" placeholder="ex. Trickshade" oninput="utils.convertToMinecraftTooltip(value, 'treeTooltip')" maxlength="100">
+              <input type="text" class="form-control focusable" id="treeNameInput" autocomplete="off" placeholder="ex. Mango Tree" oninput="utils.convertToMinecraftTooltip(value, 'treeTooltip')" maxlength="100">
               <label class="maxlength-label" for="treeNameInput">ex. Mango Tree</label>
 
             </div>

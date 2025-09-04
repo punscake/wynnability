@@ -386,7 +386,13 @@ class Properties {
      */
     useAlternativeAbilityIcons = false;
 
-    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, horizontalPages = HORIZONTAL_PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false, useAlternativeAbilityIcons = false} = {}) {
+    /**
+     * Whether to enforce L shaped allocation (how it works in-game)
+     * @var bool
+     */
+    strictAllocation = true;
+
+    constructor({classs = Object.keys(classDictionary)[0], maxAbilityPoints = MAXABILITYPOINTS_DEFAULT, loopTree = false, pages = PAGES_DEFAULT, horizontalPages = HORIZONTAL_PAGES_DEFAULT, rowsPerPage = ROWSPERPAGE_DEFAULT, pagesDisplayed = PAGESDISPLAYED_DEFAULT, bTravesableUp = false, useAlternativeAbilityIcons = false, strictAllocation = true} = {}) {
         
         this.classs = Object.keys(classDictionary).includes(String(classs)) ? String(classs) : Object.keys(classDictionary)[0];
 
@@ -400,9 +406,10 @@ class Properties {
 
         this.pagesDisplayed = isNaN(Number(pagesDisplayed)) ? PAGESDISPLAYED_DEFAULT : utils.clamp(Number(pagesDisplayed), PAGESDISPLAYED_LOWER, Math.min(PAGESDISPLAYED_UPPER, this.pages));
 
-        this.loopTree = Boolean(loopTree) ? Boolean(loopTree) : false;
-        this.bTravesableUp = Boolean(bTravesableUp) ? Boolean(bTravesableUp) : false;
-        this.useAlternativeAbilityIcons = Boolean(useAlternativeAbilityIcons) ? Boolean(useAlternativeAbilityIcons) : useAlternativeAbilityIcons;
+        this.loopTree = Boolean(loopTree);
+        this.bTravesableUp = Boolean(bTravesableUp);
+        this.useAlternativeAbilityIcons = Boolean(useAlternativeAbilityIcons);
+        this.strictAllocation = Boolean(strictAllocation);
     }
 }
 
@@ -439,7 +446,6 @@ const MAXSELECTEDCELLS = 40;
 const CELLIDPREFIX = 'cell-';
 const COLUMNS = 9;
 
-const LSHAPEDALLOCATION = false;
 export class BaseTree
 {
     /**
@@ -583,7 +589,7 @@ export class BaseTree
     }
 
     readProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID, horizontalPagesId = HORIZONTAL_PAGES_INPUTID,
-        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch", useAlternativeAbilityIcons = "altIconSwitch") {
+        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUpId = "travelUpSwitch", useAlternativeAbilityIconsId = "altIconSwitch", strictAllocationId = "strictAllocationSwitch") {
 
         if (this.properties != null && this.properties.loopTree != document.getElementById(loopTreeId).checked) {
 
@@ -617,8 +623,9 @@ export class BaseTree
             rowsPerPage : document.getElementById(rowsPerPageId).value,
             pagesDisplayed : document.getElementById(pagesDisplayedId).value,
             loopTree : document.getElementById(loopTreeId).checked,
-            bTravesableUp : document.getElementById(bTravesableUp).checked,
-            useAlternativeAbilityIcons : document.getElementById(useAlternativeAbilityIcons).checked
+            bTravesableUp : document.getElementById(bTravesableUpId).checked,
+            useAlternativeAbilityIcons : document.getElementById(useAlternativeAbilityIconsId).checked,
+            strictAllocation : document.getElementById(strictAllocationId).checked,
         });
         
         this.setMode(this.bEditMode);
@@ -627,7 +634,7 @@ export class BaseTree
     }
 
     writeProperties(classSelectId = "classSelect", maxAbilityPointsId = MAXABILITYPOINTS_INPUTID, loopTreeId = "loopTreeSwitch", pagesId = PAGES_INPUTID, horizontalPagesId = HORIZONTAL_PAGES_INPUTID,
-        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUp = "travelUpSwitch", useAlternativeAbilityIcons = "altIconSwitch") {
+        rowsPerPageId = ROWSPERPAGE_INPUTID, pagesDisplayedId = PAGESDISPLAYED_INPUTID, bTravesableUpId = "travelUpSwitch", useAlternativeAbilityIconsId = "altIconSwitch", strictAllocationId = "strictAllocationSwitch") {
 
         document.getElementById(classSelectId).value = this.properties.classs;
         document.getElementById(maxAbilityPointsId).value = this.properties.maxAbilityPoints;
@@ -636,8 +643,9 @@ export class BaseTree
         document.getElementById(rowsPerPageId).value = this.properties.rowsPerPage;
         document.getElementById(pagesDisplayedId).value = this.properties.pagesDisplayed;
         document.getElementById(loopTreeId).checked = this.properties.loopTree;
-        document.getElementById(bTravesableUp).checked = this.properties.bTravesableUp;
-        document.getElementById(useAlternativeAbilityIcons).checked = this.properties.useAlternativeAbilityIcons;
+        document.getElementById(bTravesableUpId).checked = this.properties.bTravesableUp;
+        document.getElementById(useAlternativeAbilityIconsId).checked = this.properties.useAlternativeAbilityIcons;
+        document.getElementById(strictAllocationId).checked = this.properties.strictAllocation;
 
     }
 
@@ -1391,6 +1399,26 @@ export class BaseTree
         }
     }
 
+    cloneAbility(abilityID = -1) {
+        if (this.abilities[abilityID] == null)
+            return;
+
+        let copy = new Ability(this.abilities[abilityID]);
+
+        let maxId = Object.keys(this.abilities).length + 1;
+            for (abilityID = 1; abilityID <= maxId; abilityID++) {
+                if (this.abilities[abilityID] == null)
+                    break;
+            }
+
+        this.abilities[abilityID] = copy;
+
+        this.saveState(`Copied ability: ${utils.minecraftToHTML(copy.name)}`);
+
+        this.renderAbilities();
+        this.renderArchetypes();
+    }
+
     getBlockedAbilities(abilityBlockFormID = "abilityBlockInput") {
 
         const abilityBlockInputElement = document.getElementById(abilityBlockFormID);
@@ -1435,15 +1463,14 @@ export class BaseTree
         
         if (this.abilities[abilityID] == null) {
 
-            let maxId = 0;
-            for (let id of Object.keys(this.abilities)) {
-                maxId = Math.max(maxId, Number(id));
+            let maxId = Object.keys(this.abilities).length + 1;
+            for (abilityID = 1; abilityID <= maxId; abilityID++) {
+                if (this.abilities[abilityID] == null)
+                    break;
             }
 
-            abilityID = maxId + 1;
-
             this.abilities[abilityID] = newAbility;
-            nameInputElement.abilityId = abilityID;
+            //nameInputElement.abilityId = abilityID;
 
             this.saveState(`Added ability: ${utils.minecraftToHTML(nameInputElement.value)}`);
 
@@ -1608,9 +1635,18 @@ export class BaseTree
             text.classList.add('flex-fill', 'align-items-center', 'overflow-hidden', 'ms-2');
             text.innerHTML = utils.minecraftToHTML(this.abilities[id].name);
             div.appendChild(text);
+
+            const clonebtn = document.createElement("button");
+            clonebtn.classList.add('small-btn', 'me-1', 'ms-2', 'font-default');
+            clonebtn.type = "button";
+            clonebtn.style = "background-color: transparent;";
+            clonebtn.title = "Clone";
+            clonebtn.innerHTML = "📋";
+            clonebtn.addEventListener('click', (e) => this.cloneAbility(id));
+            div.appendChild(clonebtn);
             
             const editbtn = document.createElement("button");
-            editbtn.classList.add('small-btn', 'me-1', 'ms-2', 'font-default');
+            editbtn.classList.add('small-btn', 'me-1', 'font-default');
             editbtn.type = "button";
             editbtn.style = "background-color: transparent;";
             editbtn.title = "Edit";
@@ -2367,7 +2403,7 @@ export class BaseTree
                         if (this.cellMap[connectedCellNumber]["abilityID"] == null) {
 
                             pathwayMap[connectedCellNumber] = pathwayMap[connectedCellNumber] ?? {};
-                            const restrictSides = (connectedCellDirection == 'down' && !LSHAPEDALLOCATION);
+                            const restrictSides = (connectedCellDirection == 'down' && this.properties.strictAllocation);
 
                             for (let parentAbilityID of pendingAbilityIDs) {
 
