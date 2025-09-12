@@ -294,7 +294,7 @@
             
               <div class="d-flex justify-content-end align-items-center ps-2 pe-2 mt-2">
                 
-                <input type="textbox" class="generic-background text-light" style="min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
+                <input type="text" class="generic-background text-light" style="min-width: 60px;" id="abilitySearch" placeholder="Search..." oninput="tree.selectedAbility = -1; tree.renderAbilities()">
 
                 <div class="me-auto ms-2">
 
@@ -427,7 +427,7 @@
 
             <div id="loadinterface">
 
-              <input type="textbox" id="json-container" class="overflow-hidden generic-background text-light" style="min-width: 40px; width: 100%" onfocus="this.value = ''" placeholder="Paste the JSON here"
+              <input type="text" id="json-container" class="overflow-hidden generic-background text-light" style="min-width: 40px; width: 100%" onfocus="this.value = ''" placeholder="Paste the JSON here"
                 onpaste="setTimeout( () => {
                   try {
                     tree.loadTreeFromField();
@@ -473,7 +473,7 @@
             <div id="libraryinterface" hidden>
 
             
-              <input type="textbox" id="customSearch" class="overflow-hidden generic-background text-light" style="min-width: 40px; width: 100%" placeholder="Search..."
+              <input type="text" id="customSearch" class="overflow-hidden generic-background text-light" style="min-width: 40px; width: 100%" placeholder="Search..."
                 oninput="custom.renderSearchResults()"
               >
               
