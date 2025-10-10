@@ -10,7 +10,7 @@
     },
     {
         "credit" : "ChrisWildfire",
-        "title" : "Apprentice",
+        "title" : "Brawler",
         "description" : "A melee-oriented, close-range, stance-based weaponless class",
         "class" : "custom",
         "baseclass" : "warrior",
