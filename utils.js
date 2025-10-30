@@ -482,7 +482,7 @@ export function insertStringBeforeSelected(insertString) {
         return;
     }
 
-    if (activeElement.maxLength != null && activeElement.value.length + insertString.length > activeElement.maxLength) {
+    if (activeElement.maxLength != -1 && activeElement.value.length + insertString.length > activeElement.maxLength) {
         return;
     }
 
