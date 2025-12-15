@@ -49,6 +49,9 @@ function generateIconDiv(type, travelnode = new TravelNode(), classs = "", alloc
   
     if (type == 'skill')
         switch (allocationStatus) {
+            case -1:
+                url = iconDictionary[type] + classs + '/skill_blocked.png';
+                break;
             case 0:
                 url = iconDictionary[type] + classs + '/skill_dark.png';
                 break;
