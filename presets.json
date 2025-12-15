@@ -38,7 +38,7 @@
     {
         "credit" : "Bee",
         "title" : "Archer Rework",
-        "description" : "Tweaks to the archer tree to make remake the class as it should have been",
+        "description" : "Tweaks to the archer tree to remake the class as it should have been",
         "class" : "archer",
         "baseclass" : "archer",
         "completeness" : 8,

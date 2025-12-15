@@ -2641,7 +2641,7 @@ export class BaseTree
 
         delete this.abilityTrees[name];
 
-        this.ensureDefaultTree(); 
+        this.ensureSelectedTree(); 
         this.renderTreeNames();
         this.saveState(`Deleted tree: ${utils.minecraftToHTML(name)}`);
 
