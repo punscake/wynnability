@@ -806,7 +806,7 @@ export class BaseTree
         const timeoutId = setTimeout(() => {
             controller.abort();
             console.log('Fetch request timed out');
-          }, 5000);
+          }, RESPONSETIMEOUT);
 
         fetch(`presets/base/${classSelect.value}.json`, {
 
