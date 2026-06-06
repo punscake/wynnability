@@ -43,5 +43,14 @@
         "baseclass" : "archer",
         "completeness" : 8,
         "filename" : "Bee.archerRework1"
+    },
+    {
+        "credit" : "snail",
+        "title" : "Shadestepper Rework",
+        "description" : "A rework to the Shadestepper archetype that focuses on making it play more actively while being less restricted by cooldowns, with a few touches that hearken back to pre-Spellbound Assassin and its playstyle.",
+        "class" : "assassin",
+        "baseclass" : "assassin",
+        "completeness" : 8,
+        "filename" : "snail.shadeRework1"
     }
 ]
