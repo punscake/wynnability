@@ -16,6 +16,15 @@ export const abilityIconDictionary = {
     'yellow' : 'abilities/generic/yellow',
     'white' : 'abilities/generic/white',
 }
+const ultimateIconDictionary = {
+    'skill' : 'abilities/class/',
+    'red' : 'abilities/generic/red',
+    'blue' : 'abilities/generic/blue',
+    'purple' : 'abilities/generic/purple',
+    'yellow' : 'abilities/generic/yellow',
+    'white' : 'abilities/generic/white',
+}
+
 const altAbilityIconDictionary = {
     'skill' : 'abilities/class/',
     'magenta' : 'abilities/generic/magenta',
@@ -31,6 +40,15 @@ const reverseDirectionDictionary = {
     'down' : 'up',
     'right' : 'left',
     'left' : 'right',
+}
+
+class IconStorage
+{
+    /**
+     * Abilities
+     * @var { id : Image }
+     */
+    images = {};
 }
 
 function generateIconDiv(type, travelnode = new TravelNode(), classs = "", allocationStatus = 0, bScaleAbilityIcon = false, useAlternativeAbilityIcons = false) {
@@ -1575,11 +1593,7 @@ export class BaseTree
         const notOnTreeFilter = document.getElementById(notOnTreeFilterID);
         let bFilterNotOnTree = notOnTreeFilter != null && !notOnTreeFilter.checked;
 
-        let abilitiesOnTree = {};
-        for(let cellKey of Object.keys(this.cellMap)) {
-            if (this.cellMap[cellKey]['abilityID'] != null)
-                abilitiesOnTree[ this.cellMap[cellKey]['abilityID'] ] = true;
-        }
+        let abilitiesOnTree = this.getAbilitiesOnTree();
 
         for (let id of sortedAbilityIDs) {
 
@@ -1717,6 +1731,14 @@ export class BaseTree
         this.renderEverything();
     }
 
+    getAbilitiesOnTree() {
+        let abilitiesOnTree = {};
+        for(let cellKey of Object.keys(this.cellMap)) {
+            if (this.cellMap[cellKey]['abilityID'] != null)
+                abilitiesOnTree[ this.cellMap[cellKey]['abilityID'] ] = true;
+        }
+        return abilitiesOnTree;
+    }
     // #endregion
 
     // #region Tree editing
@@ -2757,7 +2779,9 @@ export class BaseTree
         for (let archetype of this.archetypes) {
             archetypeCounts[archetype] = 0;
         }
-        for (let ability of Object.values(this.abilities)) {
+        let onTreeAbilities = Object.keys(this.getAbilitiesOnTree());
+        for (let abilityID of onTreeAbilities) {
+            let ability = this.abilities[abilityID];
             if (ability.archetype.length > 0)
                 archetypeCounts[ability.archetype]++;
         }
