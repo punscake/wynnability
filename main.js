@@ -185,12 +185,12 @@ class Ability
     type = '';
 
     /**
-     * ID of the required ability
-     * @var int
+     * IDs of required abilities
+     * @var int[]
      */
-    requires = -1;
+    requires = [];
 
-    constructor({name = '', description = '', unlockingWillBlock = [], archetype = '', bContributeArchetype = true, pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
+    constructor({name = '', description = '', unlockingWillBlock = [], archetype = '', bContributeArchetype = true, pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = []} = {}) {
 
         this.name = String(name) ? String(name) : '';
         this._plainname = utils.stripMinecraftFormatting(this.name);
@@ -204,6 +204,12 @@ class Ability
                 if (!isNaN(Number(element)))
                     this.unlockingWillBlock.push(Number(element));
             });
+        this.requires = [];
+        if (Array.isArray(requires))
+            requires.forEach(element => {
+                if (!isNaN(Number(element)))
+                    this.requires.push(Number(element));
+            });
 
         this.pointsRequired = isNaN(Number(pointsRequired)) ? POINTSREQUIRED_LOWER : utils.clamp(Number(pointsRequired), POINTSREQUIRED_LOWER, POINTSREQUIRED_UPPER);
 
@@ -212,8 +218,6 @@ class Ability
         this.type = Object.keys(abilityIconDictionary).includes(String(type))
             || Object.keys(altAbilityIconDictionary).includes(String(type))
             ? String(type) : Object.keys(abilityIconDictionary)[0];
-
-        this.requires = isNaN(Number(requires)) ? -1 : Number(requires);
     }
 
     getPlainName() {
@@ -942,7 +946,13 @@ export class BaseTree
         if (typeof abilities === 'object' && !Array.isArray(abilities) && abilities !== null) {
             
             Object.keys(abilities).forEach( id => {
-    
+
+                //Old versions had required abilities be a single value
+                const requires = abilities[id]['requires'];
+                if (!Array.isArray(requires)) {
+                    if (!isNaN(Number(requires)) && Number(requires) > 0)
+                        abilities[id]['requires'] = [requires]
+                }
                 this.abilities[id] = new Ability(abilities[id]);
     
             });
@@ -1222,8 +1232,8 @@ export class BaseTree
     renderEditorAbilityTooltip(scaleDown = true, nameFormID = "abilityNameInput",
         descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
         pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID,
-        containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput",
-        abilityBlockCountDisplayID="abilityBlockCountDisplay", typeFormID = "abilityTypeInput",
+        containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequisiteInput",
+        abilityPrerequisiteCountDisplayID="abilityPrerequisiteCountDisplay", abilityBlockCountDisplayID="abilityBlockCountDisplay", typeFormID = "abilityTypeInput",
         archetypeContributionCheckbox = "archetype-contribute-checkbox") {
         
         const nameInputElement = document.getElementById(nameFormID);
@@ -1237,10 +1247,15 @@ export class BaseTree
         const container = document.getElementById(containerId);
         
         const abilityBlockCountDisplay = document.getElementById(abilityBlockCountDisplayID);
+        const abilityPrerequisiteCountDisplay = document.getElementById(abilityPrerequisiteCountDisplayID);
 
         let blockedAbilities = this.getBlockedAbilities();
         if (abilityBlockCountDisplay != null)
             abilityBlockCountDisplay.innerHTML = blockedAbilities.length;
+
+        let prerequisiteAbilities = this.getPrerequisisteAbilities();
+        if (abilityPrerequisiteCountDisplay != null)
+            abilityPrerequisiteCountDisplay.innerHTML = prerequisiteAbilities.length;
 
         const content = this._getAbilityTooltipHTML(new Ability({
             name : nameInputElement.value,
@@ -1251,7 +1266,7 @@ export class BaseTree
             pointsRequired : pointsRequiredInputElement.value,
             archetypePointsRequired : archetypePointsRequiredInputElement.value,
             type : typeInputElement.value,
-            requires : prerequisiteInputElement.value
+            requires : prerequisiteAbilities
         }));
         
         if (scaleDown) {
@@ -1309,8 +1324,8 @@ export class BaseTree
 
         result += `<span style="color:${utils.codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>`;
         
-        if (this.abilities[ability.requires] != null)
-            result += `<span style="color:${utils.codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${utils.anyToHTML(this.abilities[ability.requires].getPlainName())}<br>`;
+        for (const requiredID of ability.requires)
+            result += `<span style="color:${utils.codeDictionaryColor['7']}">Required&nbsp;Ability:&nbsp;</span>${utils.anyToHTML(this.abilities[requiredID].getPlainName())}<br>`;
 
         if (ability.archetype != "" && ability.archetypePointsRequired > 0)
             result += `<span style="color:${utils.codeDictionaryColor['7']}">Min&nbsp;${utils.anyToHTML(utils.stripMinecraftFormatting(ability.archetype))}&nbsp;Archetype:&nbsp;</span>${ability.archetypePointsRequired}`;
@@ -1322,7 +1337,7 @@ export class BaseTree
         nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput",
         abilityBlockFormID = "abilityBlockInput", archetypeFormID = "abilityArchetypeInput",
         pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID,
-        prerequisiteFormID = "abilityPrerequiseteInput", archetypeContributionCheckbox = "archetype-contribute-checkbox") {   
+        prerequisiteFormID = "abilityPrerequisiteInput", archetypeContributionCheckbox = "archetype-contribute-checkbox") {   
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
@@ -1347,7 +1362,7 @@ export class BaseTree
 
             }
 
-            prerequisiteInputElement.innerHTML = `<option class="ability-type-none" selected value="-1">Prerequisite (none)</option>`;
+            prerequisiteInputElement.innerHTML = '';
             abilityBlockInputElement.innerHTML = '';
             for (let id of sortedAbilityIDs) {
 
@@ -1368,6 +1383,7 @@ export class BaseTree
                     this.renderEditorAbilityTooltip();
                 });
                 abilityBlockInputElement.appendChild(li);
+                prerequisiteInputElement.appendChild(li.cloneNode());
 
             }
 
@@ -1401,7 +1417,11 @@ export class BaseTree
             for (let blockedID of this.abilities[abilityID].unlockingWillBlock)
                 blockedAbilitiesMap[blockedID] = true;
 
-            prerequisiteInputElement.innerHTML = `<option class="ability-type-none" value="-1">Prerequisite (none)</option>`;
+            let prerequisiteAbilitiesMap = {};
+            for (let prereqID of this.abilities[abilityID].requires)
+                prerequisiteAbilitiesMap[prereqID] = true;
+
+            prerequisiteInputElement.innerHTML = '';
             abilityBlockInputElement.innerHTML = '';
             for (let id of sortedAbilityIDs) {
 
@@ -1410,25 +1430,29 @@ export class BaseTree
 
                 const abilityName = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(this.abilities[id].name), 50));
 
-                const option = document.createElement('option');
-                option.value = id;
-                option.innerHTML = abilityName;
-                option.classList.add("ability-type-" + this.abilities[id].type);
-                if (id == this.abilities[abilityID].requires)
-                    option.selected = true;
-                prerequisiteInputElement.appendChild(option);
-
-                const li = document.createElement('li');
-                li.innerHTML = abilityName;
-                li.value = id;
-                li.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
+                const blockedAbilityListElement = document.createElement('li');
+                blockedAbilityListElement.innerHTML = abilityName;
+                blockedAbilityListElement.value = id;
+                blockedAbilityListElement.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
                 if (blockedAbilitiesMap[id])
-                    li.classList.add("active");
-                li.addEventListener('click', (event) => {
+                    blockedAbilityListElement.classList.add("active");
+                blockedAbilityListElement.addEventListener('click', (event) => {
                     event.target.classList.toggle('active');
                     this.renderEditorAbilityTooltip();
                 });
-                abilityBlockInputElement.appendChild(li);
+                abilityBlockInputElement.appendChild(blockedAbilityListElement);
+
+                const prerequisiteAbilityListElement = document.createElement('li');
+                prerequisiteAbilityListElement.innerHTML = abilityName;
+                prerequisiteAbilityListElement.value = id;
+                prerequisiteAbilityListElement.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
+                if (prerequisiteAbilitiesMap[id])
+                    prerequisiteAbilityListElement.classList.add("active");
+                prerequisiteAbilityListElement.addEventListener('click', (event) => {
+                    event.target.classList.toggle('active');
+                    this.renderEditorAbilityTooltip();
+                });
+                prerequisiteInputElement.appendChild(prerequisiteAbilityListElement);
 
             }
 
@@ -1476,10 +1500,23 @@ export class BaseTree
         return blockedAbilities;
     }
 
+    getPrerequisisteAbilities( prerequisiteFormID = "abilityPrerequisiteInput") {
+
+        const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
+
+        let prerequisiteAbilities = [];
+
+        for (let li of prerequisiteInputElement.children) {
+            if (li.classList.contains('active'))
+                prerequisiteAbilities.push(li.value);
+        }
+        return prerequisiteAbilities;
+    }
+
     saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput",
         archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
         archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput",
-        prerequisiteFormID = "abilityPrerequiseteInput", archetypeContributionCheckbox = "archetype-contribute-checkbox") {
+        archetypeContributionCheckbox = "archetype-contribute-checkbox") {
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
@@ -1488,7 +1525,6 @@ export class BaseTree
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const typeInputElement = document.getElementById(typeFormID);
-        const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
 
         if (nameInputElement.value == '') {
             nameInputElement.value = 'UNNAMED'
@@ -1503,7 +1539,7 @@ export class BaseTree
             pointsRequired : pointsRequiredInputElement.value,
             archetypePointsRequired : archetypePointsRequiredInputElement.value,
             type : typeInputElement.value,
-            requires : prerequisiteInputElement.value
+            requires : this.getPrerequisisteAbilities()
         });
         
         let abilityID = nameInputElement.abilityId;
@@ -1544,8 +1580,10 @@ export class BaseTree
         if (this.abilities[abilityID] != null) {
 
             for (let id of Object.keys(this.abilities)) {
-                if (this.abilities[id].requires == abilityID)
-                    this.abilities[id].requires = -1;
+                
+                const removedAbilityIndex = this.abilities[id].requires.indexOf(abilityID);
+                if (removedAbilityIndex > -1)
+                    this.abilities[id].requires.splice(index, 1);
 
                 const index = this.abilities[id].unlockingWillBlock.indexOf(Number(abilityID));
                 if (index > -1)
@@ -2563,9 +2601,10 @@ export class BaseTree
             this.currentTree['archetypes'][ this.abilities[abilityID].archetype ] < this.abilities[abilityID].archetypePointsRequired)
             return false;
 
-        if (this.abilities[abilityID].requires != -1 &&
-            !this.currentTree['allocatedNodes'][ this.abilities[abilityID].requires ])
-            return false;
+        for (const requiredAbilityID of this.abilities[abilityID].requires) {
+            if (!this.currentTree['allocatedNodes'][ requiredAbilityID ])
+                return false
+        }
 
         return this.currentTree['connectedNodes'][abilityID] != null
             && this.properties.maxAbilityPoints - this.currentTree['abilityPoints'] >= this.abilities[abilityID].pointsRequired;

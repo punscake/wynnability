@@ -218,6 +218,11 @@ section {
   color: black;
 }
 
+.ability-type-magenta {
+  background-color: #c69dd7;
+  color: black;
+}
+
 .ability-type-red {
   background-color: #fc9d9d;
   color: black;

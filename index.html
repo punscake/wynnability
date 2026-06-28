@@ -657,7 +657,14 @@
               
             </div>
 
-            <select class="form-select mt-2 focusable" id="abilityPrerequiseteInput" aria-label="Prerequisite ability" oninput="tree.renderEditorAbilityTooltip()"></select>
+            <div class="btn-group dropup w-100 mt-2">
+
+              <button class="form-select" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false" style="text-align: start;" type="button">
+                Prerequisite Abilities (<span id="abilityPrerequisiteCountDisplay"></span>)
+              </button>
+              <ul class="dropdown-menu w-100" id="abilityPrerequisiteInput" style="max-height: 363px; overflow-y: auto; overflow-x: hidden;"></ul>
+
+            </div>
 
             <div class="mt-3 mb-3" style="background-color: #110111; height: 1px;"></div>
 
