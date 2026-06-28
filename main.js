@@ -155,10 +155,16 @@ class Ability
     unlockingWillBlock = [];
 
     /**
-     * Archetype
+     * Archetype for requirements/affiliation
      * @var string
      */
     archetype = '';
+
+    /**
+     * Whether it contributes to the archetype point count
+     * @var bool
+     */
+    bContributeArchetype = true;
 
     /**
      * Ability point requirement
@@ -184,12 +190,13 @@ class Ability
      */
     requires = -1;
 
-    constructor({name = '', description = '', unlockingWillBlock = [], archetype = '', pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
+    constructor({name = '', description = '', unlockingWillBlock = [], archetype = '', bContributeArchetype = true, pointsRequired = POINTSREQUIRED_LOWER, archetypePointsRequired = ARCHETYPEPOINTSREQUIRED_LOWER, type = 'skill', requires = -1} = {}) {
 
         this.name = String(name) ? String(name) : '';
         this._plainname = utils.stripMinecraftFormatting(this.name);
         this.description = String(description) ? String(description) : '';
         this.archetype = String(archetype) ? String(archetype) : '';
+        this.bContributeArchetype = Boolean(bContributeArchetype);
 
         this.unlockingWillBlock = [];
         if (Array.isArray(unlockingWillBlock))
@@ -1071,14 +1078,20 @@ export class BaseTree
         }
 
         for (let ability of Object.values(this.abilities)) {
-            if (ability.archetype.length > 0)
+            if (ability.archetype.length > 0 && ability.bContributeArchetype)
                 archetypeCounts[ability.archetype]++;
             else
                 neutralCount++;
         }
         for(let cellKey of Object.keys(this.cellMap)) {
-            if (this.cellMap[cellKey]['abilityID'] != null)
-                placedArchetypeCounts[ this.abilities[ this.cellMap[cellKey]['abilityID'] ]['archetype'] ]++;
+            const cell = this.cellMap[cellKey];
+            if (cell['abilityID'] == null)
+                continue;
+            const ability = this.abilities[cell['abilityID']];
+            if (ability['bContributeArchetype'])
+                placedArchetypeCounts[ability['archetype']]++;
+            else
+                placedArchetypeCounts[""]++;
         }
         
         container.innerHTML = "";
@@ -1286,7 +1299,7 @@ export class BaseTree
             result += '<br>';
         }
 
-        if (ability.archetype != "")
+        if (ability.archetype != "" && ability.bContributeArchetype)
             result += `${utils.minecraftToHTML(ability.archetype + ' Archetype')}<br><br>`;
 
         result += `<span style="color:${utils.codeDictionaryColor['7']}">Ability&nbsp;Points:&nbsp;</span>${ability.pointsRequired}<br>`;
@@ -1301,13 +1314,16 @@ export class BaseTree
     }
 
     editAbility(abilityID = -1,
-        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", abilityBlockFormID = "abilityBlockInput", archetypeFormID = "abilityArchetypeInput",
-        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, prerequisiteFormID = "abilityPrerequiseteInput") {   
+        nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput",
+        abilityBlockFormID = "abilityBlockInput", archetypeFormID = "abilityArchetypeInput",
+        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID,
+        prerequisiteFormID = "abilityPrerequiseteInput", archetypeContributionCheckbox = "archetype-contribute-checkbox") {   
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const abilityBlockInputElement = document.getElementById(abilityBlockFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
+        const archetypeContributionElement = document.getElementById(archetypeContributionCheckbox);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const prerequisiteInputElement = document.getElementById(prerequisiteFormID);
@@ -1356,6 +1372,7 @@ export class BaseTree
             pointsRequiredInputElement.value = 1;
             archetypePointsRequiredInputElement.value = 0;
             prerequisiteInputElement.value = -1;
+            archetypeInputElement.checked = false;
             this.renderAbilityTypeSelector();
 
         } else {
@@ -1415,6 +1432,7 @@ export class BaseTree
             descriptionInputElement.value = this.abilities[abilityID].description;
             pointsRequiredInputElement.value = this.abilities[abilityID].pointsRequired;
             archetypePointsRequiredInputElement.value = this.abilities[abilityID].archetypePointsRequired;
+            archetypeInputElement.checked = !this.abilities[abilityID].bContributeArchetype;
             this.renderAbilityTypeSelector(this.abilities[abilityID].type);
             
         }
@@ -1453,12 +1471,15 @@ export class BaseTree
         return blockedAbilities;
     }
 
-    saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
-    archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput", prerequisiteFormID = "abilityPrerequiseteInput") {
+    saveAbility(nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput",
+        archetypeFormID = "abilityArchetypeInput", pointsRequiredFormID = POINTSREQUIRED_INPUTID,
+        archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, typeFormID = "abilityTypeInput",
+        prerequisiteFormID = "abilityPrerequiseteInput", archetypeContributionCheckbox = "archetype-contribute-checkbox") {
 
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
+        const archetypeContributionElement = document.getElementById(archetypeContributionCheckbox);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const typeInputElement = document.getElementById(typeFormID);
@@ -1473,6 +1494,7 @@ export class BaseTree
             description : descriptionInputElement.value,
             unlockingWillBlock : this.getBlockedAbilities(),
             archetype : archetypeInputElement.value,
+            bContributeArchetype : !archetypeContributionElement.checked,
             pointsRequired : pointsRequiredInputElement.value,
             archetypePointsRequired : archetypePointsRequiredInputElement.value,
             type : typeInputElement.value,
@@ -2546,11 +2568,14 @@ export class BaseTree
 
     allocateNode(abilityID, saveAfter = true) {
 
-        for (let blockedID of this.abilities[abilityID].unlockingWillBlock)
+        const ability = this.abilities[abilityID];
+
+        for (let blockedID of ability.unlockingWillBlock)
             this.currentTree['blockedNodes'][blockedID] = true;
-        if (this.abilities[abilityID].archetype != '')
-            this.currentTree['archetypes'][ this.abilities[abilityID].archetype ] += 1;
-        this.currentTree['abilityPoints'] += this.abilities[abilityID].pointsRequired;
+
+        if (ability.archetype != '' && ability.bContributeArchetype)
+            this.currentTree['archetypes'][ ability.archetype ] += 1;
+        this.currentTree['abilityPoints'] += ability.pointsRequired;
         this.currentTree['allocatedNodes'][abilityID] = true;
         this.abilityTrees[this.selectedTree].push(abilityID);
 
