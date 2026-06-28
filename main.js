@@ -1219,13 +1219,17 @@ export class BaseTree
 
     }
 
-    renderEditorAbilityTooltip(scaleDown = true, nameFormID = "abilityNameInput", descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
-        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID, containerId = "editAbilityTooltip",
-        prerequisiteFormID = "abilityPrerequiseteInput", abilityBlockCountDisplayID="abilityBlockCountDisplay", typeFormID = "abilityTypeInput") {
+    renderEditorAbilityTooltip(scaleDown = true, nameFormID = "abilityNameInput",
+        descriptionFormID = "abilityDescriptionInput", archetypeFormID = "abilityArchetypeInput",
+        pointsRequiredFormID = POINTSREQUIRED_INPUTID, archetypePointsRequiredFormID = ARCHETYPEPOINTSREQUIRED_INPUTID,
+        containerId = "editAbilityTooltip", prerequisiteFormID = "abilityPrerequiseteInput",
+        abilityBlockCountDisplayID="abilityBlockCountDisplay", typeFormID = "abilityTypeInput",
+        archetypeContributionCheckbox = "archetype-contribute-checkbox") {
         
         const nameInputElement = document.getElementById(nameFormID);
         const descriptionInputElement = document.getElementById(descriptionFormID);
         const archetypeInputElement = document.getElementById(archetypeFormID);
+        const archetypeContributionElement = document.getElementById(archetypeContributionCheckbox);
         const pointsRequiredInputElement = document.getElementById(pointsRequiredFormID);
         const archetypePointsRequiredInputElement = document.getElementById(archetypePointsRequiredFormID);
         const typeInputElement = document.getElementById(typeFormID);
@@ -1243,6 +1247,7 @@ export class BaseTree
             description : descriptionInputElement.value,
             unlockingWillBlock : blockedAbilities,
             archetype : archetypeInputElement.value,
+            bContributeArchetype : !archetypeContributionElement.checked,
             pointsRequired : pointsRequiredInputElement.value,
             archetypePointsRequired : archetypePointsRequiredInputElement.value,
             type : typeInputElement.value,
@@ -1372,7 +1377,7 @@ export class BaseTree
             pointsRequiredInputElement.value = 1;
             archetypePointsRequiredInputElement.value = 0;
             prerequisiteInputElement.value = -1;
-            archetypeInputElement.checked = false;
+            archetypeContributionElement.checked = false;
             this.renderAbilityTypeSelector();
 
         } else {
@@ -1432,7 +1437,7 @@ export class BaseTree
             descriptionInputElement.value = this.abilities[abilityID].description;
             pointsRequiredInputElement.value = this.abilities[abilityID].pointsRequired;
             archetypePointsRequiredInputElement.value = this.abilities[abilityID].archetypePointsRequired;
-            archetypeInputElement.checked = !this.abilities[abilityID].bContributeArchetype;
+            archetypeContributionElement.checked = !this.abilities[abilityID].bContributeArchetype;
             this.renderAbilityTypeSelector(this.abilities[abilityID].type);
             
         }
