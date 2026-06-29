@@ -2437,7 +2437,7 @@ export class BaseTree
     ensureSelectedTree() {
         this.ensureDefaultTree();
         if (this.abilityTrees[this.selectedTree] == null)
-            this.selectedTree = Object.keys(this.abilityTrees)[0];
+            this.selectTree(Object.keys(this.abilityTrees)[0]);
     }
 
     compileAllocationMap() {
@@ -2801,7 +2801,7 @@ export class BaseTree
         this.saveState(`Selected '${utils.minecraftToHTML(this.selectedTree)}' tree for allocation`, `${this.selectedTree}`, true);
         this.renderTreeNames();
         this.renderArchetypeCounts();
-        this.renderAbilityPointsUsed()
+        this.renderAbilityPointsUsed();
         this.renderTree();
     }
 
