@@ -52,5 +52,14 @@
         "baseclass" : "assassin",
         "completeness" : 8,
         "filename" : "snail.shadeRework1"
+    },
+    {
+        "credit" : "Sunbreak",
+        "title" : "Reaver",
+        "description" : "A tree made around Sunbreak and his interests, as a test of sorts to see if he could make an ability tree. References numerous fictional works throughout. Forge, grow, or punch your way through the opposition with a diverse array of archaic arts.",
+        "class" : "custom",
+        "baseclass" : "shaman",
+        "completeness" : 9,
+        "filename" : "sunbreak.reaver1"
     }
 ]
