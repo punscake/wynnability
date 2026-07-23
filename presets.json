@@ -61,5 +61,14 @@
         "baseclass" : "shaman",
         "completeness" : 9,
         "filename" : "sunbreak.reaver1"
+    },
+    {
+        "credit" : "ChrisWildfire",
+        "title" : "Cloud Ritualist (Revamp)",
+        "description" : "A revamp and reimagination of Ritualist's theme, turning it into a rainmaker that performs rituals to change the weather.",
+        "class" : "shaman",
+        "baseclass" : "shaman",
+        "completeness" : 6,
+        "filename" : "chris.ritualist1"
     }
 ]
