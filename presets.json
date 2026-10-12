@@ -70,5 +70,14 @@
         "baseclass" : "shaman",
         "completeness" : 6,
         "filename" : "chris.ritualist1"
+    },
+    {
+        "credit" : "ChrisWildfire",
+        "title" : "Ninja",
+        "description" : "Chris' take on an assassin class.",
+        "class" : "assassin",
+        "baseclass" : "assassin",
+        "completeness" : 10,
+        "filename" : "chris.ninja1"
     }
 ]
