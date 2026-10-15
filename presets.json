@@ -75,7 +75,7 @@
         "credit" : "ChrisWildfire",
         "title" : "Ninja",
         "description" : "Chris' take on an assassin class.",
-        "class" : "assassin",
+        "class" : "custom",
         "baseclass" : "assassin",
         "completeness" : 10,
         "filename" : "chris.ninja1"
