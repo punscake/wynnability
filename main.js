@@ -1368,22 +1368,25 @@ export class BaseTree
 
                 const abilityName = utils.anyToHTML(utils.shortenText(utils.stripMinecraftFormatting(this.abilities[id].name), 50));
 
-                const option = document.createElement('option');
-                option.value = id;
-                option.innerHTML = abilityName;
-                option.classList.add("ability-type-" + this.abilities[id].type);
-                prerequisiteInputElement.appendChild(option);
-
-                const li = document.createElement('li');
-                li.innerHTML = abilityName;
-                li.value = id;
-                li.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
-                li.addEventListener('click', (event) => {
+                const blockedAbilityListElement = document.createElement('li');
+                blockedAbilityListElement.innerHTML = abilityName;
+                blockedAbilityListElement.value = id;
+                blockedAbilityListElement.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
+                blockedAbilityListElement.addEventListener('click', (event) => {
                     event.target.classList.toggle('active');
                     this.renderEditorAbilityTooltip();
                 });
-                abilityBlockInputElement.appendChild(li);
-                prerequisiteInputElement.appendChild(li.cloneNode());
+                abilityBlockInputElement.appendChild(blockedAbilityListElement);
+
+                const prerequisiteAbilityListElement = document.createElement('li');
+                prerequisiteAbilityListElement.innerHTML = abilityName;
+                prerequisiteAbilityListElement.value = id;
+                prerequisiteAbilityListElement.classList.add("ability-type-" + this.abilities[id].type, "dropdown-item");
+                prerequisiteAbilityListElement.addEventListener('click', (event) => {
+                    event.target.classList.toggle('active');
+                    this.renderEditorAbilityTooltip();
+                });
+                prerequisiteInputElement.appendChild(prerequisiteAbilityListElement);
 
             }
 
